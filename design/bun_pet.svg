@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 210" width="400" height="420">
+  <!-- Sitless pet "Bun" — layered for Compose/VectorDrawable.
+       Fill mechanic: draw #body + #ears in grey #E9E5DE, then clip to the
+       same shapes and draw a #F5DC8B rect from fillTop to the bottom.
+       fillTop = 36 + (1 - energyLevel) * 160   (energyLevel 0..1) -->
+  <g id="feet" fill="#F5DC8B">
+    <ellipse cx="80" cy="192" rx="13" ry="10"/>
+    <ellipse cx="120" cy="192" rx="13" ry="10"/>
+  </g>
+  <g id="arms_side" fill="#F5DC8B">
+    <ellipse cx="36" cy="132" rx="10" ry="17" transform="rotate(28 36 132)"/>
+    <ellipse cx="164" cy="132" rx="10" ry="17" transform="rotate(-28 164 132)"/>
+  </g>
+  <g id="silhouette" fill="#F5DC8B">
+    <path id="body" d="M100 46 C130 46 144 62 149 86 C153 106 166 124 166 148 C166 174 140 190 100 190 C60 190 34 174 34 148 C34 124 47 106 51 86 C56 62 70 46 100 46 Z"/>
+    <circle id="ear_left" cx="62" cy="54" r="18"/>
+    <circle id="ear_right" cx="138" cy="54" r="18"/>
+  </g>
+  <g id="ears_inner" fill="#F6A98A">
+    <circle cx="62" cy="55" r="9"/>
+    <circle cx="138" cy="55" r="9"/>
+  </g>
+  <g id="eyes" fill="#2B2A3A">
+    <circle cx="84" cy="106" r="5.5"/>
+    <circle cx="116" cy="106" r="5.5"/>
+  </g>
+  <g id="cheeks" fill="#F7A58B">
+    <ellipse cx="72" cy="118" rx="9" ry="5.5"/>
+    <ellipse cx="128" cy="118" rx="9" ry="5.5"/>
+  </g>
+  <path id="mouth" d="M96 112 Q100 117 104 112 Z" fill="#2B2A3A" stroke="#2B2A3A" stroke-width="3" stroke-linejoin="round"/>
+</svg>

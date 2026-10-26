@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background before Compose draws; matches Cream in ui/theme/Color.kt -->
+    <color name="cream">#FFFFF4E8</color>
+    <!-- Notification accent; matches Coral in ui/theme/Color.kt -->
+    <color name="notification_accent">#FFE5603A</color>
+</resources>

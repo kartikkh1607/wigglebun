@@ -1,0 +1,38 @@
+<resources>
+    <!-- Debug-only Pet lab (src/debug); never shipped in release -->
+    <string name="pet_lab_open">Pet lab</string>
+    <string name="pet_lab_title">Pet lab</string>
+    <string name="pet_lab_energy">Energy %1$.2f · fillTop %2$.0f</string>
+    <string name="pet_lab_mood_follows_energy">Mood follows energy</string>
+    <string name="pet_lab_animate">Animate</string>
+    <string name="pet_lab_celebrate">Celebrate</string>
+    <string name="pet_lab_mood_happy">Happy</string>
+    <string name="pet_lab_mood_tired">Tired</string>
+    <string name="pet_lab_mood_stiff">Stiff</string>
+    <string name="pet_lab_mood_stretch">Stretch</string>
+    <string name="pet_lab_mood_celebrate">Celebrate</string>
+    <string name="pet_lab_mood_sleeping">Sleeping</string>
+    <string name="pet_lab_manual">Manual pet</string>
+    <string name="pet_lab_engine">Sitting engine</string>
+    <string name="pet_lab_engine_now">App time: %1$s</string>
+    <string name="pet_lab_engine_working">In work hours</string>
+    <string name="pet_lab_engine_off">Outside work hours (pet sleeps)</string>
+    <string name="pet_lab_engine_sit">Sitting %1$d:%2$02d of %3$d min</string>
+    <string name="pet_lab_engine_next">Next reminder: %1$s</string>
+    <string name="pet_lab_engine_next_none">Next reminder: none</string>
+    <string name="pet_lab_engine_snoozes">Snoozes used: %1$d / %2$d</string>
+    <string name="pet_lab_engine_mood">Mood %1$s · energy %2$.2f</string>
+    <string name="pet_lab_notifications_allowed">Notifications: allowed</string>
+    <string name="pet_lab_notifications_blocked">Notifications: blocked (reminders are skipped)</string>
+    <string name="pet_lab_follow_engine">Pet follows engine</string>
+    <string name="pet_lab_fast_clock">Fast clock (1 min = 1 s)</string>
+    <string name="pet_lab_always_work">Work hours: always</string>
+    <string name="pet_lab_interval">Interval: %1$d min</string>
+    <string name="pet_lab_interval_down">−5</string>
+    <string name="pet_lab_interval_up">+5</string>
+    <string name="pet_lab_done">Done</string>
+    <string name="pet_lab_snooze">Snooze</string>
+    <string name="pet_lab_skip">Skip</string>
+    <string name="pet_lab_reset">Reset timer</string>
+    <string name="pet_lab_open_notification_settings">Notification settings</string>
+</resources>

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 960 900" width="960" height="900">
+  <!-- Built from bun_pet.svg. Row 1: shoulder rolls. Row 2: wrist stretch. Row 3: march in place (replaces the side-view walk). -->
+  <defs>
+    <g id="body">
+      <path d="M100 46 C130 46 144 62 149 86 C153 106 166 124 166 148 C166 174 140 190 100 190 C60 190 34 174 34 148 C34 124 47 106 51 86 C56 62 70 46 100 46 Z" fill="#F5DC8B"/>
+      <circle cx="62" cy="54" r="18" fill="#F5DC8B"/>
+      <circle cx="138" cy="54" r="18" fill="#F5DC8B"/>
+      <circle cx="62" cy="55" r="9" fill="#F6A98A"/>
+      <circle cx="138" cy="55" r="9" fill="#F6A98A"/>
+      <ellipse cx="72" cy="118" rx="9" ry="5.5" fill="#F7A58B"/>
+      <ellipse cx="128" cy="118" rx="9" ry="5.5" fill="#F7A58B"/>
+      <path d="M96 112 Q100 117 104 112 Z" fill="#2B2A3A" stroke="#2B2A3A" stroke-width="3" stroke-linejoin="round"/>
+    </g>
+    <g id="eyesOpen" fill="#2B2A3A"><circle cx="84" cy="106" r="5.5"/><circle cx="116" cy="106" r="5.5"/></g>
+    <g id="eyesHappy" fill="none" stroke="#2B2A3A" stroke-width="3.6" stroke-linecap="round"><path d="M78 108 Q84 100 90 108"/><path d="M110 108 Q116 100 122 108"/></g>
+    <g id="eyesSqueeze" fill="none" stroke="#2B2A3A" stroke-width="3.6" stroke-linecap="round"><path d="M78 103 L89 107 L78 110"/><path d="M122 103 L111 107 L122 110"/></g>
+    <g id="armL"><ellipse cx="36" cy="132" rx="10" ry="17" transform="rotate(28 36 132)" fill="#F5DC8B"/></g>
+    <g id="armR"><ellipse cx="164" cy="132" rx="10" ry="17" transform="rotate(-28 164 132)" fill="#F5DC8B"/></g>
+    <g id="feet" fill="#F5DC8B"><ellipse cx="80" cy="192" rx="13" ry="10"/><ellipse cx="120" cy="192" rx="13" ry="10"/></g>
+  </defs>
+  <rect width="960" height="900" fill="#EAF3FD"/>
+
+  <!-- ROW 1: SHOULDER ROLLS -->
+  <g transform="translate(20 50)">
+    <use xlink:href="#feet"/><use xlink:href="#armL"/><use xlink:href="#armR"/><use xlink:href="#body"/><use xlink:href="#eyesOpen"/>
+  </g>
+  <g transform="translate(260 50)">
+    <use xlink:href="#feet"/>
+    <ellipse cx="44" cy="104" rx="10" ry="18" transform="rotate(-8 44 104)" fill="#F5DC8B"/>
+    <ellipse cx="156" cy="104" rx="10" ry="18" transform="rotate(8 156 104)" fill="#F5DC8B"/>
+    <g transform="translate(100 192) scale(1.03 0.96) translate(-100 -192)"><use xlink:href="#body"/><use xlink:href="#eyesSqueeze"/></g>
+  </g>
+  <g transform="translate(500 50)">
+    <use xlink:href="#feet"/>
+    <ellipse cx="44" cy="126" rx="8" ry="14" transform="rotate(40 44 126)" fill="#EBCB6A"/>
+    <ellipse cx="156" cy="126" rx="8" ry="14" transform="rotate(-40 156 126)" fill="#EBCB6A"/>
+    <g transform="translate(100 192) scale(1.05 1.0) translate(-100 -192)"><use xlink:href="#body"/><use xlink:href="#eyesOpen"/></g>
+  </g>
+  <g transform="translate(740 50)">
+    <use xlink:href="#feet"/>
+    <ellipse cx="38" cy="140" rx="10" ry="17" transform="rotate(18 38 140)" fill="#F5DC8B"/>
+    <ellipse cx="162" cy="140" rx="10" ry="17" transform="rotate(-18 162 140)" fill="#F5DC8B"/>
+    <use xlink:href="#body"/><use xlink:href="#eyesHappy"/>
+  </g>
+
+  <!-- ROW 2: WRIST STRETCH -->
+  <g transform="translate(20 350)">
+    <use xlink:href="#feet"/><use xlink:href="#armL"/><use xlink:href="#armR"/><use xlink:href="#body"/><use xlink:href="#eyesOpen"/>
+  </g>
+  <g transform="translate(260 350)">
+    <use xlink:href="#feet"/><use xlink:href="#armL"/>
+    <ellipse cx="180" cy="126" rx="24" ry="10" fill="#F5DC8B"/>
+    <ellipse cx="203" cy="114" rx="8" ry="12" fill="#F5DC8B"/>
+    <use xlink:href="#body"/><use xlink:href="#eyesOpen"/>
+  </g>
+  <g transform="translate(500 350)">
+    <use xlink:href="#feet"/><use xlink:href="#armL"/><use xlink:href="#armR"/><use xlink:href="#body"/><use xlink:href="#eyesOpen"/>
+  </g>
+  <g transform="translate(740 350)">
+    <use xlink:href="#feet"/><use xlink:href="#armR"/>
+    <ellipse cx="20" cy="126" rx="24" ry="10" fill="#F5DC8B"/>
+    <ellipse cx="-3" cy="114" rx="8" ry="12" fill="#F5DC8B"/>
+    <use xlink:href="#body"/><use xlink:href="#eyesOpen"/>
+  </g>
+
+  <!-- ROW 3: MARCH IN PLACE (loop A-B-C-B) -->
+  <g transform="translate(20 650)">
+    <ellipse cx="80" cy="180" rx="12" ry="9" fill="#F5DC8B"/>
+    <ellipse cx="120" cy="192" rx="13" ry="10" fill="#F5DC8B"/>
+    <g transform="translate(0 -6)">
+      <ellipse cx="38" cy="124" rx="10" ry="17" transform="rotate(10 38 124)" fill="#F5DC8B"/>
+      <use xlink:href="#armR"/><use xlink:href="#body"/><use xlink:href="#eyesHappy"/>
+    </g>
+  </g>
+  <g transform="translate(260 650)">
+    <use xlink:href="#feet"/>
+    <g transform="translate(100 192) scale(1.03 0.97) translate(-100 -192)"><use xlink:href="#armL"/><use xlink:href="#armR"/><use xlink:href="#body"/><use xlink:href="#eyesOpen"/></g>
+  </g>
+  <g transform="translate(500 650)">
+    <ellipse cx="80" cy="192" rx="13" ry="10" fill="#F5DC8B"/>
+    <ellipse cx="120" cy="180" rx="12" ry="9" fill="#F5DC8B"/>
+    <g transform="translate(0 -6)">
+      <use xlink:href="#armL"/>
+      <ellipse cx="162" cy="124" rx="10" ry="17" transform="rotate(-10 162 124)" fill="#F5DC8B"/>
+      <use xlink:href="#body"/><use xlink:href="#eyesHappy"/>
+    </g>
+  </g>
+  <g transform="translate(740 650)">
+    <use xlink:href="#feet"/>
+    <g transform="translate(100 192) scale(1.03 0.97) translate(-100 -192)"><use xlink:href="#armL"/><use xlink:href="#armR"/><use xlink:href="#body"/><use xlink:href="#eyesOpen"/></g>
+  </g>
+</svg>

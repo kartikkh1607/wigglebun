@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: {{w}}px; height: {{w}}px; display: flex; align-items: center; justify-content: center">
+<svg viewBox="0 0 200 210" width="{{w}}" height="{{w}}" role="img" aria-label="{{label}}">
+<defs>
+<clipPath id="{{clipId}}">
+<path d="M100 46 C130 46 144 62 149 86 C153 106 166 124 166 148 C166 174 140 190 100 190 C60 190 34 174 34 148 C34 124 47 106 51 86 C56 62 70 46 100 46 Z"></path>
+<circle cx="62" cy="54" r="18"></circle>
+<circle cx="138" cy="54" r="18"></circle>
+</clipPath>
+</defs>
+<g opacity="{{conf}}">
+<rect x="22" y="38" width="10" height="6" rx="2" fill="#F68A6B" transform="rotate(-25 27 41)"></rect>
+<rect x="168" y="46" width="10" height="6" rx="2" fill="#7FB8F5" transform="rotate(30 173 49)"></rect>
+<circle cx="18" cy="98" r="5" fill="#7DD3B0"></circle>
+<circle cx="184" cy="104" r="5" fill="#B9A3F0"></circle>
+<rect x="44" y="14" width="9" height="5" rx="2" fill="#F4A3C0" transform="rotate(20 48 16)"></rect>
+<rect x="148" y="10" width="9" height="5" rx="2" fill="#7DD3B0" transform="rotate(-15 152 12)"></rect>
+</g>
+<g transform="{{tilt}}">
+<ellipse cx="80" cy="192" rx="13" ry="10" fill="{{footColor}}"></ellipse>
+<ellipse cx="120" cy="192" rx="13" ry="10" fill="{{footColor}}"></ellipse>
+<g opacity="{{sideArms}}">
+<ellipse cx="36" cy="132" rx="10" ry="17" fill="{{sideArmColor}}" transform="rotate(28 36 132)"></ellipse>
+<ellipse cx="164" cy="132" rx="10" ry="17" fill="{{sideArmColor}}" transform="rotate(-28 164 132)"></ellipse>
+</g>
+<g opacity="{{upArms}}">
+<ellipse cx="44" cy="76" rx="10" ry="19" fill="{{fill}}" transform="rotate(-22 44 76)"></ellipse>
+<ellipse cx="156" cy="76" rx="10" ry="19" fill="{{fill}}" transform="rotate(22 156 76)"></ellipse>
+</g>
+<g clip-path="{{clipUrl}}">
+<rect x="0" y="0" width="200" height="210" fill="#E9E5DE"></rect>
+<rect x="0" y="{{fillTop}}" width="200" height="210" fill="{{fill}}"></rect>
+<rect x="0" y="{{fillTop}}" width="200" height="4" fill="{{fillEdge}}" opacity="{{edgeO}}"></rect>
+</g>
+<circle cx="62" cy="55" r="9" fill="#F6A98A"></circle>
+<circle cx="138" cy="55" r="9" fill="#F6A98A"></circle>
+<circle cx="84" cy="106" r="5.5" fill="#2B2A3A" opacity="{{dots}}"></circle>
+<circle cx="116" cy="106" r="5.5" fill="#2B2A3A" opacity="{{dots}}"></circle>
+<path d="{{eyeL}}" fill="none" stroke="#2B2A3A" stroke-width="3.6" stroke-linecap="round"></path>
+<path d="{{eyeR}}" fill="none" stroke="#2B2A3A" stroke-width="3.6" stroke-linecap="round"></path>
+<ellipse cx="72" cy="118" rx="9" ry="5.5" fill="#F7A58B" opacity="0.85"></ellipse>
+<ellipse cx="128" cy="118" rx="9" ry="5.5" fill="#F7A58B" opacity="0.85"></ellipse>
+<path d="{{mouth}}" fill="{{mouthFill}}" stroke="#2B2A3A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M150 70 Q143 83 150 88 Q157 83 150 70 Z" fill="#7FB8F5" opacity="{{sweat}}"></path>
+</g>
+<g opacity="{{z}}" fill="#B9A3F0" font-family="Fredoka, system-ui, sans-serif" font-weight="700">
+<text x="150" y="40" font-size="24">z</text>
+<text x="170" y="20" font-size="16">z</text>
+</g>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mood":{"editor":"enum","options":["happy","tired","stiff","sleep","celebrate","stretch"],"default":"happy"},"size":{"editor":"int","min":60,"max":400,"default":200},"$preview":{"width":240,"height":240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    if (!this._uid) this._uid = 'pc' + Math.random().toString(36).slice(2, 9);
+    var grey = '#E9E5DE';
+    var yellow = '#F5DC8B';
+    var M = {
+      happy: { level: 1, eyes: 'open', mouth: 'nose', tilt: 0, label: 'Pet, happy and full of energy' },
+      tired: { level: 0.55, eyes: 'half', mouth: 'flat', tilt: 2, label: 'Pet, energy draining from sitting' },
+      stiff: { level: 0.18, eyes: 'half', mouth: 'frown', tilt: 7, sweat: 1, label: 'Pet, stiff from sitting too long' },
+      sleep: { level: 1, eyes: 'closed', mouth: 'small', tilt: 0, z: 1, label: 'Pet, sleeping' },
+      celebrate: { level: 1, eyes: 'happy', mouth: 'open', tilt: -4, conf: 1, up: 1, label: 'Pet, celebrating' },
+      stretch: { level: 1, eyes: 'happy', mouth: 'nose', tilt: 0, up: 1, label: 'Pet, stretching' }
+    };
+    var m = M[this.props.mood] || M.happy;
+    var E = {
+      open: ['M0 0', 'M0 0', 1],
+      half: ['M78 106 L90 106', 'M110 106 L122 106', 0],
+      closed: ['M78 104 Q84 110 90 104', 'M110 104 Q116 110 122 104', 0],
+      happy: ['M78 108 Q84 100 90 108', 'M110 108 Q116 100 122 108', 0]
+    };
+    var Mo = {
+      nose: 'M96 112 Q100 117 104 112 Z',
+      flat: 'M96 114 L104 114',
+      frown: 'M95 117 Q100 112 105 117',
+      small: 'M98 114 Q100 116 102 114',
+      open: 'M92 111 Q100 125 108 111 Z'
+    };
+    var e = E[m.eyes];
+    var top = 36 + (1 - m.level) * 160;
+    var w = this.props.size ?? 200;
+    return {
+      w: w,
+      label: m.label,
+      clipId: this._uid,
+      clipUrl: 'url(#' + this._uid + ')',
+      fill: yellow,
+      fillEdge: '#EBCB6A',
+      edgeO: m.level < 1 ? 1 : 0,
+      fillTop: top,
+      footColor: top < 185 ? yellow : grey,
+      sideArmColor: top < 128 ? yellow : grey,
+      sideArms: m.up ? 0 : 1,
+      upArms: m.up ? 1 : 0,
+      eyeL: e[0], eyeR: e[1], dots: e[2],
+      mouth: Mo[m.mouth],
+      mouthFill: (m.mouth === 'open' || m.mouth === 'nose') ? '#2B2A3A' : 'none',
+      tilt: 'rotate(' + m.tilt + ' 100 192)',
+      sweat: m.sweat || 0,
+      z: m.z || 0,
+      conf: m.conf || 0
+    };
+  }
+}
+</script>
+</body>
+</html>

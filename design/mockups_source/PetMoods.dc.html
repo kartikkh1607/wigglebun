@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pet moods</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1100px; height: 300px; box-sizing: border-box; background: #FFF4E8; padding: 28px 32px; font-family: Nunito, system-ui, sans-serif; color: #2B2A3A; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px">
+<sc-for list="{{moods}}" as="m" hint-placeholder-count="6">
+<div style="background: #FFFFFF; border-radius: 24px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+<div style="width: 140px; height: 140px">
+<dc-import name="Pet" mood="{{m.key}}" size="{{ 140 }}" hint-size="140px,140px"></dc-import>
+</div>
+<span style="font-family: Fredoka, system-ui, sans-serif; font-weight: 600; font-size: 18px">{{m.title}}</span>
+<span style="font-size: 13px; font-weight: 700; color: #6B6A7B; text-align: center; line-height: 1.35">{{m.when}}</span>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      moods: [
+        { key: 'happy', title: 'Happy', when: '0–50% of interval' },
+        { key: 'tired', title: 'Tired', when: '50–100% of interval' },
+        { key: 'stiff', title: 'Stiff', when: 'Over the interval' },
+        { key: 'stretch', title: 'Stretch', when: 'During a break' },
+        { key: 'celebrate', title: 'Celebrate', when: 'Break finished, 3 s' },
+        { key: 'sleep', title: 'Sleeping', when: 'Outside work hours' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

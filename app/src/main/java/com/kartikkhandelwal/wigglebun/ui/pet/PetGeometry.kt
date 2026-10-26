@@ -1,0 +1,89 @@
+package com.kartikkhandelwal.wigglebun.ui.pet
+
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.text.TextLayoutResult
+
+/** Sweat drop from bun_stiff.svg, relative to [PetSpec.sweatAnchor]. */
+private const val SWEAT_DROP = "M0 0 Q-7 13 0 18 Q7 13 0 0 Z"
+
+/**
+ * Every [Path] and [Stroke] a pet needs, built once per [PetSpec] (and remembered), so the
+ * per-frame draw code never allocates.
+ */
+internal class PetGeometry(
+    spec: PetSpec,
+    /** The two sleeping z's ("z" at 24 and 16 viewBox units). */
+    val sleepZLarge: TextLayoutResult,
+    val sleepZSmall: TextLayoutResult,
+) {
+    /** Body + ears, unioned so the overlapping ear circles never leave winding holes. */
+    val silhouette: Path = Path.combine(PathOperation.Union, parse(spec.bodyPath), ovals(spec.ears))
+    val feet: Path = ovals(spec.feet)
+    val armsSide: Path = ovals(spec.armsSide)
+    val armsUp: Path = ovals(spec.armsUp)
+    val earsInner: Path = ovals(spec.earsInner)
+    val cheeks: Path = ovals(spec.cheeks)
+
+    val eyeDots: Path = ovals(
+        listOf(
+            OvalSpec(spec.eyeLeft.x, spec.eyeLeft.y, spec.eyeDotRadius),
+            OvalSpec(spec.eyeRight.x, spec.eyeRight.y, spec.eyeDotRadius),
+        ),
+    )
+
+    /** Indexed by [EyeShape.ordinal]; null for [EyeShape.Dots], which uses [eyeDots]. */
+    val eyeLines: List<Path?> = EyeShape.entries.map { shape ->
+        shape.pathData?.let { data ->
+            val one = parse(data)
+            Path().apply {
+                addPath(one, spec.eyeLeft)
+                addPath(one, spec.eyeRight)
+            }
+        }
+    }
+
+    /** Indexed by [MouthShape.ordinal]. */
+    val mouths: List<Path> = MouthShape.entries.map { parse(it.pathData).apply { translate(spec.mouthAnchor) } }
+
+    val sweatDrop: Path = parse(SWEAT_DROP).apply { translate(spec.sweatAnchor) }
+
+    /** Bounds and paint for the silhouette fill layer (see drawPet). */
+    val viewBox = Rect(0f, 0f, spec.viewBoxWidth, spec.viewBoxHeight)
+    val layerPaint = Paint()
+
+    // Stroke widths from the mood SVGs, in viewBox units (the canvas is scaled before drawing).
+    val eyeStroke = Stroke(width = 3.6f, cap = StrokeCap.Round)
+    val mouthStroke = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+
+    private companion object {
+        fun parse(pathData: String): Path = PathParser().parsePathString(pathData).toPath()
+
+        fun ovals(specs: List<OvalSpec>): Path = Path().apply {
+            specs.forEach { oval ->
+                val one = Path().apply {
+                    addOval(Rect(oval.cx - oval.rx, oval.cy - oval.ry, oval.cx + oval.rx, oval.cy + oval.ry))
+                }
+                if (oval.rotationDeg != 0f) {
+                    // SVG rotate(deg cx cy): rotate about the oval's own centre.
+                    one.transform(
+                        Matrix().apply {
+                            translate(oval.cx, oval.cy)
+                            rotateZ(oval.rotationDeg)
+                            translate(-oval.cx, -oval.cy)
+                        },
+                    )
+                }
+                addPath(one, Offset.Zero)
+            }
+        }
+    }
+}

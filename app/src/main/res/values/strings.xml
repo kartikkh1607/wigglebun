@@ -1,0 +1,59 @@
+<resources>
+    <string name="app_name">Wigglebun</string>
+
+    <!-- Bottom tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_collection">Collection</string>
+    <string name="tab_settings">Settings</string>
+    <!-- Starter pet name; also the pet tab label until the user names their pet -->
+    <string name="pet_default_name">Bun</string>
+
+    <!-- Pet accessibility labels; %1$s is the pet's name -->
+    <string name="pet_desc_happy">%1$s, happy and full of energy</string>
+    <string name="pet_desc_tired">%1$s, energy draining from sitting</string>
+    <string name="pet_desc_stiff">%1$s, stiff from sitting too long</string>
+    <string name="pet_desc_stretch">%1$s, stretching</string>
+    <string name="pet_desc_celebrate">%1$s, celebrating</string>
+    <string name="pet_desc_sleeping">%1$s, sleeping</string>
+
+    <string name="coming_soon">Coming soon</string>
+
+    <!-- Break types (CLAUDE.md §5.3) -->
+    <string name="break_stand_up">Stand up</string>
+    <string name="break_walk">2-min walk</string>
+    <string name="break_neck">Neck stretch</string>
+    <string name="break_shoulders">Shoulder rolls</string>
+    <string name="break_wrist">Wrist stretch</string>
+    <string name="break_eyes">Eyes rest</string>
+    <string name="break_water">Drink water</string>
+
+    <!-- Break reminder notification -->
+    <string name="channel_break_reminders_name">Break reminders</string>
+    <string name="channel_break_reminders_description">Gentle nudges from your pet to stand up and stretch</string>
+    <string name="reminder_title">Time for a Bun Break</string>
+    <!-- %1$s is the pet's name -->
+    <string-array name="reminder_texts">
+        <item>%1$s is getting stiff… 2-minute stretch?</item>
+        <item>%1$s has been sitting with you for a while. Bun Break?</item>
+        <item>%1$s\'s ears are drooping. Stand up together?</item>
+        <item>%1$s would love a quick wiggle. Coming?</item>
+    </string-array>
+    <!-- Suggested break, e.g. "Neck stretch · 2 min" -->
+    <string name="reminder_suggestion">%1$s · %2$d min</string>
+    <string name="action_done">Done</string>
+    <string name="action_snooze">Snooze 10 min</string>
+    <string name="action_skip">Skip</string>
+
+    <!-- Home (placeholder until M5) -->
+    <string name="home_time_since_break">Time since last break</string>
+    <plurals name="home_minutes">
+        <item quantity="one">%d min</item>
+        <item quantity="other">%d min</item>
+    </plurals>
+    <!-- %1$s is the pet's name -->
+    <string name="home_asleep">%1$s is asleep. No reminders outside work hours.</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_done">Done</string>
+    <string name="cd_mark_done">Mark as done</string>
+</resources>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 960 300" width="960" height="300">
+  <!-- Neck stretch: 4 key poses built from bun_pet.svg.
+       Feet stay planted; everything above them rotates around the lower torso (100,172).
+       Frame order: neutral, tilt right (+20), neutral, tilt left (-20).
+       In the app: play as a flipbook (hold each pose ~1.2 s, 250 ms eased crossfade/rotation between). -->
+  <defs>
+    <g id="upper">
+      <ellipse cx="36" cy="132" rx="10" ry="17" transform="rotate(28 36 132)" fill="#F5DC8B"/>
+      <ellipse cx="164" cy="132" rx="10" ry="17" transform="rotate(-28 164 132)" fill="#F5DC8B"/>
+      <path d="M100 46 C130 46 144 62 149 86 C153 106 166 124 166 148 C166 174 140 190 100 190 C60 190 34 174 34 148 C34 124 47 106 51 86 C56 62 70 46 100 46 Z" fill="#F5DC8B"/>
+      <circle cx="62" cy="54" r="18" fill="#F5DC8B"/>
+      <circle cx="138" cy="54" r="18" fill="#F5DC8B"/>
+      <circle cx="62" cy="55" r="9" fill="#F6A98A"/>
+      <circle cx="138" cy="55" r="9" fill="#F6A98A"/>
+      <path d="M78 104 Q84 110 90 104" fill="none" stroke="#2B2A3A" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M110 104 Q116 110 122 104" fill="none" stroke="#2B2A3A" stroke-width="3.6" stroke-linecap="round"/>
+      <ellipse cx="72" cy="118" rx="9" ry="5.5" fill="#F7A58B"/>
+      <ellipse cx="128" cy="118" rx="9" ry="5.5" fill="#F7A58B"/>
+      <path d="M96 112 Q100 117 104 112 Z" fill="#2B2A3A" stroke="#2B2A3A" stroke-width="3" stroke-linejoin="round"/>
+    </g>
+    <g id="upperOpen">
+      <use xlink:href="#upper"/>
+    </g>
+    <g id="feet" fill="#F5DC8B">
+      <ellipse cx="80" cy="192" rx="13" ry="10"/>
+      <ellipse cx="120" cy="192" rx="13" ry="10"/>
+    </g>
+  </defs>
+  <rect width="960" height="300" fill="#EAF3FD"/>
+  <!-- Frame 1: neutral -->
+  <g transform="translate(20 40)">
+    <use xlink:href="#feet"/>
+    <use xlink:href="#upper"/>
+  </g>
+  <!-- Frame 2: tilt right -->
+  <g transform="translate(260 40)">
+    <use xlink:href="#feet"/>
+    <g transform="rotate(20 100 172)"><use xlink:href="#upper"/></g>
+  </g>
+  <!-- Frame 3: neutral -->
+  <g transform="translate(500 40)">
+    <use xlink:href="#feet"/>
+    <use xlink:href="#upper"/>
+  </g>
+  <!-- Frame 4: tilt left -->
+  <g transform="translate(740 40)">
+    <use xlink:href="#feet"/>
+    <g transform="rotate(-20 100 172)"><use xlink:href="#upper"/></g>
+  </g>
+</svg>

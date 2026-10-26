@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification small icon: Bun's silhouette (body + ears from design/bun_pet.svg), white only. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="210"
+    android:viewportHeight="210">
+    <group android:translateX="5">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M100,46 C130,46 144,62 149,86 C153,106 166,124 166,148 C166,174 140,190 100,190 C60,190 34,174 34,148 C34,124 47,106 51,86 C56,62 70,46 100,46 Z M44,54 a18,18 0,1 1,36 0 a18,18 0,1 1,-36 0 Z M120,54 a18,18 0,1 1,36 0 a18,18 0,1 1,-36 0 Z" />
+    </group>
+</vector>

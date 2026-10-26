@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Break card actions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: Nunito, system-ui, sans-serif; color: #2B2A3A">
+<div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px">
+<dc-import name="Main" mood="tired" hint-size="390px,844px"></dc-import>
+</div>
+<div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(33, 32, 48, 0.72)"></div>
+<div style="position: absolute; left: 24px; right: 24px; top: 250px; background: #FFFFFF; border-radius: 28px; padding: 26px 22px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+<div style="position: absolute; right: 18px; top: 18px; display: flex; align-items: center; gap: 3px; font-weight: 800; font-size: 15px">+10<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z" fill="#FFC857" stroke="#E5A52A" stroke-width="1.5" stroke-linejoin="round"></path></svg></div>
+<div style="width: 72px; height: 72px; border-radius: 24px; background: #CDEFE0; display: flex; align-items: center; justify-content: center">
+<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#2B2A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 4 a1.8 1.8 0 1 0 0.01 0 M9 21 L11 15 L14 17 L15 21 M11 15 L12 9 L16 11 L18 10 M12 9 L8 11 L7 14"></path></svg>
+</div>
+<span style="font-size: 13px; font-weight: 800; color: #2B7A57; background: #DDF3E9; padding: 4px 12px; border-radius: 999px">Movement</span>
+<h2 style="margin: 0; font-family: Fredoka, system-ui, sans-serif; font-weight: 600; font-size: 28px">2-min walk</h2>
+<p style="margin: 0; font-size: 15px; font-weight: 700; color: #6B6A7B">Reminds you every 45 min · 9:00–18:00</p>
+</div>
+<div style="position: absolute; left: 0; right: 0; top: 520px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; padding: 0 28px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<button aria-label="Skip" style="width: 64px; height: 64px; border-radius: 22px; border: none; background: #FFFFFF; box-shadow: 0 5px 0 #CFC6BA; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2B2A3A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6 L13 12 L5 18 Z M17 6 V18"></path></svg>
+</button>
+<span style="color: #FFFFFF; font-weight: 800; font-size: 15px">Skip</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<button aria-label="Done" style="width: 88px; height: 88px; border-radius: 30px; border: none; background: #3BAA6E; box-shadow: 0 6px 0 #2C8655; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 L10 17.5 L19 7"></path></svg>
+</button>
+<span style="color: #FFFFFF; font-weight: 800; font-size: 15px">Done</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<button aria-label="Snooze 10 minutes" style="width: 64px; height: 64px; border-radius: 22px; border: none; background: #FFFFFF; box-shadow: 0 5px 0 #CFC6BA; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2B2A3A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 9 V13 L15 15 M4 4 L7 6 M20 4 L17 6"></path></svg>
+</button>
+<span style="color: #FFFFFF; font-weight: 800; font-size: 15px">Snooze 10m</span>
+</div>
+</div>
+<button aria-label="Close" style="position: absolute; left: 167px; bottom: 120px; width: 56px; height: 56px; border-radius: 999px; border: 2px solid #8F8CA8; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>
+</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
