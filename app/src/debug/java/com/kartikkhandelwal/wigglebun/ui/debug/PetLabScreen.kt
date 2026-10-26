@@ -1,7 +1,10 @@
 package com.kartikkhandelwal.wigglebun.ui.debug
 
+import android.Manifest
 import android.content.Intent
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.activity.StepReading
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
+import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
+import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
@@ -69,6 +76,9 @@ class PetLabActions(
     val onSnooze: () -> Unit = {},
     val onSkip: () -> Unit = {},
     val onReset: () -> Unit = {},
+    val onPermissionResult: () -> Unit = {},
+    val onMovementEnabled: (Boolean) -> Unit = {},
+    val onSimulateWalk: () -> Unit = {},
 )
 
 /** Debug-only playground for PetView and the sitting engine. */
@@ -91,6 +101,9 @@ fun PetLabScreen(viewModel: PetLabViewModel = hiltViewModel()) {
             onSnooze = { viewModel.snooze() },
             onSkip = { viewModel.skip() },
             onReset = { viewModel.resetTimer() },
+            onPermissionResult = { viewModel.onPermissionResult() },
+            onMovementEnabled = { viewModel.setMovementEnabled(it) },
+            onSimulateWalk = { viewModel.simulateWalk() },
         ),
     )
 }
@@ -116,6 +129,7 @@ private fun PetLabContent(state: PetLabState, actions: PetLabActions) {
         )
 
         state.engine?.let { EngineCard(it, state.followEngine, actions) }
+        state.movement?.let { MovementCardView(it, state.engine?.zone ?: ZoneId.systemDefault(), actions) }
         ManualCard(state, actions)
     }
 }
@@ -194,6 +208,81 @@ private fun EngineCard(engine: EngineInfo, followEngine: Boolean, actions: PetLa
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+@Composable
+private fun MovementCardView(movement: MovementCard, zone: ZoneId, actions: PetLabActions) {
+    // Debug-only shortcut; the real just-in-time permission UX is M9.
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        actions.onPermissionResult()
+    }
+    PillCard(modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.pet_lab_movement), style = MaterialTheme.typography.titleMedium)
+        StatusLine(R.string.pet_lab_movement_permission, movement.permissionGranted)
+        StatusLine(R.string.pet_lab_movement_play_services, movement.playServicesAvailable)
+        StatusLine(R.string.pet_lab_movement_registered, movement.registered)
+        StatusLine(R.string.pet_lab_movement_step_sensor, movement.hasStepSensor)
+        InfoLine(
+            stringResource(
+                R.string.pet_lab_movement_current,
+                movement.currentActivity?.name ?: stringResource(R.string.pet_lab_unknown),
+            ),
+        )
+        StatusLine(R.string.pet_lab_movement_step_listener, movement.stepListenerOn)
+        InfoLine(
+            movement.lastStepReading?.let {
+                stringResource(R.string.pet_lab_movement_last_step_reading, it.total, it.at.format(zone))
+            } ?: stringResource(R.string.pet_lab_movement_last_step_reading_none),
+        )
+        InfoLine(
+            movement.stepsSinceTimerStart?.let { stringResource(R.string.pet_lab_movement_steps, it) }
+                ?: stringResource(R.string.pet_lab_movement_steps_unknown),
+        )
+        InfoLine(
+            stringResource(
+                R.string.pet_lab_movement_last_reset,
+                movement.lastResetReason?.name ?: stringResource(R.string.pet_lab_unknown),
+            ),
+        )
+        if (movement.isOnWalk) InfoLine(stringResource(R.string.pet_lab_movement_on_walk))
+
+        LabSwitch(R.string.pet_lab_movement_enabled, movement.enabled, actions.onMovementEnabled)
+        if (movement.needsRuntimePermission && !movement.permissionGranted) {
+            ChunkyButton(
+                text = stringResource(R.string.pet_lab_request_activity_permission),
+                onClick = { permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION) },
+                style = ChunkyButtonStyle.Highlight,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        ChunkyButton(
+            text = stringResource(R.string.pet_lab_simulate_walk),
+            onClick = actions.onSimulateWalk,
+            style = ChunkyButtonStyle.Secondary,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Text(stringResource(R.string.pet_lab_movement_log), style = MaterialTheme.typography.labelMedium, color = InkMuted)
+        if (movement.log.isEmpty()) InfoLine(stringResource(R.string.pet_lab_movement_log_empty))
+        movement.log.forEach { t ->
+            InfoLine(
+                stringResource(
+                    if (t.entered) R.string.pet_lab_movement_log_enter else R.string.pet_lab_movement_log_exit,
+                    t.at.format(zone),
+                    t.activity.name,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatusLine(@StringRes label: Int, ok: Boolean) {
+    Text(
+        text = stringResource(label, stringResource(if (ok) R.string.pet_lab_yes else R.string.pet_lab_no)),
+        style = MaterialTheme.typography.labelMedium,
+        color = if (ok) DoneGreen else Coral,
+    )
 }
 
 @Composable
@@ -286,7 +375,7 @@ private fun Mood.labelRes(): Int = when (this) {
     Mood.SLEEPING -> R.string.pet_lab_mood_sleeping
 }
 
-@Preview(widthDp = 390, heightDp = 1400)
+@Preview(widthDp = 390, heightDp = 2200)
 @Composable
 internal fun PetLabPreview() {
     val zone = ZoneId.of("Asia/Kolkata")
@@ -308,6 +397,25 @@ internal fun PetLabPreview() {
                     notificationsAllowed = false,
                     fastClock = true,
                     alwaysWorkHours = true,
+                ),
+                movement = MovementCard(
+                    enabled = true,
+                    registered = true,
+                    permissionGranted = true,
+                    needsRuntimePermission = true,
+                    playServicesAvailable = true,
+                    hasStepSensor = true,
+                    currentActivity = MovementActivity.WALKING,
+                    log = listOf(
+                        MovementTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(100)),
+                        MovementTransition(MovementActivity.STILL, entered = false, at = now.minusSeconds(100)),
+                        MovementTransition(MovementActivity.STILL, entered = true, at = now.minusSeconds(900)),
+                    ),
+                    stepsSinceTimerStart = 42,
+                    lastStepReading = StepReading(total = 1_276, at = now.minusSeconds(40)),
+                    stepListenerOn = true,
+                    lastResetReason = ResetReason.WALKING,
+                    isOnWalk = false,
                 ),
             ),
             actions = PetLabActions(),

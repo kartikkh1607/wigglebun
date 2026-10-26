@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
 
     implementation(libs.hilt.android)
+    implementation(libs.play.services.base)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
@@ -82,6 +83,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.datastore.preferences)
+
+    // Activity Recognition Transition API (CLAUDE.md §3).
+    implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.junit)

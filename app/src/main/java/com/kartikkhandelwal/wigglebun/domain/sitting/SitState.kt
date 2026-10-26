@@ -1,6 +1,8 @@
 package com.kartikkhandelwal.wigglebun.domain.sitting
 
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
+import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import java.time.Duration
 import java.time.Instant
 
@@ -32,6 +34,11 @@ data class SitState(
     val lastNotifiedDue: Instant? = null,
     val celebrateUntil: Instant? = null,
     val lastBreakAt: Instant? = null,
+    val lastResetReason: ResetReason? = null,
+    /** Start of the current moving period (walking/running), or null when not moving. */
+    val movingSince: Instant? = null,
+    /** Moving activities currently entered, so WALKING → RUNNING stays one period. */
+    val activeMoving: Set<MovementActivity> = emptySet(),
 )
 
 /** A snapshot computed by [SittingEngine.status]. */
@@ -52,7 +59,17 @@ data class SitStatus(
     val snoozeCount: Int,
     val sessionEnd: Instant?,
     val nextSessionStart: Instant?,
+    /** Moving for 2+ min right now: the sit timer is held at zero until the walk ends. */
+    val isOnWalk: Boolean = false,
+    val lastResetReason: ResetReason? = null,
 ) {
+    /**
+     * When something needs re-evaluating: the next reminder, or the next work-hours boundary
+     * (start/end), so movement detection is switched on and off with work hours.
+     */
+    val nextWakeAt: Instant?
+        get() = listOfNotNull(nextAlarmAt, sessionEnd ?: nextSessionStart).minOrNull()
+
     val sitMinutes: Int get() = sitDuration.toMinutes().toInt()
     val sitFraction: Float get() = sitDuration.toMillis() / 60_000f / intervalMinutes
     val snoozesLeft: Int get() = (SittingEngine.MAX_SNOOZES - snoozeCount).coerceAtLeast(0)
@@ -61,4 +78,7 @@ data class SitStatus(
 sealed interface SnoozeResult {
     data class Snoozed(val state: SitState, val until: Instant) : SnoozeResult
     data object LimitReached : SnoozeResult
+
+    /** Nothing to snooze yet (reminder not due, or outside work hours). */
+    data object NotDue : SnoozeResult
 }

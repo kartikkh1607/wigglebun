@@ -27,7 +27,7 @@ internal interface ReceiverEntryPoint {
  * Runs [block] off the main thread. goAsync() keeps the process alive until finish()
  * (the system allows ~10 s), which is plenty for a DataStore write and an alarm.
  */
-private fun BroadcastReceiver.runAsync(context: Context, block: suspend (SitRepository) -> Unit) {
+internal fun BroadcastReceiver.runAsync(context: Context, block: suspend (SitRepository) -> Unit) {
     val pending = goAsync()
     val entryPoint = EntryPointAccessors.fromApplication(context.applicationContext, ReceiverEntryPoint::class.java)
     entryPoint.scope().launch {

@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +37,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -54,7 +56,8 @@ class HomeViewModel @Inject constructor(
     sitRepository: SitRepository,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
-    val state: StateFlow<HomeUiState> = combine(sitRepository.status, settingsRepository.petName) { status, name ->
+    /** Null until the saved state has loaded (no default pet flashing on a cold start). */
+    val state: StateFlow<HomeUiState?> = combine(sitRepository.status.filterNotNull(), settingsRepository.petName) { status, name ->
         HomeUiState(
             energy = status.energy,
             mood = status.mood,
@@ -62,7 +65,7 @@ class HomeViewModel @Inject constructor(
             isWorkTime = status.isWorkTime,
             petName = name,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 }
 
 @Composable
@@ -72,7 +75,11 @@ fun HomeScreenRoute(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HomeScreen(state = state, modifier = modifier, debugEntry = debugEntry)
+    when (val loaded = state) {
+        // Only the background until the real state arrives (a few ms from DataStore).
+        null -> Box(modifier.fillMaxSize().background(Cream))
+        else -> HomeScreen(state = loaded, modifier = modifier, debugEntry = debugEntry)
+    }
 }
 
 /**

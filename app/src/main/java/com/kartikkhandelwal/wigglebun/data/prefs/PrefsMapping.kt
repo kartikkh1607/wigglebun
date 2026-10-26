@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
+import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitState
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
@@ -26,6 +28,9 @@ internal object PrefsKeys {
     val LastNotifiedDue = longPreferencesKey("last_notified_due")
     val CelebrateUntil = longPreferencesKey("celebrate_until")
     val LastBreakAt = longPreferencesKey("last_break_at")
+    val LastResetReason = stringPreferencesKey("last_reset_reason")
+    val MovingSince = longPreferencesKey("moving_since")
+    val ActiveMoving = stringSetPreferencesKey("active_moving")
 }
 
 internal fun Preferences.toSittingSettings(): SittingSettings {
@@ -56,6 +61,9 @@ internal fun Preferences.toSitState(): SitState = SitState(
     lastNotifiedDue = instant(PrefsKeys.LastNotifiedDue),
     celebrateUntil = instant(PrefsKeys.CelebrateUntil),
     lastBreakAt = instant(PrefsKeys.LastBreakAt),
+    lastResetReason = enumOrNull<ResetReason>(this[PrefsKeys.LastResetReason]),
+    movingSince = instant(PrefsKeys.MovingSince),
+    activeMoving = this[PrefsKeys.ActiveMoving].orEmpty().mapNotNull { enumOrNull<MovementActivity>(it) }.toSet(),
 )
 
 internal fun MutablePreferences.writeSitState(state: SitState) {
@@ -65,7 +73,14 @@ internal fun MutablePreferences.writeSitState(state: SitState) {
     putInstant(PrefsKeys.LastNotifiedDue, state.lastNotifiedDue)
     putInstant(PrefsKeys.CelebrateUntil, state.celebrateUntil)
     putInstant(PrefsKeys.LastBreakAt, state.lastBreakAt)
+    val reason = state.lastResetReason
+    if (reason == null) remove(PrefsKeys.LastResetReason) else this[PrefsKeys.LastResetReason] = reason.name
+    putInstant(PrefsKeys.MovingSince, state.movingSince)
+    this[PrefsKeys.ActiveMoving] = state.activeMoving.map { it.name }.toSet()
 }
+
+private inline fun <reified E : Enum<E>> enumOrNull(name: String?): E? =
+    name?.let { n -> enumValues<E>().firstOrNull { it.name == n } }
 
 private fun Preferences.instant(key: Preferences.Key<Long>): Instant? = this[key]?.let(Instant::ofEpochMilli)
 

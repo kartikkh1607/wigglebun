@@ -2,17 +2,26 @@ package com.kartikkhandelwal.wigglebun.ui.debug
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kartikkhandelwal.wigglebun.activity.MovementPermissions
+import com.kartikkhandelwal.wigglebun.activity.StepCounter
+import com.kartikkhandelwal.wigglebun.activity.StepReading
+import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
+import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
+import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitStatus
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.notify.ReminderNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,11 +61,32 @@ data class EngineInfo(
     val alwaysWorkHours: Boolean,
 )
 
+/** What the Movement card shows. */
+data class MovementCard(
+    val enabled: Boolean,
+    val registered: Boolean,
+    val permissionGranted: Boolean,
+    val needsRuntimePermission: Boolean,
+    val playServicesAvailable: Boolean,
+    val hasStepSensor: Boolean,
+    val currentActivity: MovementActivity?,
+    /** Newest first; real wall-clock times. */
+    val log: List<MovementTransition>,
+    val stepsSinceTimerStart: Long?,
+    /** Last value the app itself got from the step counter (no extra listener in the lab). */
+    val lastStepReading: StepReading?,
+    /** Whether the best-effort work-hours step listener is registered right now. */
+    val stepListenerOn: Boolean,
+    val lastResetReason: ResetReason?,
+    val isOnWalk: Boolean,
+)
+
 data class PetLabState(
     val manual: ManualPet = ManualPet(),
     val followEngine: Boolean = true,
     val animated: Boolean = true,
     val engine: EngineInfo? = null,
+    val movement: MovementCard? = null,
 ) {
     val petEnergy: Float get() = if (followEngine && engine != null) engine.energy else manual.energy
     val petMood: Mood get() = if (followEngine && engine != null) engine.mood else manual.mood
@@ -70,21 +100,55 @@ class PetLabViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val clock: AppClock,
     private val notifier: ReminderNotifier,
+    private val movementStore: MovementStore,
+    private val permissions: MovementPermissions,
+    private val stepCounter: StepCounter,
 ) : ViewModel() {
 
     private val controls = MutableStateFlow(LabControls(ManualPet(), followEngine = true, animated = true))
 
+    // The lab deliberately does NOT register its own step listener: that would keep the sensor
+    // activated and hide how the real best-effort counting behaves.
+    private val movement: Flow<MovementCard> = combine(
+        movementStore.info,
+        stepCounter.lastReading,
+        stepCounter.isCounting,
+        sitRepository.status.filterNotNull(),
+    ) { info, reading, counting, status ->
+        MovementCard(
+            enabled = info.enabled,
+            registered = info.registered,
+            permissionGranted = permissions.granted(),
+            needsRuntimePermission = permissions.needsRuntimePermission,
+            playServicesAvailable = permissions.playServicesAvailable(),
+            hasStepSensor = stepCounter.hasSensor,
+            currentActivity = info.currentActivity,
+            log = info.log,
+            stepsSinceTimerStart = if (reading != null && info.baseline != null) {
+                StepCounter.stepsSince(info.baseline, reading.total, stepCounter.bootCount())
+            } else {
+                null
+            },
+            lastStepReading = reading,
+            stepListenerOn = counting,
+            lastResetReason = status.lastResetReason,
+            isOnWalk = status.isOnWalk,
+        )
+    }
+
     val state: StateFlow<PetLabState> = combine(
         controls,
-        sitRepository.status,
+        sitRepository.status.filterNotNull(),
         settingsRepository.settings,
         clock.speed,
-    ) { c, status, settings, speed ->
+        movement,
+    ) { c, status, settings, speed, movementCard ->
         PetLabState(
             manual = c.manual,
             followEngine = c.followEngine,
             animated = c.animated,
             engine = status.toInfo(settings, speed),
+            movement = movementCard,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PetLabState())
 
@@ -143,6 +207,26 @@ class PetLabViewModel @Inject constructor(
         val current = settingsRepository.current().interval
         settingsRepository.setInterval(current + steps * INTERVAL_STEP)
         sitRepository.checkReminder()
+    }
+
+    // --- Movement ---
+
+    fun onPermissionResult() = viewModelScope.launch {
+        sitRepository.checkReminder() // registers transitions and the step listener now that we may
+    }
+
+    fun setMovementEnabled(enabled: Boolean) = viewModelScope.launch { sitRepository.setMovementEnabled(enabled) }
+
+    /** Feeds a fake 3-minute walk that ended now, to test the reset at a desk. */
+    fun simulateWalk() = viewModelScope.launch {
+        val now = clock.instant()
+        sitRepository.onTransitions(
+            listOf(
+                MovementTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(180)),
+                MovementTransition(MovementActivity.STILL, entered = true, at = now),
+            ),
+            realTime = false,
+        )
     }
 
     private fun suggestedBreak(): BreakType = BreakType.suggestedFor(clock.instant().epochSecond / 60)

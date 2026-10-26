@@ -10,13 +10,21 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.kartikkhandelwal.wigglebun.activity.MovementPermissions
+import com.kartikkhandelwal.wigglebun.activity.MovementTracker
+import com.kartikkhandelwal.wigglebun.activity.StepCounter
+import com.kartikkhandelwal.wigglebun.activity.TransitionRegistrar
 import com.kartikkhandelwal.wigglebun.data.db.AppDatabase
+import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
+import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
+import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
 import com.kartikkhandelwal.wigglebun.domain.sitting.SnoozeResult
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
@@ -26,36 +34,43 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.io.File
+import java.nio.file.Files
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 /** Repository wiring: engine + DataStore + Room + notifier + alarm, as the receivers use it. */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class)
 class SitRepositoryTest {
 
-    @get:Rule
-    val tmp = TemporaryFolder()
+    // Not a TemporaryFolder rule: SitRepository starts reading DataStore from its init block,
+    // which runs during field initialisation, before JUnit rules exist.
+    private val tmpDir: File = Files.createTempDirectory("sitrepo").toFile()
 
     private val context: Application = ApplicationProvider.getApplicationContext()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val dataStore = PreferenceDataStoreFactory.create(scope = scope) { tmp.newFile("test.preferences_pb") }
+    private val dataStore = PreferenceDataStoreFactory.create(scope = scope) { File(tmpDir, "test.preferences_pb") }
     private val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
     private val clock = AppClock()
     private val settings = SettingsRepository(dataStore)
     private val store = SitStateStore(dataStore)
     private val alarms = context.getSystemService<AlarmManager>()!!
+    private val permissions = MovementPermissions(context)
+    private val movementStore = MovementStore(dataStore)
+    private val stepCounter = StepCounter(context, permissions)
     private val repo = SitRepository(
         engine = SittingEngine(clock),
         clock = clock,
@@ -64,6 +79,9 @@ class SitRepositoryTest {
         breaks = BreakRepository(db.breakLogDao()),
         scheduler = ReminderScheduler(context, alarms, clock),
         notifier = ReminderNotifier(context, NotificationManagerCompat.from(context)).apply { createChannel() },
+        movementStore = movementStore,
+        movementTracker = MovementTracker(permissions, TransitionRegistrar(context, permissions), stepCounter, movementStore),
+        stepCounter = stepCounter,
         scope = scope,
     )
 
@@ -71,6 +89,7 @@ class SitRepositoryTest {
     fun tearDown() {
         db.close()
         scope.cancel()
+        tmpDir.deleteRecursively()
     }
 
     private fun loggedBreaks() = runBlocking { db.breakLogDao().observeSince(0).first() }
@@ -106,9 +125,83 @@ class SitRepositoryTest {
     @Test
     fun snoozeStopsAfterThree() = runBlocking {
         settings.setSchedule(WorkSchedule.AlwaysOn)
-        repo.onAppStart()
-        repeat(3) { assertTrue(repo.snooze() is SnoozeResult.Snoozed) }
+        settings.setInterval(20)
+        // Sat for 2 h: the reminder is due, and each 10-min snooze lands in the past too.
+        store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(2 * 60 * 60)) }
+        assertTrue(repo.snooze() is SnoozeResult.Snoozed)
+        repeat(2) {
+            store.update { s -> s.copy(snoozedUntil = s.snoozedUntil!!.minusSeconds(11 * 60)) } // snooze expired
+            assertTrue(repo.snooze() is SnoozeResult.Snoozed)
+        }
+        store.update { s -> s.copy(snoozedUntil = s.snoozedUntil!!.minusSeconds(11 * 60)) }
         assertEquals(SnoozeResult.LimitReached, repo.snooze())
+    }
+
+    /** Review fix: snoozing a reminder that isn't due yet changes nothing. */
+    @Test
+    fun snoozeBeforeDueChangesNothing() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        repo.onAppStart() // just started: due in 45 min
+        val before = store.current()
+        assertEquals(SnoozeResult.NotDue, repo.snooze())
+        assertEquals(before, store.current())
+    }
+
+    /** Review fix (cold-start flicker): no made-up status before the saved state has loaded. */
+    @Test
+    fun statusIsNullUntilTheSavedStateLoads() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(30 * 60)) }
+        assertNull(repo.status.value)
+        val first = repo.status.filterNotNull().first()
+        assertEquals(30, first.sitMinutes) // the real persisted timer, not a 0-minute default
+    }
+
+    /** Review fix: changing settings re-arms the alarm without anyone calling checkReminder(). */
+    @Test
+    fun settingsChangeReArmsTheAlarm() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        repo.onAppStart()
+        val start = store.current().sitStartedAt!!
+        val shadow = shadowOf(alarms)
+        assertEquals(start.plusSeconds(45 * 60).toEpochMilli(), shadow.peekNextScheduledAlarm()!!.triggerAtMs)
+
+        settings.setInterval(20)
+        val expected = start.plusSeconds(20 * 60).toEpochMilli()
+        val deadline = System.currentTimeMillis() + 5_000
+        while (shadow.peekNextScheduledAlarm()?.triggerAtMs != expected && System.currentTimeMillis() < deadline) {
+            Thread.sleep(50)
+        }
+        assertEquals(expected, shadow.peekNextScheduledAlarm()!!.triggerAtMs)
+    }
+
+    @Test
+    fun walkResetsTimerWithoutBreakLogOrReward() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(30 * 60)) }
+        val now = Instant.now().truncatedTo(ChronoUnit.MILLIS) // DataStore keeps millis
+        repo.onTransitions(
+            listOf(
+                MovementTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(180)),
+                MovementTransition(MovementActivity.STILL, entered = true, at = now),
+            ),
+            realTime = false,
+        )
+        assertEquals(ResetReason.WALKING, store.current().lastResetReason)
+        assertEquals(now, store.current().sitStartedAt)
+        assertTrue(loggedBreaks().isEmpty())
+        val log = movementStore.current().log
+        assertEquals(listOf(MovementActivity.STILL, MovementActivity.WALKING), log.map { it.activity })
+        assertEquals(MovementActivity.STILL, movementStore.current().currentActivity)
+    }
+
+    @Test
+    fun withoutPermissionNothingIsRegisteredAndManualStillWorks() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        repo.onAppStart()
+        assertEquals(false, movementStore.current().registered)
+        repo.done(BreakType.STAND_UP)
+        assertEquals(ResetReason.DONE, store.current().lastResetReason)
     }
 
     @Test

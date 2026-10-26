@@ -35,4 +35,27 @@
     <string name="pet_lab_skip">Skip</string>
     <string name="pet_lab_reset">Reset timer</string>
     <string name="pet_lab_open_notification_settings">Notification settings</string>
+    <string name="pet_lab_yes">yes</string>
+    <string name="pet_lab_no">no</string>
+    <string name="pet_lab_unknown">unknown</string>
+    <string name="pet_lab_movement">Movement</string>
+    <string name="pet_lab_movement_permission">Activity permission: %1$s</string>
+    <string name="pet_lab_movement_play_services">Play services: %1$s</string>
+    <string name="pet_lab_movement_registered">Transitions registered: %1$s</string>
+    <string name="pet_lab_movement_step_sensor">Step sensor: %1$s</string>
+    <string name="pet_lab_movement_current">Current activity: %1$s</string>
+    <string name="pet_lab_movement_steps">Steps since timer start: %1$d</string>
+    <string name="pet_lab_movement_steps_unknown">Steps since timer start: no reading yet</string>
+    <string name="pet_lab_movement_step_listener">Step listener (best effort): %1$s</string>
+    <string name="pet_lab_movement_last_step_reading">Last step reading: %1$d at %2$s</string>
+    <string name="pet_lab_movement_last_step_reading_none">Last step reading: none yet</string>
+    <string name="pet_lab_movement_last_reset">Last reset: %1$s</string>
+    <string name="pet_lab_movement_on_walk">On a walk: timer held at zero</string>
+    <string name="pet_lab_movement_enabled">Movement detection</string>
+    <string name="pet_lab_request_activity_permission">Request activity permission</string>
+    <string name="pet_lab_simulate_walk">Simulate 3-min walk</string>
+    <string name="pet_lab_movement_log">Last 20 transitions</string>
+    <string name="pet_lab_movement_log_empty">No transitions yet</string>
+    <string name="pet_lab_movement_log_enter">%1$s  enter %2$s</string>
+    <string name="pet_lab_movement_log_exit">%1$s  exit %2$s</string>
 </resources>

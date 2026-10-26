@@ -6,6 +6,11 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Re-arm the reminder alarm after a reboot. Normal permission, no prompt. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Movement detection (M4). API 29+: runtime permission for both the Activity Recognition
+         Transition API and the step counter. API 28 and below: Play services' install-time
+         permission covers the Transition API (the step counter needs none there). -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:name=".WigglebunApp"
@@ -35,6 +40,10 @@
             android:exported="false" />
         <receiver
             android:name=".notify.BreakActionReceiver"
+            android:exported="false" />
+        <!-- Play services sends transitions through our own PendingIntent, so this stays unexported. -->
+        <receiver
+            android:name=".activity.MovementReceiver"
             android:exported="false" />
         <!-- Exported so the system can deliver these; they are protected broadcasts that
              only the system can send, so other apps can't trigger it. -->

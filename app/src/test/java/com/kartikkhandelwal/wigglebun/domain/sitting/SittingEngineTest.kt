@@ -6,20 +6,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.Clock
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-
-/** A clock the test moves by hand. */
-private class MutableClock(var now: Instant, private val zone: ZoneId) : Clock() {
-    override fun getZone(): ZoneId = zone
-    override fun withZone(zone: ZoneId): Clock = MutableClock(now, zone)
-    override fun instant(): Instant = now
-    fun advance(minutes: Long) { now = now.plusSeconds(minutes * 60) }
-}
 
 class SittingEngineTest {
 
@@ -122,6 +113,24 @@ class SittingEngineTest {
         }
         assertEquals(SnoozeResult.LimitReached, engine.snooze(state, settings))
         assertEquals(0, engine.status(state, settings).snoozesLeft)
+    }
+
+    /** Review fix: snoozing before the due time must not pull the reminder forward. */
+    @Test
+    fun snoozeBeforeDueIsRejected() {
+        val state = started("2026-10-26T10:00") // due 10:45
+        clock.now = at("2026-10-26T10:05")
+        assertEquals(SnoozeResult.NotDue, engine.snooze(state, settings))
+        assertEquals(at("2026-10-26T10:45"), engine.status(state, settings).reminderDue)
+
+        clock.now = at("2026-10-26T10:45") // exactly due: allowed
+        assertTrue(engine.snooze(state, settings) is SnoozeResult.Snoozed)
+    }
+
+    @Test
+    fun snoozeOutsideWorkHoursIsRejected() {
+        clock.now = at("2026-10-26T20:00")
+        assertEquals(SnoozeResult.NotDue, engine.snooze(started("2026-10-26T10:00"), settings))
     }
 
     @Test

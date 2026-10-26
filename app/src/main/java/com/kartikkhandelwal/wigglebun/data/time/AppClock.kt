@@ -59,6 +59,14 @@ class AppClock @Inject constructor() : Clock() {
         return if (c.speed == 1) ms else c.realAnchorMillis + (ms - c.fakeAnchorMillis) / c.speed
     }
 
+    /** Inverse of [toRealEpochMillis]: a real wall-clock time (e.g. a sensor event) in app time. */
+    fun fromRealEpochMillis(realMillis: Long): Instant {
+        val c = config
+        return Instant.ofEpochMilli(
+            if (c.speed == 1) realMillis else c.fakeAnchorMillis + (realMillis - c.realAnchorMillis) * c.speed,
+        )
+    }
+
     private inner class ZonedView(private val zone: ZoneId) : Clock() {
         override fun getZone(): ZoneId = zone
         override fun withZone(zone: ZoneId): Clock = ZonedView(zone)

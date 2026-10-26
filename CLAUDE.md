@@ -48,7 +48,7 @@ A cute virtual-pet app that gets desk workers and students to **stand up, stretc
 | Local DB | Room |
 | Settings | DataStore (Preferences) |
 | Background | WorkManager + inexact `AlarmManager` (`setAndAllowWhileIdle`) |
-| Movement | Google Play services Activity Recognition **Transition API** (`STILL`, `WALKING`, `RUNNING`, `ON_FOOT`) |
+| Movement | Google Play services Activity Recognition **Transition API**: `WALKING` / `RUNNING` enter+exit and `STILL` enter+exit (`ON_FOOT` is not a supported Transition API activity). Step counter (`TYPE_STEP_COUNTER`) as a best-effort fallback |
 | Widget | Jetpack Glance (`androidx.glance:glance-appwidget`, stable 1.2.x) |
 | Billing | RevenueCat Android SDK (wraps Google Play Billing Library 8+/9.x; does server-side verification + acknowledgement so no own backend is needed) |
 | Images | Vector drawables (SVG imported via Android Studio "Vector Asset") + PNG for widget mood images |
@@ -101,10 +101,10 @@ v1 rule set, simple and robust:
 - During work hours a **sit timer** runs.
 - The sit timer **resets** when any of these happen:
   - user completes a break in the app (Done),
-  - Activity Recognition reports a `WALKING`, `RUNNING` or `ON_FOOT` transition that lasts ≥ 2 minutes,
-  - phone step counter (if available) shows ≥ 100 new steps since the timer started.
+  - Activity Recognition (primary signal) reports a walking/running period that lasts ≥ 2 minutes. We subscribe to `WALKING` and `RUNNING` enter+exit plus `STILL` enter+exit; `ON_FOOT` is not supported by the Transition API. The period ends on the last moving exit or a `STILL` enter, and the timer restarts at that moment,
+  - phone step counter (if available, best effort) shows ≥ 100 new steps since the timer started. The sensor only counts while a listener is registered, and we have no foreground service, so it counts only while the app process is alive during work hours.
 - When the timer reaches the interval → send a break reminder notification.
-- **Snooze** pushes the reminder by 10 min (max 3 snoozes in a row). **Skip** resets the timer without reward.
+- **Snooze** pushes the reminder by 10 min (max 3 snoozes in a row), and only once the reminder is due. **Skip** resets the timer without reward.
 - Outside work hours: nothing runs, pet sleeps peacefully (no guilt).
 
 Known limitation to handle gracefully: `STILL` means the *phone* is still, not the person. That is why the engine relies on "movement resets the timer" rather than "STILL means sitting".

@@ -16,7 +16,7 @@ import org.robolectric.annotation.GraphicsMode
 /** Debug-only: the Pet lab exists only in debug builds. */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [36], qualifiers = "w390dp-h844dp-xxhdpi", application = Application::class)
+@Config(sdk = [36], qualifiers = "w390dp-h2200dp-xxhdpi", application = Application::class)
 class PetLabScreenshotTest {
 
     @get:Rule

@@ -1,10 +1,14 @@
 package com.kartikkhandelwal.wigglebun.data.repo
 
+import com.kartikkhandelwal.wigglebun.activity.MovementTracker
+import com.kartikkhandelwal.wigglebun.activity.StepCounter
 import com.kartikkhandelwal.wigglebun.data.ApplicationScope
+import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitState
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitStatus
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
@@ -18,18 +22,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Owns the sit timer: runs the [SittingEngine] over the persisted state and settings,
- * applies Done / Snooze / Skip, writes the BreakLog, posts reminders and keeps the alarm armed.
+ * applies Done / Snooze / Skip and movement, writes the BreakLog, posts reminders and keeps
+ * the alarm and movement tracking in step with work hours.
  */
 @Singleton
 class SitRepository @Inject constructor(
@@ -40,40 +48,71 @@ class SitRepository @Inject constructor(
     private val breaks: BreakRepository,
     private val scheduler: ReminderScheduler,
     private val notifier: ReminderNotifier,
-    @ApplicationScope scope: CoroutineScope,
+    private val movementStore: MovementStore,
+    private val movementTracker: MovementTracker,
+    private val stepCounter: StepCounter,
+    @ApplicationScope private val scope: CoroutineScope,
 ) {
-    // UI buttons and notification receivers can act at the same time.
+    // UI buttons, notification actions and movement events can all arrive at once.
     private val mutex = Mutex()
 
     private val ticker: Flow<Unit> = flow {
         while (true) {
             emit(Unit)
-            delay(TICK_MILLIS)
+            delay(TICK_MILLIS.milliseconds)
         }
     }
 
-    /** Live status, recomputed every second while someone is watching (Home, Pet lab). */
-    val status: StateFlow<SitStatus> =
+    /**
+     * Live status, recomputed every second while someone is watching (Home, Pet lab).
+     * Null until the persisted state and settings have loaded, so a cold start never shows a
+     * made-up default pet for a frame before the real one (the "cold-start flicker").
+     */
+    val status: StateFlow<SitStatus?> =
         combine(store.state, settingsRepository.settings, clock.speed, ticker) { state, settings, _, _ ->
             engine.status(state, settings)
         }
             // While the app is open, post the reminder right on time instead of waiting for the
             // inexact alarm (which may run late). Deduped by lastNotifiedDue, so never twice.
             .onEach { if (it.shouldNotify) checkReminder() }
-            .stateIn(scope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), engine.status(SitState(), SittingSettings()))
+            .stateIn(scope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
-    /** First run starts the timer now (not at 09:00); every start re-arms the alarm. */
+    init {
+        // Settings changes (work hours, interval) move the next reminder and the work-hours
+        // boundaries, so re-arm the alarm and movement tracking whoever changed them. No drop(1):
+        // a change made before this collector subscribes would otherwise be lost; re-checking the
+        // initial value too is harmless (mutex + each due is notified once).
+        scope.launch { settingsRepository.settings.collect { checkReminder() } }
+        // Each new step-counter batch is a chance to apply the 100-step rule.
+        scope.launch { stepCounter.lastReading.filterNotNull().collect { onStepReading(it.total) } }
+    }
+
+    /** First run starts the timer now (not at 09:00); every start re-arms alarm and tracking. */
     suspend fun onAppStart() {
         mutex.withLock {
-            if (store.current().sitStartedAt == null) store.update { engine.resetTimer(it) }
+            if (store.current().sitStartedAt == null) {
+                store.update { engine.resetTimer(it) }
+                captureStepBaseline()
+            }
         }
         checkReminder()
     }
 
-    /** Post the reminder if one is due, then arm the alarm for the next one. */
+    /**
+     * The central check, run on every alarm, boot/update, app start and action:
+     * apply the step fallback, sync movement tracking with work hours, post a due reminder,
+     * then arm the next wake-up (next reminder or work-hours boundary).
+     */
     suspend fun checkReminder() = mutex.withLock {
         val settings = settingsRepository.current()
-        var state = store.current()
+        var state = applySteps(store.current(), settings)
+
+        val tracking = movementTracker.sync(engine.status(state, settings).isWorkTime)
+        if (!tracking && (state.movingSince != null || state.activeMoving.isNotEmpty())) {
+            // Not tracking any more, so an open walk will never get its exit event.
+            state = store.update { engine.clearMovement(it) }
+        }
+
         val status = engine.status(state, settings)
         val due = status.reminderDue
         if (status.shouldNotify && due != null) {
@@ -88,10 +127,28 @@ class SitRepository @Inject constructor(
         armAlarm(state, settings)
     }
 
+    /** Activity Recognition transitions, in chronological order. */
+    suspend fun onTransitions(events: List<MovementTransition>, realTime: Boolean) = mutex.withLock {
+        val fresh = movementStore.appendLog(events)
+        if (fresh.isEmpty()) return@withLock // only replays of events we already handled
+        // Event times are real wall-clock time; the engine works in app time (debug fast clock).
+        val appEvents = if (realTime) fresh.map { it.copy(at = clock.fromRealEpochMillis(it.at.toEpochMilli())) } else fresh
+        val before = store.current()
+        var state = store.update { current -> appEvents.fold(current) { s, e -> engine.onMovement(s, e) } }
+        val settings = settingsRepository.current()
+        if (state.sitStartedAt != before.sitStartedAt) {
+            onMovementReset()
+        } else {
+            state = applySteps(state, settings)
+        }
+        armAlarm(state, settings)
+    }
+
     suspend fun done(type: BreakType) = mutex.withLock {
         val state = store.update { engine.done(it) }
         breaks.logDone(type, clock.instant())
         notifier.cancel()
+        captureStepBaseline()
         armAlarm(state, settingsRepository.current())
     }
 
@@ -99,6 +156,7 @@ class SitRepository @Inject constructor(
         val state = store.update { engine.skip(it) }
         breaks.logSkipped(type, clock.instant())
         notifier.cancel()
+        captureStepBaseline()
         armAlarm(state, settingsRepository.current())
     }
 
@@ -116,7 +174,14 @@ class SitRepository @Inject constructor(
     suspend fun resetTimer() = mutex.withLock {
         val state = store.update { engine.resetTimer(it) }
         notifier.cancel()
+        captureStepBaseline()
         armAlarm(state, settingsRepository.current())
+    }
+
+    /** User switch for movement detection; turning it off unregisters right away. */
+    suspend fun setMovementEnabled(enabled: Boolean) {
+        movementStore.setEnabled(enabled)
+        checkReminder()
     }
 
     /** Debug fast clock: switching speed restarts the timer so old timestamps don't confuse it. */
@@ -125,8 +190,43 @@ class SitRepository @Inject constructor(
         resetTimer()
     }
 
+    private suspend fun onStepReading(total: Long) = mutex.withLock {
+        val settings = settingsRepository.current()
+        val state = store.current()
+        val after = applySteps(state, settings, total)
+        if (after != state) armAlarm(after, settings)
+    }
+
+    /** Step-counter fallback (work hours only, best effort): ≥ 100 steps since the timer started resets it. */
+    private suspend fun applySteps(state: SitState, settings: SittingSettings, knownTotal: Long? = null): SitState {
+        if (!engine.status(state, settings).isWorkTime) return state
+        val total = knownTotal ?: stepCounter.readTotal() ?: return state
+        val baseline = movementStore.current().baseline
+        if (baseline == null) {
+            movementStore.setBaseline(stepCounter.baselineNow(total))
+            return state
+        }
+        val steps = StepCounter.stepsSince(baseline, total, stepCounter.bootCount())
+        val after = engine.onSteps(state, steps)
+        if (after == state) return state
+        val saved = store.update { engine.onSteps(it, steps) }
+        movementStore.setBaseline(stepCounter.baselineNow(total))
+        notifier.cancel()
+        return saved
+    }
+
+    private suspend fun onMovementReset() {
+        notifier.cancel() // no point nagging someone who just walked
+        captureStepBaseline()
+    }
+
+    /** Remember the step counter value when the timer restarts (cleared if it can't be read). */
+    private suspend fun captureStepBaseline() {
+        movementStore.setBaseline(stepCounter.readTotal()?.let(stepCounter::baselineNow))
+    }
+
     private fun armAlarm(state: SitState, settings: SittingSettings) {
-        scheduler.schedule(engine.status(state, settings).nextAlarmAt)
+        scheduler.schedule(engine.status(state, settings).nextWakeAt)
     }
 
     private companion object {

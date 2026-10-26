@@ -1,0 +1,108 @@
+package com.kartikkhandelwal.wigglebun.data.prefs
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
+import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import java.io.IOException
+import java.time.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/** Step-counter baseline: the sensor value when the timer started, and which boot it came from. */
+data class StepBaseline(val steps: Long, val bootCount: Int)
+
+data class MovementInfo(
+    val enabled: Boolean = true,
+    val registered: Boolean = false,
+    val baseline: StepBaseline? = null,
+    /** Newest first, at most [MovementStore.LOG_SIZE]. Times are real wall-clock time. */
+    val log: List<MovementTransition> = emptyList(),
+) {
+    /** The activity of the newest ENTER that hasn't been exited since. */
+    val currentActivity: MovementActivity?
+        get() = log.firstOrNull()?.let { latest -> if (latest.entered) latest.activity else null }
+}
+
+/** Movement detection settings and diagnostics (same single DataStore). */
+@Singleton
+class MovementStore @Inject constructor(
+    private val dataStore: DataStore<Preferences>,
+) {
+    val info: Flow<MovementInfo> = dataStore.data
+        .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
+        .map { it.toMovementInfo() }
+
+    suspend fun current(): MovementInfo = info.first()
+
+    suspend fun setEnabled(enabled: Boolean) = dataStore.edit { it[Keys.Enabled] = enabled }
+
+    suspend fun setRegistered(registered: Boolean) = dataStore.edit { it[Keys.Registered] = registered }
+
+    suspend fun setBaseline(baseline: StepBaseline?) = dataStore.edit {
+        if (baseline == null) {
+            it.remove(Keys.BaselineSteps)
+            it.remove(Keys.BaselineBoot)
+        } else {
+            it[Keys.BaselineSteps] = baseline.steps
+            it[Keys.BaselineBoot] = baseline.bootCount
+        }
+    }
+
+    /**
+     * Logs [events] (chronological, as Play services delivers them) and returns the ones that
+     * were new. Play services replays the current state on every registration, so the same
+     * event can arrive more than once; duplicates are dropped.
+     */
+    suspend fun appendLog(events: List<MovementTransition>): List<MovementTransition> {
+        var fresh = emptyList<MovementTransition>()
+        dataStore.edit { prefs ->
+            val existing = prefs.toMovementInfo().log
+            fresh = events.distinct().filter { it !in existing }
+            if (fresh.isNotEmpty()) prefs.writeLog((fresh.reversed() + existing).take(LOG_SIZE))
+        }
+        return fresh
+    }
+
+    private fun MutablePreferences.writeLog(log: List<MovementTransition>) {
+        this[Keys.Log] = log.joinToString("\n") { "${it.at.toEpochMilli()},${it.activity.name},${if (it.entered) 1 else 0}" }
+    }
+
+    private fun Preferences.toMovementInfo() = MovementInfo(
+        enabled = this[Keys.Enabled] ?: true,
+        registered = this[Keys.Registered] ?: false,
+        baseline = this[Keys.BaselineSteps]?.let { StepBaseline(it, this[Keys.BaselineBoot] ?: -1) },
+        log = this[Keys.Log].orEmpty().lineSequence().mapNotNull(::parseLogLine).toList(),
+    )
+
+    private fun parseLogLine(line: String): MovementTransition? {
+        val parts = line.split(',')
+        if (parts.size != 3) return null
+        val activity = MovementActivity.entries.firstOrNull { it.name == parts[1] } ?: return null
+        val millis = parts[0].toLongOrNull() ?: return null
+        return MovementTransition(activity, entered = parts[2] == "1", at = Instant.ofEpochMilli(millis))
+    }
+
+    private object Keys {
+        val Enabled = booleanPreferencesKey("movement_enabled")
+        val Registered = booleanPreferencesKey("movement_registered")
+        val BaselineSteps = longPreferencesKey("step_baseline")
+        val BaselineBoot = intPreferencesKey("step_baseline_boot")
+        val Log = stringPreferencesKey("movement_log")
+    }
+
+    companion object {
+        const val LOG_SIZE = 20
+    }
+}
