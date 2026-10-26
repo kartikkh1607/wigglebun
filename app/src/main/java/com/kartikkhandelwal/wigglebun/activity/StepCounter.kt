@@ -4,10 +4,12 @@ import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
+import android.hardware.SensorEventListener2
 import android.hardware.SensorManager
 import androidx.core.content.getSystemService
 import com.kartikkhandelwal.wigglebun.data.prefs.StepBaseline
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +25,20 @@ import kotlin.time.Duration.Companion.milliseconds
 data class StepReading(val total: Long, val at: Instant)
 
 /**
+ * Asks for a flush and waits up to [timeoutMillis] for it to complete, then returns the newest
+ * reading. On timeout (or if the flush can't be requested) it falls back to the cached reading.
+ */
+internal suspend fun freshestReading(
+    requestFlush: () -> Boolean,
+    flushCompleted: CompletableDeferred<Unit>,
+    latest: () -> StepReading?,
+    timeoutMillis: Long,
+): StepReading? {
+    if (requestFlush()) withTimeoutOrNull(timeoutMillis.milliseconds) { flushCompleted.await() }
+    return latest()
+}
+
+/**
  * TYPE_STEP_COUNTER, best effort only. Activity Recognition is the primary movement signal.
  *
  * The docs say the "application needs to stay registered for this sensor because step counter
@@ -35,7 +51,8 @@ data class StepReading(val total: Long, val at: Instant)
  *   permission is gone.
  * - When Android kills the process in the background, the listener dies with it and steps are
  *   not counted until the next wake-up re-registers it.
- * - [readTotal] returns the live listener's latest value, or does a short one-shot read.
+ * - [readTotal] flushes the live listener first (its batch can be up to 5 min old), or does a
+ *   short one-shot read when no listener is registered.
  *
  * Needs ACTIVITY_RECOGNITION on API 29+. Not every device has the sensor.
  */
@@ -57,6 +74,9 @@ class StepCounter @Inject constructor(
 
     private var countingListener: SensorEventListener? = null
 
+    /** readTotal() calls waiting for their flush to complete. */
+    private val flushWaiters = mutableSetOf<CompletableDeferred<Unit>>()
+
     val hasSensor: Boolean get() = sensor != null
 
     /** Keep the sensor activated (see class docs). Returns whether it is registered. */
@@ -66,9 +86,15 @@ class StepCounter @Inject constructor(
         val manager = sensorManager ?: return false
         val stepSensor = sensor ?: return false
         if (!permissions.granted()) return false
-        val listener = object : SensorEventListener {
+        val listener = object : SensorEventListener2 {
             override fun onSensorChanged(event: SensorEvent) = record(event)
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+
+            // Delivered after every batched event that was in the FIFO when flush() was called.
+            override fun onFlushCompleted(sensor: Sensor?) {
+                val waiters = synchronized(flushWaiters) { flushWaiters.toList() }
+                waiters.forEach { it.complete(Unit) }
+            }
         }
         // Batching lets the hardware hold events while the CPU sleeps; a non-wakeup sensor
         // delivers them when the device next wakes, so this costs almost no battery.
@@ -85,9 +111,29 @@ class StepCounter @Inject constructor(
         _isCounting.value = false
     }
 
-    /** Current total, or null if unavailable (no sensor, no permission, no reading in time). */
+    /**
+     * Current total, or null if unavailable (no sensor, no permission, no reading in time).
+     *
+     * With the counting listener registered, its cached value can be up to the 5-minute batch
+     * latency old. That matters at reminder time (a late batch would reset the timer right after
+     * the reminder posts) and for the baseline after Done/Skip (steps walked during the break
+     * would count toward the next timer). So flush the hardware FIFO first and wait briefly.
+     */
     suspend fun readTotal(): Long? {
-        if (countingListener != null) _lastReading.value?.let { return it.total }
+        countingListener?.let { listener ->
+            val done = CompletableDeferred<Unit>()
+            synchronized(flushWaiters) { flushWaiters += done }
+            try {
+                freshestReading(
+                    requestFlush = { sensorManager?.flush(listener) == true },
+                    flushCompleted = done,
+                    latest = { _lastReading.value },
+                    timeoutMillis = FLUSH_TIMEOUT_MILLIS,
+                )?.let { return it.total }
+            } finally {
+                synchronized(flushWaiters) { flushWaiters -= done }
+            }
+        }
         val manager = sensorManager ?: return null
         val stepSensor = sensor ?: return null
         if (!permissions.granted()) return null
@@ -121,6 +167,7 @@ class StepCounter @Inject constructor(
 
     companion object {
         private const val READ_TIMEOUT_MILLIS = 2_000L
+        private const val FLUSH_TIMEOUT_MILLIS = 2_000L
         private const val MAX_BATCH_LATENCY_US = 5 * 60 * 1_000_000 // 5 min
 
         /**

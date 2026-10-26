@@ -100,21 +100,22 @@ class SittingEngine(private val clock: Clock) {
     /** Feed one Activity Recognition transition (in chronological order). */
     fun onMovement(state: SitState, transition: MovementTransition): SitState {
         val activity = transition.activity
+        // Play services replays the current state (with its original time) on registration.
+        // An event from before the open moving period started is stale: it changes nothing,
+        // so it can neither end the walk nor drop the activities that are still active.
+        val since = state.movingSince
+        if (since != null && transition.at.isBefore(since)) return state
         return when {
             activity.isMoving && transition.entered -> state.copy(
                 activeMoving = state.activeMoving + activity,
-                movingSince = state.movingSince ?: transition.at,
+                movingSince = since ?: transition.at,
             )
             activity.isMoving -> {
                 val remaining = state.activeMoving - activity
-                if (remaining.isEmpty()) {
-                    closeMovingPeriod(state.copy(activeMoving = emptySet()), transition.at)
-                } else {
-                    state.copy(activeMoving = remaining)
-                }
+                if (remaining.isEmpty()) closeMovingPeriod(state, transition.at) else state.copy(activeMoving = remaining)
             }
             // Entering STILL ends any moving period; leaving STILL alone proves nothing yet.
-            transition.entered -> closeMovingPeriod(state.copy(activeMoving = emptySet()), transition.at)
+            transition.entered -> closeMovingPeriod(state, transition.at)
             else -> state
         }
     }
@@ -126,12 +127,10 @@ class SittingEngine(private val clock: Clock) {
     /** Forget an open moving period (movement detection was switched off or lost). */
     fun clearMovement(state: SitState): SitState = state.copy(movingSince = null, activeMoving = emptySet())
 
+    /** The moving period really ended at [end]: clear it, and reset the timer if it lasted ≥ 2 min. */
     private fun closeMovingPeriod(state: SitState, end: Instant): SitState {
-        val since = state.movingSince ?: return state
-        // Play services replays the current state (with its original time) on registration;
-        // an event from before this walk started is stale and must not end the walk.
-        if (end.isBefore(since)) return state.copy(activeMoving = state.activeMoving)
-        val cleared = state.copy(movingSince = null)
+        val cleared = state.copy(movingSince = null, activeMoving = emptySet())
+        val since = state.movingSince ?: return cleared
         return if (Duration.between(since, end) >= MIN_WALK) resetAt(cleared, end, ResetReason.WALKING) else cleared
     }
 

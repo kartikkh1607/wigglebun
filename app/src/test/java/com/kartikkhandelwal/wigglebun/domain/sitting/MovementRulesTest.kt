@@ -135,6 +135,28 @@ class MovementRulesTest {
         assertEquals(ResetReason.WALKING, ended.lastResetReason)
     }
 
+    /** Review item: a stale replay must not drop activities that are still active. */
+    @Test
+    fun staleStillKeepsActiveActivitiesSoRunningStillHoldsThePeriod() {
+        val afterReplay = sitting.feed(
+            enter(WALKING, "10:20"),
+            enter(RUNNING, "10:22"),
+            enter(STILL, "09:50"), // replayed, older than the open period
+        )
+        assertEquals(setOf(WALKING, RUNNING), afterReplay.activeMoving)
+
+        val walkingEnded = afterReplay.feed(exit(WALKING, "10:24"))
+        assertEquals(at("10:20"), walkingEnded.movingSince) // still open: RUNNING is active
+        assertEquals(setOf(RUNNING), walkingEnded.activeMoving)
+        assertEquals(at("10:00"), walkingEnded.sitStartedAt)
+
+        val runningEnded = walkingEnded.feed(exit(RUNNING, "10:26"))
+        assertEquals(at("10:26"), runningEnded.sitStartedAt)
+        assertEquals(ResetReason.WALKING, runningEnded.lastResetReason)
+        assertNull(runningEnded.movingSince)
+        assertTrue(runningEnded.activeMoving.isEmpty())
+    }
+
     @Test
     fun exitWithoutEnterIsHarmless() {
         val s = sitting.feed(exit(WALKING, "10:20"), exit(STILL, "10:21"))

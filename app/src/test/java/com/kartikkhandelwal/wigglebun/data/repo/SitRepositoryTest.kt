@@ -220,6 +220,29 @@ class SitRepositoryTest {
         assertEquals(3, movementStore.current().log.size)
     }
 
+    /** Review item, through the simulate path (no watermark): the stale STILL is ignored by the engine. */
+    @Test
+    fun staleStillOnSimulatePathKeepsRunningActive() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        val t0 = Instant.now().truncatedTo(ChronoUnit.MILLIS).minusSeconds(10 * 60)
+        store.update { it.copy(sitStartedAt = t0) }
+        fun at(minutes: Long) = t0.plusSeconds(minutes * 60)
+        repo.simulateTransitions(
+            listOf(
+                MovementTransition(MovementActivity.WALKING, true, at(1)),
+                MovementTransition(MovementActivity.RUNNING, true, at(3)),
+                MovementTransition(MovementActivity.STILL, true, t0.minusSeconds(30 * 60)), // replay
+                MovementTransition(MovementActivity.WALKING, false, at(5)),
+            ),
+        )
+        assertEquals(setOf(MovementActivity.RUNNING), store.current().activeMoving)
+        assertEquals(t0, store.current().sitStartedAt)
+
+        repo.simulateTransitions(listOf(MovementTransition(MovementActivity.RUNNING, false, at(7))))
+        assertEquals(at(7), store.current().sitStartedAt)
+        assertEquals(ResetReason.WALKING, store.current().lastResetReason)
+    }
+
     @Test
     fun withoutPermissionNothingIsRegisteredAndManualStillWorks() = runBlocking {
         settings.setSchedule(WorkSchedule.AlwaysOn)
