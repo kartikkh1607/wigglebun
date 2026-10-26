@@ -77,15 +77,6 @@ class MovementPlatformTest {
     }
 
     @Test
-    fun replayedEventsAreLoggedOnce() = runBlocking {
-        val store = MovementStore(PreferenceDataStoreFactory.create(scope = scope) { tmp.newFile("d.preferences_pb") })
-        val still = MovementTransition(MovementActivity.STILL, entered = true, at = Instant.parse("2026-10-26T16:23:44Z"))
-        assertEquals(listOf(still), store.appendLog(listOf(still)))
-        assertEquals(emptyList<MovementTransition>(), store.appendLog(listOf(still))) // replay
-        assertEquals(1, store.current().log.size)
-    }
-
-    @Test
     fun transitionLogKeepsNewestTwenty() = runBlocking {
         val store = MovementStore(PreferenceDataStoreFactory.create(scope = scope) { tmp.newFile("m.preferences_pb") })
         val base = Instant.parse("2026-10-26T05:00:00Z")

@@ -7,6 +7,7 @@ import android.os.SystemClock
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
+import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
 import com.kartikkhandelwal.wigglebun.notify.runAsync
@@ -27,13 +28,17 @@ class MovementReceiver : BroadcastReceiver() {
                 else -> return@mapNotNull null
             }
             val ageMillis = (nowElapsedNanos - event.elapsedRealTimeNanos) / 1_000_000
-            MovementTransition(
-                activity = activity,
-                entered = event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER,
-                at = Instant.ofEpochMilli(nowWallMillis - ageMillis),
+            ReceivedTransition(
+                transition = MovementTransition(
+                    activity = activity,
+                    entered = event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER,
+                    at = Instant.ofEpochMilli(nowWallMillis - ageMillis),
+                ),
+                elapsedRealtimeNanos = event.elapsedRealTimeNanos,
             )
         }
         if (events.isEmpty()) return
-        runAsync(context) { it.onTransitions(events, realTime = true) }
+        val bootCount = context.bootCount()
+        runAsync(context) { it.onReceivedTransitions(events, bootCount) }
     }
 }

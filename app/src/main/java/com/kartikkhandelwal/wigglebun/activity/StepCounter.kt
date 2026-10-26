@@ -5,7 +5,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.provider.Settings
 import androidx.core.content.getSystemService
 import com.kartikkhandelwal.wigglebun.data.prefs.StepBaseline
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -116,7 +115,7 @@ class StepCounter @Inject constructor(
     }
 
     /** Settings.Global.BOOT_COUNT changes on every reboot, which is when the counter resets. */
-    fun bootCount(): Int = Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT, -1)
+    fun bootCount(): Int = context.bootCount()
 
     fun baselineNow(total: Long) = StepBaseline(total, bootCount())
 

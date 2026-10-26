@@ -220,12 +220,11 @@ class PetLabViewModel @Inject constructor(
     /** Feeds a fake 3-minute walk that ended now, to test the reset at a desk. */
     fun simulateWalk() = viewModelScope.launch {
         val now = clock.instant()
-        sitRepository.onTransitions(
+        sitRepository.simulateTransitions(
             listOf(
                 MovementTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(180)),
                 MovementTransition(MovementActivity.STILL, entered = true, at = now),
             ),
-            realTime = false,
         )
     }
 

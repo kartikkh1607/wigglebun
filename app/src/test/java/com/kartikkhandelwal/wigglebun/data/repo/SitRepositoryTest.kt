@@ -16,6 +16,7 @@ import com.kartikkhandelwal.wigglebun.activity.StepCounter
 import com.kartikkhandelwal.wigglebun.activity.TransitionRegistrar
 import com.kartikkhandelwal.wigglebun.data.db.AppDatabase
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
+import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
@@ -180,12 +181,11 @@ class SitRepositoryTest {
         settings.setSchedule(WorkSchedule.AlwaysOn)
         store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(30 * 60)) }
         val now = Instant.now().truncatedTo(ChronoUnit.MILLIS) // DataStore keeps millis
-        repo.onTransitions(
+        repo.simulateTransitions(
             listOf(
                 MovementTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(180)),
                 MovementTransition(MovementActivity.STILL, entered = true, at = now),
             ),
-            realTime = false,
         )
         assertEquals(ResetReason.WALKING, store.current().lastResetReason)
         assertEquals(now, store.current().sitStartedAt)
@@ -193,6 +193,31 @@ class SitRepositoryTest {
         val log = movementStore.current().log
         assertEquals(listOf(MovementActivity.STILL, MovementActivity.WALKING), log.map { it.activity })
         assertEquals(MovementActivity.STILL, movementStore.current().currentActivity)
+    }
+
+    /** Play services replays the current state on registration: same elapsedRealtime, ignored. */
+    @Test
+    fun replayedTransitionsAreIgnoredByTheWatermark() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        val now = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+        val walk = listOf(
+            ReceivedTransition(MovementTransition(MovementActivity.WALKING, true, now.minusSeconds(180)), elapsedRealtimeNanos = 1_000),
+            ReceivedTransition(MovementTransition(MovementActivity.STILL, true, now), elapsedRealtimeNanos = 181_000),
+        )
+        repo.onReceivedTransitions(walk, bootCount = 3)
+        assertEquals(now, store.current().sitStartedAt)
+        assertEquals(2, movementStore.current().log.size)
+
+        repo.resetTimer()
+        val afterReset = store.current().sitStartedAt
+        repo.onReceivedTransitions(listOf(walk.last()), bootCount = 3) // replay of the STILL enter
+        assertEquals(afterReset, store.current().sitStartedAt)
+        assertEquals(2, movementStore.current().log.size)
+
+        // After a reboot elapsedRealtime restarts, so a small value is new again.
+        val afterReboot = ReceivedTransition(MovementTransition(MovementActivity.WALKING, true, now.plusSeconds(5)), 500)
+        repo.onReceivedTransitions(listOf(afterReboot), bootCount = 4)
+        assertEquals(3, movementStore.current().log.size)
     }
 
     @Test

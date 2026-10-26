@@ -4,6 +4,7 @@ import com.kartikkhandelwal.wigglebun.activity.MovementTracker
 import com.kartikkhandelwal.wigglebun.activity.StepCounter
 import com.kartikkhandelwal.wigglebun.data.ApplicationScope
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
+import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
@@ -127,12 +128,21 @@ class SitRepository @Inject constructor(
         armAlarm(state, settings)
     }
 
-    /** Activity Recognition transitions, in chronological order. */
-    suspend fun onTransitions(events: List<MovementTransition>, realTime: Boolean) = mutex.withLock {
-        val fresh = movementStore.appendLog(events)
-        if (fresh.isEmpty()) return@withLock // only replays of events we already handled
+    /** Activity Recognition transitions from Play services, in chronological order. */
+    suspend fun onReceivedTransitions(events: List<ReceivedTransition>, bootCount: Int) = mutex.withLock {
+        val accepted = movementStore.acceptAndLog(events, bootCount)
+        if (accepted.isEmpty()) return@withLock // replays/redeliveries at or below the watermark
         // Event times are real wall-clock time; the engine works in app time (debug fast clock).
-        val appEvents = if (realTime) fresh.map { it.copy(at = clock.fromRealEpochMillis(it.at.toEpochMilli())) } else fresh
+        applyTransitions(accepted.map { it.copy(at = clock.fromRealEpochMillis(it.at.toEpochMilli())) })
+    }
+
+    /** Debug only: feed made-up transitions (already in app time), bypassing the watermark. */
+    suspend fun simulateTransitions(events: List<MovementTransition>) = mutex.withLock {
+        movementStore.appendLog(events)
+        applyTransitions(events)
+    }
+
+    private suspend fun applyTransitions(appEvents: List<MovementTransition>) {
         val before = store.current()
         var state = store.update { current -> appEvents.fold(current) { s, e -> engine.onMovement(s, e) } }
         val settings = settingsRepository.current()

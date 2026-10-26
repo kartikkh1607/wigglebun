@@ -61,18 +61,30 @@ class MovementStore @Inject constructor(
     }
 
     /**
-     * Logs [events] (chronological, as Play services delivers them) and returns the ones that
-     * were new. Play services replays the current state on every registration, so the same
-     * event can arrive more than once; duplicates are dropped.
+     * Keeps only events newer than the stored watermark (see [acceptNewerThanWatermark]), logs
+     * them and moves the watermark, all in one atomic write. Returns the accepted transitions.
      */
-    suspend fun appendLog(events: List<MovementTransition>): List<MovementTransition> {
-        var fresh = emptyList<MovementTransition>()
+    suspend fun acceptAndLog(events: List<ReceivedTransition>, bootCount: Int): List<MovementTransition> {
+        var accepted = emptyList<MovementTransition>()
         dataStore.edit { prefs ->
-            val existing = prefs.toMovementInfo().log
-            fresh = events.distinct().filter { it !in existing }
-            if (fresh.isNotEmpty()) prefs.writeLog((fresh.reversed() + existing).take(LOG_SIZE))
+            val stored = prefs[Keys.WatermarkNanos]?.let { TransitionWatermark(it, prefs[Keys.WatermarkBoot] ?: -1) }
+            val (newer, watermark) = acceptNewerThanWatermark(events, stored, bootCount)
+            if (watermark == null) {
+                prefs.remove(Keys.WatermarkNanos)
+                prefs.remove(Keys.WatermarkBoot)
+            } else {
+                prefs[Keys.WatermarkNanos] = watermark.elapsedRealtimeNanos
+                prefs[Keys.WatermarkBoot] = watermark.bootCount
+            }
+            accepted = newer.map { it.transition }
+            if (accepted.isNotEmpty()) prefs.writeLog((accepted.reversed() + prefs.toMovementInfo().log).take(LOG_SIZE))
         }
-        return fresh
+        return accepted
+    }
+
+    /** Logs [events] (chronological) without any filtering; used for the debug walk simulation. */
+    suspend fun appendLog(events: List<MovementTransition>) = dataStore.edit { prefs ->
+        prefs.writeLog((events.reversed() + prefs.toMovementInfo().log).take(LOG_SIZE))
     }
 
     private fun MutablePreferences.writeLog(log: List<MovementTransition>) {
@@ -100,6 +112,8 @@ class MovementStore @Inject constructor(
         val BaselineSteps = longPreferencesKey("step_baseline")
         val BaselineBoot = intPreferencesKey("step_baseline_boot")
         val Log = stringPreferencesKey("movement_log")
+        val WatermarkNanos = longPreferencesKey("transition_watermark_nanos")
+        val WatermarkBoot = intPreferencesKey("transition_watermark_boot")
     }
 
     companion object {
