@@ -27,6 +27,6 @@ class PetLabScreenshotTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalInspectionMode provides true) { PetLabPreview() }
         }
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/pet_lab.png")
+        composeRule.onRoot().captureRoboImage("pet_lab.png")
     }
 }

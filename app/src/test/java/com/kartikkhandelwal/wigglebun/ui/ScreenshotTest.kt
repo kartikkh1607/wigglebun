@@ -26,8 +26,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Renders the @Previews to PNGs under app/build/outputs/roborazzi.
- * Record with `./gradlew recordRoborazziDebug`, compare with `./gradlew compareRoborazziDebug`.
+ * Renders the @Previews to the reference PNGs in app/src/test/screenshots.
+ * Record with `./gradlew recordRoborazziDebug`, check with `./gradlew verifyRoborazziDebug`.
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -73,7 +73,7 @@ class ScreenshotTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalInspectionMode provides true) { WigglebunNavHostPreview() }
         }
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/app_shell_home.png")
+        composeRule.onRoot().captureRoboImage("app_shell_home.png")
 
         listOf("Collection", "Bun", "Settings", "Home").forEach { label ->
             // Screen titles repeat the tab label, so match the selectable tab node only.
@@ -82,7 +82,7 @@ class ScreenshotTest {
             composeRule.waitForIdle()
             tab.assertIsSelected()
             composeRule.onRoot().captureRoboImage(
-                "build/outputs/roborazzi/app_shell_${label.lowercase()}.png",
+                "app_shell_${label.lowercase()}.png",
             )
         }
     }

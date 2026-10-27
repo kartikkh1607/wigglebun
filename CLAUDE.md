@@ -52,7 +52,7 @@ A cute virtual-pet app that gets desk workers and students to **stand up, stretc
 | Widget | Jetpack Glance (`androidx.glance:glance-appwidget`, stable 1.2.x) |
 | Billing | RevenueCat Android SDK (wraps Google Play Billing Library 8+/9.x; does server-side verification + acknowledgement so no own backend is needed) |
 | Images | Vector drawables (SVG imported via Android Studio "Vector Asset") + PNG for widget mood images |
-| UI tests | Compose `@Preview` for every screen + Roborazzi screenshot tests on Robolectric (so Claude can render and look at the UI): `./gradlew recordRoborazziDebug` → `app/build/outputs/roborazzi/` |
+| UI tests | Compose `@Preview` for every screen + Roborazzi screenshot tests on Robolectric (so Claude can render and look at the UI). Reference PNGs are checked in at `app/src/test/screenshots/`: `./gradlew recordRoborazziDebug` writes them, `./gradlew verifyRoborazziDebug` fails on any difference (diffs in `app/build/outputs/roborazzi/`) |
 
 Ask Kartik before adding any dependency not in this table.
 
@@ -277,6 +277,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 1. Work **milestone by milestone** (section 14). Finish, build, and show before moving on.
 2. After every change: `./gradlew assembleDebug` must pass; run unit tests for `domain/`.
 3. For every UI change: add/update a `@Preview` and a Roborazzi screenshot test, render it, **look at the PNG yourself**, fix obvious issues, then show Kartik.
+   After every UI change run `./gradlew verifyRoborazziDebug` so unintended changes to existing screens fail the build. When a change is intended, re-record (`recordRoborazziDebug`) and tell Kartik exactly which reference images changed (`git status app/src/test/screenshots`).
 4. When Kartik attaches reference screenshots or mockups, match spacing, radius, hierarchy and motion feel; never copy another app's artwork or brand.
 5. Keep composables small and stateless; state lives in ViewModels.
 6. No hard-coded strings, colours or dimensions inside screens; use theme tokens.

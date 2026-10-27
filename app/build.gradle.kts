@@ -56,6 +56,12 @@ android {
     }
 }
 
+roborazzi {
+    // Reference screenshots are checked in, so verifyRoborazziDebug fails on unintended UI changes.
+    // Compare/diff images still go to build/outputs/roborazzi.
+    outputDir.set(file("src/test/screenshots"))
+}
+
 room {
     schemaDirectory("$projectDir/schemas")
 }

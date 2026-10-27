@@ -19,7 +19,7 @@ import org.robolectric.annotation.GraphicsMode
 
 /**
  * Final Home (M5) at the mockup's 390×844 phone size, plus a small phone and a large font.
- * PNGs land in app/build/outputs/roborazzi/home_*.png.
+ * Reference PNGs: app/src/test/screenshots/home_*.png.
  *
  * Large fonts use @Config(fontScale): the system setting, like a real phone (non-linear scaling
  * on API 34+), and it also reaches the focused card's dialog window, which a LocalDensity
@@ -42,7 +42,7 @@ class HomeScreenshotTest {
 
     private fun capture(name: String, content: @Composable () -> Unit) {
         setContent(content)
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/home_$name.png")
+        composeRule.onRoot().captureRoboImage("home_$name.png")
     }
 
     /** The whole screen including dialog windows: the real [FocusCardDialog] path. */
@@ -50,7 +50,7 @@ class HomeScreenshotTest {
     private fun captureScreen(name: String, content: @Composable () -> Unit) {
         setContent(content)
         composeRule.waitForIdle()
-        captureScreenRoboImage("build/outputs/roborazzi/home_$name.png")
+        captureScreenRoboImage("home_$name.png")
     }
 
     private fun home(state: HomeUiState): @Composable () -> Unit = { WigglebunTheme { HomeScreen(state) } }

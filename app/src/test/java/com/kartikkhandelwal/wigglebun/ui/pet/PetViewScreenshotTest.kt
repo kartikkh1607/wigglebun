@@ -54,7 +54,7 @@ class PetViewScreenshotTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalInspectionMode provides true) { PetAllMoodsPreview() }
         }
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/pet_all_moods.png")
+        composeRule.onRoot().captureRoboImage("pet_all_moods.png")
     }
 
     /** One live frame mid-hop with confetti flying, to sanity-check the animation drawing. */
@@ -75,7 +75,7 @@ class PetViewScreenshotTest {
         composeRule.mainClock.advanceTimeBy(500)
         mood = Mood.CELEBRATE
         composeRule.mainClock.advanceTimeBy(300)
-        composeRule.onNodeWithTag("pet").captureRoboImage("build/outputs/roborazzi/pet_celebrate_frame.png")
+        composeRule.onNodeWithTag("pet").captureRoboImage("pet_celebrate_frame.png")
     }
 
     private fun captureMood(mood: Mood) {
@@ -83,6 +83,6 @@ class PetViewScreenshotTest {
             CompositionLocalProvider(LocalInspectionMode provides true) { PetMoodPreview(mood) }
         }
         composeRule.onNodeWithTag("pet")
-            .captureRoboImage("build/outputs/roborazzi/pet_${mood.name.lowercase()}.png")
+            .captureRoboImage("pet_${mood.name.lowercase()}.png")
     }
 }
