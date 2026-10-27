@@ -3,11 +3,11 @@ package com.kartikkhandelwal.wigglebun.activity
 import android.Manifest
 import android.app.Application
 import android.app.PendingIntent
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.StepBaseline
+import com.kartikkhandelwal.wigglebun.data.prefs.inMemoryPreferencesDataStore
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
 import kotlinx.coroutines.CoroutineScope
@@ -20,9 +20,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
@@ -31,9 +29,6 @@ import java.time.Instant
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class)
 class MovementPlatformTest {
-
-    @get:Rule
-    val tmp = TemporaryFolder()
 
     private val context: Application = ApplicationProvider.getApplicationContext()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -78,7 +73,7 @@ class MovementPlatformTest {
 
     @Test
     fun transitionLogKeepsNewestTwenty() = runBlocking {
-        val store = MovementStore(PreferenceDataStoreFactory.create(scope = scope) { tmp.newFile("m.preferences_pb") })
+        val store = MovementStore(inMemoryPreferencesDataStore(scope))
         val base = Instant.parse("2026-10-26T05:00:00Z")
         repeat(25) { i ->
             store.appendLog(listOf(MovementTransition(MovementActivity.WALKING, entered = i % 2 == 0, at = base.plusSeconds(i * 60L))))

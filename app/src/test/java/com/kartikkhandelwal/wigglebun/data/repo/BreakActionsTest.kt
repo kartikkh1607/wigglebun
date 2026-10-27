@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.Application
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -16,6 +15,7 @@ import com.kartikkhandelwal.wigglebun.data.db.AppDatabase
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
+import com.kartikkhandelwal.wigglebun.data.prefs.inMemoryPreferencesDataStore
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
@@ -35,8 +35,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import java.io.File
-import java.nio.file.Files
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -46,10 +44,8 @@ import java.time.temporal.ChronoUnit
 class BreakActionsTest {
 
     private val context: Application = ApplicationProvider.getApplicationContext()
-    // Not a TemporaryFolder rule: SitRepository reads DataStore from its init block, before rules exist.
-    private val tmpDir: File = Files.createTempDirectory("breakactions").toFile()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val dataStore = PreferenceDataStoreFactory.create(scope = scope) { File(tmpDir, "test.preferences_pb") }
+    private val dataStore = inMemoryPreferencesDataStore(scope)
     private val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
     private val clock = AppClock()
     private val settings = SettingsRepository(dataStore)
@@ -77,7 +73,6 @@ class BreakActionsTest {
     fun tearDown() {
         db.close()
         scope.cancel()
-        tmpDir.deleteRecursively()
     }
 
     private fun logs() = runBlocking { breaks.observeSince(Instant.EPOCH).first() }
