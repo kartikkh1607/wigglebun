@@ -40,6 +40,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // BuildConfig.DEBUG keeps diagnostic logging out of release builds.
+        buildConfig = true
     }
     testOptions {
         unitTests {

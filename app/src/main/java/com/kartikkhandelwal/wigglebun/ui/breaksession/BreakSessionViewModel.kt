@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -53,9 +54,14 @@ class BreakSessionViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            while (true) {
-                delay(TICK_MILLIS)
-                if (timer.isRunning && result == null) publish()
+            // Tick only while the screen is collecting (collectAsStateWithLifecycle stops at
+            // ON_STOP), so a pocketed 2-min walk doesn't redraw 10× a second in the background.
+            // The timer is elapsed-time based, so the first tick on return shows the real time.
+            _state.subscriptionCount.collectLatest { subscribers ->
+                while (subscribers > 0) {
+                    delay(TICK_MILLIS)
+                    if (timer.isRunning && result == null) publish()
+                }
             }
         }
     }

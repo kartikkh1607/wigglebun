@@ -21,7 +21,7 @@ data object SettingsRoute
 /** Full-screen guided break (no tab bar). [type] is a BreakType name. */
 @Serializable
 data class BreakSessionRoute(val type: String) {
-    val breakType: BreakType get() = BreakType.entries.firstOrNull { it.name == type } ?: BreakType.STAND_UP
+    val breakType: BreakType get() = BreakType.fromName(type) ?: BreakType.STAND_UP
 }
 
 /** The four bottom tabs, in display order. */

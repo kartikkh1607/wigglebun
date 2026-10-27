@@ -275,7 +275,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 ## 13. How Claude should work in this repo
 
 1. Work **milestone by milestone** (section 14). Finish, build, and show before moving on.
-2. After every change: `./gradlew assembleDebug` must pass; run unit tests for `domain/`.
+2. After every change: `./gradlew assembleDebug` must pass; run unit tests for `domain/`; `./gradlew lintDebug` must pass (it catches APIs missing on older Android versions, which the Robolectric tests on API 36 cannot).
 3. For every UI change: add/update a `@Preview` and a Roborazzi screenshot test, render it, **look at the PNG yourself**, fix obvious issues, then show Kartik.
    After every UI change run `./gradlew verifyRoborazziDebug` so unintended changes to existing screens fail the build. When a change is intended, re-record (`recordRoborazziDebug`) and tell Kartik exactly which reference images changed (`git status app/src/test/screenshots`).
 4. When Kartik attaches reference screenshots or mockups, match spacing, radius, hierarchy and motion feel; never copy another app's artwork or brand.

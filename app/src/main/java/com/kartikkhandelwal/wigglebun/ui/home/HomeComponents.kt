@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -316,7 +317,7 @@ private fun workStartsText(next: LocalDateTime?, today: LocalDate): String {
         today.plusDays(1) -> stringResource(R.string.home_work_starts_tomorrow, time)
         else -> stringResource(
             R.string.home_work_starts_on,
-            next.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()),
+            next.dayOfWeek.getDisplayName(TextStyle.FULL, currentLocale()),
             time,
         )
     }
@@ -325,7 +326,11 @@ private fun workStartsText(next: LocalDateTime?, today: LocalDate): String {
 /** A time in the user's 12/24-hour preference, see [formatClockTime]. */
 @Composable
 internal fun formatTime(time: LocalTime): String =
-    formatClockTime(time, DateFormat.is24HourFormat(LocalContext.current), Locale.getDefault())
+    formatClockTime(time, DateFormat.is24HourFormat(LocalContext.current), currentLocale())
+
+/** The app's locale, read so a language change recomposes (Locale.getDefault() would not). */
+@Composable
+private fun currentLocale(): Locale = LocalConfiguration.current.locales[0]
 
 /**
  * "9 AM", "9:30 AM" (12-hour) or "9:00", "18:00" (24-hour). Whole hours drop ":00" in 12-hour

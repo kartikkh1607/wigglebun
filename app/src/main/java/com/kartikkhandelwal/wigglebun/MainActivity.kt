@@ -46,8 +46,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         private const val EXTRA_START_BREAK = "start_break"
 
-        private fun Intent.startBreak(): BreakType? =
-            getStringExtra(EXTRA_START_BREAK)?.let { name -> BreakType.entries.firstOrNull { it.name == name } }
+        private fun Intent.startBreak(): BreakType? = BreakType.fromName(getStringExtra(EXTRA_START_BREAK))
 
         /**
          * Opens the break session for [type] (the medium widget's "Take a break").

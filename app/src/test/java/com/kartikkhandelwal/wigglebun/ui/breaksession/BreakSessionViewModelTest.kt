@@ -11,7 +11,11 @@ import com.kartikkhandelwal.wigglebun.data.time.ElapsedClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -97,16 +101,24 @@ class BreakSessionViewModelTest {
         assertFalse(walk.state.value.isPaused)
         now += 90_000 // pocketed for a minute and a half
         shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(TICK_WAIT_MILLIS))
+        // Nobody is watching in the background, so nothing redraws...
+        assertEquals(0, walk.state.value.stepIndex)
+        // ...but the walk kept running: back on screen, the next tick shows the real time.
+        val walkScreen = onScreen(walk)
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(TICK_WAIT_MILLIS))
         assertEquals(1, walk.state.value.stepIndex)
         assertEquals(30_000L, walk.state.value.remainingMillis)
+        walkScreen.cancel()
 
         val neck = session(BreakType.NECK)
         neck.onBackground()
         assertTrue(neck.state.value.isPaused)
         now += 90_000
+        val neckScreen = onScreen(neck)
         shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(TICK_WAIT_MILLIS))
         assertEquals(0, neck.state.value.stepIndex)
         assertEquals(30_000L, neck.state.value.remainingMillis)
+        neckScreen.cancel()
     }
 
     private companion object {
@@ -114,4 +126,7 @@ class BreakSessionViewModelTest {
         const val WAIT_MILLIS = 10L
         const val TICK_WAIT_MILLIS = 250L
     }
+
+    /** Collects the state like the screen does (collectAsStateWithLifecycle while visible). */
+    private fun onScreen(vm: BreakSessionViewModel): Job = CoroutineScope(Dispatchers.Main).launch { vm.state.collect {} }
 }

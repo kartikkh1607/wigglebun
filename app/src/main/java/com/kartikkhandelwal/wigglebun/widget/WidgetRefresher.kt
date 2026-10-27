@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.widget
 
 import android.content.Context
+import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
 import com.kartikkhandelwal.wigglebun.data.ApplicationScope
@@ -9,11 +10,14 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "Widget"
 
 /** Redraws the home-screen widget after anything that changes the pet (Done, Snooze, Skip, walks, alarms). */
 fun interface WidgetRefresher {
@@ -32,7 +36,13 @@ class GlanceWidgetRefresher @Inject constructor(
         scope.launch {
             for (request in requests) {
                 // Cheap when no widget is placed: updateAll finds no ids and returns.
-                runCatching { WigglebunWidget().updateAll(context) }
+                try {
+                    WigglebunWidget().updateAll(context)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "Widget update failed", e) // the next change or 15-min refresh retries
+                }
             }
         }
     }

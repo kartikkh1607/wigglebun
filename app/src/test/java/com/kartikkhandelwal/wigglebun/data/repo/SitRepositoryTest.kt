@@ -65,7 +65,7 @@ class SitRepositoryTest {
     private val store = SitStateStore(dataStore)
     private val alarms = context.getSystemService<AlarmManager>()!!
     private val permissions = MovementPermissions(context)
-    private val movementStore = MovementStore(dataStore)
+    private val movementStore = MovementStore(dataStore, dataStore)
     private val stepCounter = StepCounter(context, permissions)
     private val widgetUpdates = CountingWidgetRefresher()
     private val repo = SitRepository(
