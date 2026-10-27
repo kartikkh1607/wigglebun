@@ -100,6 +100,8 @@
     <string name="session_safety">Move gently. Stop if anything hurts.</string>
     <string name="session_pause">Pause</string>
     <string name="session_resume">Resume</string>
+    <!-- Under the dimmed countdown while the session is paused -->
+    <string name="session_paused">Paused</string>
     <string name="session_next">Next step</string>
     <string name="session_done">Done</string>
     <!-- Countdown, e.g. 0:11 -->

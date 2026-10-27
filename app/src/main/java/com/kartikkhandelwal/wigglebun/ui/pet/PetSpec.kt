@@ -67,6 +67,8 @@ data class PetSpec(
 
     /** Lean and breathing pivot (on the floor between the feet). */
     val pivot: Offset,
+    /** Break-session pose rotations turn the upper body about this point on the lower torso. */
+    val torsoPivot: Offset,
     /** Lowest point of the feet; squash and stretch scale about this. */
     val groundY: Float,
     val sweatAnchor: Offset,

@@ -93,6 +93,7 @@ object PetSpecs {
         eyeDotRadius = 5.5f,
         mouthAnchor = Offset(100f, 114f),
         pivot = Offset(100f, 192f),
+        torsoPivot = Offset(100f, 172f), // neck_stretch_frames.svg: rotate(±20 100 172)
         groundY = 202f,
         sweatAnchor = Offset(150f, 70f),
         sleepZAnchor = Offset(150f, 40f),

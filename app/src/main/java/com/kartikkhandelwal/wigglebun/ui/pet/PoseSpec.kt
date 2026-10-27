@@ -7,8 +7,8 @@ enum class FeetPose { Standing, Sit, LiftLeft, LiftRight }
 
 /**
  * One break-session pose (CLAUDE.md §7): the pet's own layers with a transform and different
- * arm / eye / feet layers, never a new body shape. Rotation and scale are about [PetSpec.pivot]
- * (between the feet); the feet stay planted.
+ * arm / eye / feet layers, never a new body shape. Rotation is about [PetSpec.torsoPivot] (the
+ * lower torso), scale about [PetSpec.pivot] (between the feet); the feet stay planted.
  */
 @Immutable
 data class PoseSpec(

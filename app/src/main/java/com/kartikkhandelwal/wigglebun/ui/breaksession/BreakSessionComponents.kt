@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -116,11 +117,20 @@ internal fun Segments(count: Int, filled: Int, modifier: Modifier = Modifier, fi
     }
 }
 
-/** Track circle with the step's progress arc from 12 o'clock, [content] (the pet) in the middle. */
+/**
+ * Track circle with the step's progress arc from 12 o'clock, [content] (the pet) in the middle.
+ * [ringAlpha] dims the ring alone (paused); the pet stays bright.
+ */
 @Composable
-internal fun CountdownRing(progress: Float, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+internal fun CountdownRing(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    ringAlpha: Float = 1f,
+    content: @Composable BoxScope.() -> Unit,
+) {
     Box(modifier, contentAlignment = Alignment.Center) {
-        Canvas(Modifier.matchParentSize().clearAndSetSemantics {}) {
+        // alpha() composites track + arc as one layer, so the arc doesn't show the track through it.
+        Canvas(Modifier.matchParentSize().alpha(ringAlpha).clearAndSetSemantics {}) {
             val stroke = S.RingStroke.toPx()
             val radius = size.minDimension * RING_RADIUS_FRACTION
             drawCircle(SessionTrack, radius = radius, style = Stroke(stroke))
@@ -153,6 +163,18 @@ internal fun CountdownText(remainingMillis: Long, modifier: Modifier = Modifier)
         style = WigglebunTextStyles.Countdown,
         color = Ink,
         modifier = modifier.clearAndSetSemantics { contentDescription = description },
+    )
+}
+
+/** Under the dimmed countdown while paused; a polite live region, so TalkBack says "Paused". */
+@Composable
+internal fun PausedLabel(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.session_paused),
+        style = WigglebunTextStyles.Count,
+        color = SessionMuted,
+        textAlign = TextAlign.Center,
+        modifier = modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
 }
 

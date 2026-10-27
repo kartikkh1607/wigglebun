@@ -63,6 +63,15 @@ class BreakRoutinesTest {
     }
 
     @Test
+    fun safetyNoteOnlyForBreaksThatMoveTheBody() {
+        val withNote = BreakType.entries.filter { sessionUiState(it, null, timerFor(it), 0, null).showSafetyNote }
+        assertEquals(
+            setOf(BreakType.STAND_UP, BreakType.WALK, BreakType.NECK, BreakType.SHOULDERS, BreakType.WRIST),
+            withNote.toSet(),
+        )
+    }
+
+    @Test
     fun walkPosesLoopMarchingInPlace() {
         val timer = timerFor(BreakType.WALK)
         val poses = listOf(0L, 1_200L, 2_400L, 3_600L).map { sessionUiState(BreakType.WALK, null, timer, it, null).pose }

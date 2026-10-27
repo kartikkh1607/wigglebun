@@ -75,7 +75,11 @@ internal fun DrawScope.drawPet(
 
             val breath = motion.breath
             withTransform({
-                rotate(leanDeg + poseRotation, spec.pivot)
+                // Mood lean tips the whole body over the feet; a pose rotation (neck stretch)
+                // turns only the upper body about the lower torso, as in neck_stretch_frames.svg.
+                rotate(leanDeg, spec.pivot)
+                // Skipped at 0: an identity rotate about another pivot still shifts anti-aliasing.
+                if (poseRotation != 0f) rotate(poseRotation, spec.torsoPivot)
                 translate(0f, poseLift - motion.bobAmplitude * breath)
                 scale(poseScaleX, poseScaleY * (1f + motion.breathAmplitude * breath), spec.pivot)
             }) {

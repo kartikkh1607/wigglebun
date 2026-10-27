@@ -24,6 +24,12 @@ fun BreakType.sessionSteps(): List<SessionStep> = routines.getValue(this)
 /** Stretch (full energy, pose frames take over, CLAUDE.md §5.2); drinking water is a happy idle. */
 val BreakType.sessionMood: Mood get() = if (this == BreakType.WATER) Mood.HAPPY else Mood.STRETCH
 
+/** "Move gently. Stop if anything hurts." is for breaks that move the body, not eyes rest or water. */
+val BreakType.hasSafetyNote: Boolean get() = when (this) {
+    BreakType.STAND_UP, BreakType.WALK, BreakType.NECK, BreakType.SHOULDERS, BreakType.WRIST -> true
+    BreakType.EYES, BreakType.WATER -> false
+}
+
 private val march = listOf(Poses.MarchA, Poses.MarchB, Poses.MarchC, Poses.MarchB)
 private val shoulderRoll = listOf(Poses.ShouldersNeutral, Poses.ShouldersUp, Poses.ShouldersBack, Poses.ShouldersDown)
 

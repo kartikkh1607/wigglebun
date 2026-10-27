@@ -26,8 +26,8 @@ data class BreakSessionUiState(
     /** Set once Done has been recorded: the celebration replaces the steps. */
     val result: BreakDoneResult?,
 ) {
-    /** "Move gently. Stop if anything hurts." opens every session. */
-    val showSafetyNote: Boolean get() = stepIndex == 0
+    /** "Move gently. Stop if anything hurts." opens every session that moves the body. */
+    val showSafetyNote: Boolean get() = stepIndex == 0 && type.hasSafetyNote
 
     /** Only while the countdown runs; a paused or finished session may let the screen sleep. */
     val keepScreenOn: Boolean get() = !isPaused && !isFinished && result == null

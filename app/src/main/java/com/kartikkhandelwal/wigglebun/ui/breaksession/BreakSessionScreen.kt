@@ -1,6 +1,10 @@
 package com.kartikkhandelwal.wigglebun.ui.breaksession
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.res.stringResource
@@ -48,6 +53,10 @@ private const val CELEBRATE_MILLIS = 3_000L
 
 /** Mockup: the 210 dp pet inside the 280 dp ring. */
 private const val PET_IN_RING = 210f / 280f
+
+/** Ring and countdown opacity while paused. */
+private const val PAUSED_ALPHA = 0.4f
+private const val PAUSE_FADE_MILLIS = 200
 
 @Composable
 fun BreakSessionScreenRoute(
@@ -132,6 +141,12 @@ private fun SessionContent(
     onDone: () -> Unit,
 ) {
     val stepLabel = stringResource(R.string.session_step, state.stepIndex + 1, state.stepCount)
+    // Paused reads at a glance: ring and countdown dim, "Paused" appears under the time.
+    val timerAlpha by animateFloatAsState(
+        targetValue = if (state.isPaused) PAUSED_ALPHA else 1f,
+        animationSpec = tween(PAUSE_FADE_MILLIS, easing = FastOutSlowInEasing),
+        label = "timerAlpha",
+    )
     Column(Modifier.fillMaxSize()) {
         // Everything above the buttons; the free space collects under the card, as in the mockup.
         Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -147,6 +162,7 @@ private fun SessionContent(
                 val ring = minOf(S.RingSize, maxHeight - S.RingTop).coerceAtLeast(0.dp)
                 CountdownRing(
                     progress = state.progress,
+                    ringAlpha = timerAlpha,
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = S.RingTop).size(ring),
                 ) {
                     PetView(
@@ -158,7 +174,8 @@ private fun SessionContent(
                     )
                 }
             }
-            CountdownText(state.remainingMillis, Modifier.padding(top = S.TimerTop))
+            CountdownText(state.remainingMillis, Modifier.padding(top = S.TimerTop).alpha(timerAlpha))
+            AnimatedVisibility(visible = state.isPaused) { PausedLabel() }
             InstructionCard(
                 stepLabel = stepLabel,
                 instruction = stringResource(state.instruction),
