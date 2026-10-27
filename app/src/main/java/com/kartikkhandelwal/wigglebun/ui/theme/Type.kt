@@ -108,4 +108,16 @@ object WigglebunTextStyles {
 
     /** Focused card sub line (15 sp, 700). */
     val FocusSub = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 20.sp)
+
+    /** Break session title (Fredoka 20). */
+    val SessionTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 26.sp)
+
+    /** Break session countdown "0:11" (Fredoka 44). */
+    val Countdown = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 44.sp, lineHeight = 52.sp)
+
+    /** Session button labels shrink to at most this (from 18) rather than being cut off. */
+    val SessionButtonMinFontSize = 13.sp
+
+    /** Break session instruction (Nunito 18, 700, line height 1.45). */
+    val Instruction = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 26.sp)
 }

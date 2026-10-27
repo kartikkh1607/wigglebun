@@ -6,16 +6,16 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.SnoozeResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** What the Home break cards and focused card do (kept out of the ViewModel so it's testable). */
+/**
+ * What the Home focused card's Skip and Snooze do (kept out of the ViewModel so it's testable).
+ * Done opens the break session, which completes through [RecordBreakDone].
+ */
 @Singleton
 class BreakActions @Inject constructor(
     private val sitRepository: SitRepository,
     private val breakRepository: BreakRepository,
     private val clock: AppClock,
 ) {
-    /** The break was done: timer reset, celebrate, BreakLog (same as the notification's Done). */
-    suspend fun done(type: BreakType) = sitRepository.done(type)
-
     /**
      * Skip from the focused card. When the reminder is due it is the same as the notification's
      * Skip (timer reset, no reward). Before that, only the break is marked skipped for today: the

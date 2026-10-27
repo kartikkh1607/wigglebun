@@ -297,7 +297,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 | M5 | Home screen (scene, timer pill, break cards, focused overlay) | Matches approved mockup |
 | M6 | Break session screen + rewards + streak | Completing a break updates pet, coins, streak |
 | M7 | Glance widget (small + medium) | Widget reflects mood within 15 min and instantly after a break |
-| M8 | Collection + unlock with sparks | Can unlock and switch pets |
+| M8 | Collection + unlock with sparks; Pet profile tab (name, streak card, total breaks, weekly chart) | Can unlock and switch pets; profile shows the streak, total breaks and this week's chart |
 | M9 | Onboarding (wake-up, naming, settings) + just-in-time permission cards | Fresh install flows end to end |
 | M10 | RevenueCat + paywall + restore + trial-end reminder | Test purchases work with license testers; entitlement survives offline restart |
 | M11 | Polish, accessibility (TalkBack labels, contrast), privacy policy, store assets | Ready for closed testing |
@@ -310,3 +310,4 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 - ~~Final colour palette and font~~ Decided: see section 11
 - Prices and trial length
 - Which 3 pets ship in v1
+- Streak milestone bonuses (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks are placeholders in `domain/rewards/RewardRules.kt`)

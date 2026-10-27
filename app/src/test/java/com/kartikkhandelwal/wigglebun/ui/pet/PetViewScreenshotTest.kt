@@ -57,6 +57,15 @@ class PetViewScreenshotTest {
         composeRule.onRoot().captureRoboImage("pet_all_moods.png")
     }
 
+    /** Break-session poses (M6), to compare with the three frame SVGs. */
+    @Test
+    fun allPoses() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalInspectionMode provides true) { PetAllPosesPreview() }
+        }
+        composeRule.onRoot().captureRoboImage("pet_all_poses.png")
+    }
+
     /** One live frame mid-hop with confetti flying, to sanity-check the animation drawing. */
     @Test
     fun celebrateAnimatedFrame() {

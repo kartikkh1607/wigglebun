@@ -2,9 +2,11 @@ package com.kartikkhandelwal.wigglebun.data
 
 import android.app.AlarmManager
 import android.content.Context
+import android.os.SystemClock
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
+import com.kartikkhandelwal.wigglebun.data.time.ElapsedClock
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
 import dagger.Module
 import dagger.Provides
@@ -34,6 +36,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSittingEngine(clock: AppClock): SittingEngine = SittingEngine(clock)
+
+    // elapsedRealtime includes deep sleep, so a pocketed 2-min walk keeps counting.
+    @Provides
+    fun provideElapsedClock(): ElapsedClock = ElapsedClock { SystemClock.elapsedRealtime() }
 
     @Provides
     fun provideAlarmManager(@ApplicationContext context: Context): AlarmManager = context.getSystemService()!!

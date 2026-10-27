@@ -3,6 +3,7 @@ package com.kartikkhandelwal.wigglebun.ui.navigation
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,6 +17,12 @@ data object PetRoute
 
 @Serializable
 data object SettingsRoute
+
+/** Full-screen guided break (no tab bar). [type] is a BreakType name. */
+@Serializable
+data class BreakSessionRoute(val type: String) {
+    val breakType: BreakType get() = BreakType.entries.firstOrNull { it.name == type } ?: BreakType.STAND_UP
+}
 
 /** The four bottom tabs, in display order. */
 enum class TopLevelTab(

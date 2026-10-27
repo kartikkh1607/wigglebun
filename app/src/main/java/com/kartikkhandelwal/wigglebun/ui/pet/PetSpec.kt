@@ -36,6 +36,10 @@ data class PetSpec(
     val feet: List<OvalSpec>,
     val armsSide: List<OvalSpec>,
     val armsUp: List<OvalSpec>,
+    /** Break-session arm layers (both arms per pose); a missing pose falls back to [armsSide]. */
+    val poseArms: Map<ArmPose, List<OvalSpec>>,
+    /** Break-session feet layers; a missing pose falls back to [feet]. */
+    val poseFeet: Map<FeetPose, List<OvalSpec>>,
     val earsInner: List<OvalSpec>,
     val cheeks: List<OvalSpec>,
 

@@ -111,4 +111,43 @@ object Dimens {
         /** Short screens / large fonts: top and bottom margins shrink to this before anything scrolls. */
         val OverlayMinMargin = 24.dp
     }
+
+    /** Break session + celebration, measured from design/mockups_source/BreakSession.dc.html. */
+    object BreakSession {
+        val TopPadding = 16.dp
+        val CloseSize = 48.dp
+        val CloseEdge = 4.dp
+        val CloseIcon = 20.dp
+        val SegmentsTop = 14.dp
+        val SegmentsHorizontal = 24.dp
+        val SegmentGap = 6.dp
+        val SegmentHeight = 6.dp
+        val RingTop = 34.dp
+        val RingSize = 280.dp
+        val RingStroke = 12.dp
+        val TimerTop = 14.dp
+        val CardTop = 14.dp
+        val CardHorizontal = 20.dp
+        val CardPaddingVertical = 18.dp
+        val CardPaddingHorizontal = 20.dp
+        val CardEdge = 4.dp
+        val SafetyTop = 10.dp
+        val ButtonsTop = 16.dp
+        val ButtonsHorizontal = 20.dp
+        val ButtonsBottom = 34.dp
+        val ButtonsGap = 12.dp
+        val ButtonHeight = 56.dp
+        val ButtonPaddingHorizontal = 12.dp
+
+        val CelebratePetSize = 210.dp
+        val CelebrateGap = 10.dp
+        val BadgePaddingStart = 14.dp
+        val BadgePaddingEnd = 18.dp
+        val BadgePaddingVertical = 8.dp
+        val BadgeGap = 6.dp
+        val BadgeIcon = 22.dp
+        val BadgeEdge = 4.dp
+        val StreakCardTop = 8.dp
+        val StreakCardPadding = 16.dp
+    }
 }

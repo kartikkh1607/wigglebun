@@ -20,4 +20,7 @@ object DatabaseModule {
 
     @Provides
     fun provideBreakLogDao(database: AppDatabase): BreakLogDao = database.breakLogDao()
+
+    @Provides
+    fun provideSparkLedgerDao(database: AppDatabase): SparkLedgerDao = database.sparkLedgerDao()
 }

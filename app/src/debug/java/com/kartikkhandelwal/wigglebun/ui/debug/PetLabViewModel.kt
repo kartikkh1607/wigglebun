@@ -7,6 +7,7 @@ import com.kartikkhandelwal.wigglebun.activity.StepCounter
 import com.kartikkhandelwal.wigglebun.activity.StepReading
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
+import com.kartikkhandelwal.wigglebun.data.repo.RecordBreakDone
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
@@ -97,6 +98,7 @@ private data class LabControls(val manual: ManualPet, val followEngine: Boolean,
 @HiltViewModel
 class PetLabViewModel @Inject constructor(
     private val sitRepository: SitRepository,
+    private val recordBreakDone: RecordBreakDone,
     private val settingsRepository: SettingsRepository,
     private val clock: AppClock,
     private val notifier: ReminderNotifier,
@@ -186,7 +188,8 @@ class PetLabViewModel @Inject constructor(
 
     // --- Engine ---
 
-    fun done() = viewModelScope.launch { sitRepository.done(suggestedBreak()) }
+    // Same path as the notification's Done, so sparks and the streak behave like the real app.
+    fun done() = viewModelScope.launch { recordBreakDone(suggestedBreak()) }
 
     fun snooze() = viewModelScope.launch { sitRepository.snooze() }
 

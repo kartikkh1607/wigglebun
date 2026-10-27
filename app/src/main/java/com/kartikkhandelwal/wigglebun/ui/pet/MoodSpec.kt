@@ -9,18 +9,21 @@ import com.kartikkhandelwal.wigglebun.domain.model.Mood
  * Face shapes from design/pet_moods/bun_<mood>.svg, rewritten as SVG path data relative to
  * each eye centre (eyes) or to [PetSpec.mouthAnchor] (mouths), so every pet can reuse them.
  */
-enum class EyeShape(val pathData: String?) {
+enum class EyeShape(val pathData: String?, val mirrorRight: Boolean = false) {
     /** Filled dots, radius [PetSpec.eyeDotRadius]. The only shape that blinks. */
     Dots(null),
 
     /** Flat lines: tired, stiff. */
     Half("M-6 0 L6 0"),
 
-    /** Curved down: sleeping. */
+    /** Curved down: sleeping, neck stretch. */
     Closed("M-6 -2 Q0 4 6 -2"),
 
     /** ^ ^ : stretch, celebrate. */
     Happy("M-6 2 Q0 -6 6 2"),
+
+    /** > < : shoulder shrug (more_stretch_frames.svg). The right eye is the mirror image. */
+    Squeeze("M-6 -3 L5 1 L-6 4", mirrorRight = true),
 }
 
 enum class MouthShape(val pathData: String, val filled: Boolean) {
@@ -31,7 +34,8 @@ enum class MouthShape(val pathData: String, val filled: Boolean) {
     Open("M-8 -3 Q0 11 8 -3 Z", filled = true),
 }
 
-enum class ArmPose { Side, Up }
+/** Side and Up are the mood arms; the rest are break-session poses ([PoseSpec]). */
+enum class ArmPose { Side, Up, Lap, Shrug, RollBack, RollDown, ReachRight, ReachLeft, MarchLeft, MarchRight }
 
 @Immutable
 data class MoodSpec(

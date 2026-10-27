@@ -17,7 +17,10 @@ data class BreakLogEntity(
     val type: BreakType,
     /** Epoch millis (UTC). */
     val completedAt: Long,
-    /** Sparks earned; 0 for skipped. */
+    /**
+     * The type's listed reward; 0 for skipped. What was actually paid (repeats pay nothing)
+     * lives in spark_ledger.
+     */
     val reward: Int,
     val outcome: BreakOutcome,
 )
@@ -35,4 +38,10 @@ interface BreakLogDao {
 
     @Query("SELECT COUNT(*) FROM break_log WHERE outcome = 'DONE' AND completedAt >= :fromEpochMillis")
     suspend fun countDoneSince(fromEpochMillis: Long): Int
+
+    /** Every completed break (type + time), for the streak. A few thousand rows per year at most. */
+    @Query("SELECT type, completedAt FROM break_log WHERE outcome = 'DONE' ORDER BY completedAt")
+    suspend fun doneBreaks(): List<DoneBreakRow>
 }
+
+data class DoneBreakRow(val type: BreakType, val completedAt: Long)

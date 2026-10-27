@@ -65,3 +65,11 @@ val Scrim = Color(0xB8212030)
 val ActionEdge = Color(0xFFCFC6BA)
 val CloseBorder = Color(0xFF8F8CA8)
 val MovementChipText = Color(0xFF2B7A57)
+
+// Break session (BreakSession.dc.html)
+val SessionAccent = Color(0xFF4E8FD9)
+val SessionTrack = Color(0xFFD5E5F7)
+val SessionEdge = Color(0xFFCBDDF1)
+val SessionSegmentIdle = Color(0xFFCFE0F3)
+/** "Step 2 of 4" and the safety line: 5.6:1 on BreakSky. */
+val SessionMuted = Color(0xFF5B6577)

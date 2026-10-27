@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kartikkhandelwal.wigglebun.ui.breaksession.BreakSessionScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.collection.CollectionScreen
 import com.kartikkhandelwal.wigglebun.ui.components.TabBarItem
 import com.kartikkhandelwal.wigglebun.ui.debug.DebugHomeEntry
@@ -37,9 +38,12 @@ fun WigglebunNavHost(
     homeContent: @Composable (HomeNavigation) -> Unit = { HomeScreenRoute(it) },
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentTab = TopLevelTab.entries.firstOrNull { tab ->
+    val selectedTab = TopLevelTab.entries.firstOrNull { tab ->
         backStackEntry?.destination?.hierarchy?.any { it.hasRoute(tab.route::class) } == true
-    } ?: TopLevelTab.Home
+    }
+    val currentTab = selectedTab ?: TopLevelTab.Home
+    // Full-screen destinations (break session, debug tools) hide the tab bar.
+    val showTabBar = backStackEntry == null || selectedTab != null
 
     fun openTab(tab: TopLevelTab) {
         navController.navigate(tab.route) {
@@ -54,13 +58,15 @@ fun WigglebunNavHost(
         modifier = modifier,
         containerColor = Cream,
         bottomBar = {
-            WigglebunTabBar(
-                items = TopLevelTab.entries.map {
-                    TabBarItem(stringResource(it.label), it.icon, it.tintIcon)
-                },
-                selectedIndex = currentTab.ordinal,
-                onSelect = { index -> openTab(TopLevelTab.entries[index]) },
-            )
+            if (showTabBar) {
+                WigglebunTabBar(
+                    items = TopLevelTab.entries.map {
+                        TabBarItem(stringResource(it.label), it.icon, it.tintIcon)
+                    },
+                    selectedIndex = currentTab.ordinal,
+                    onSelect = { index -> openTab(TopLevelTab.entries[index]) },
+                )
+            }
         },
     ) { innerPadding ->
         NavHost(
@@ -73,6 +79,7 @@ fun WigglebunNavHost(
                 homeContent(
                     HomeNavigation(
                         onOpenMenu = { openTab(TopLevelTab.Settings) },
+                        onStartBreak = { type -> navController.navigate(BreakSessionRoute(type.name)) { launchSingleTop = true } },
                         debugEntry = { DebugHomeEntry(navController) },
                     ),
                 )
@@ -80,6 +87,7 @@ fun WigglebunNavHost(
             composable<CollectionRoute> { CollectionScreen() }
             composable<PetRoute> { PetProfileScreen() }
             composable<SettingsRoute> { SettingsScreen() }
+            composable<BreakSessionRoute> { BreakSessionScreenRoute(onExit = { navController.popBackStack() }) }
             debugDestinations(navController)
         }
     }

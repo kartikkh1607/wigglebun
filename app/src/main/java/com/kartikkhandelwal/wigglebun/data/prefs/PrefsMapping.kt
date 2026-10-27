@@ -10,9 +10,12 @@ import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitState
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
+import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDayHistory
+import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDaysChange
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 
 /** All keys in the single app DataStore (see DataStoreModule). */
 internal object PrefsKeys {
@@ -21,6 +24,8 @@ internal object PrefsKeys {
     val WorkEndMinute = intPreferencesKey("work_end_minute")
     val IntervalMinutes = intPreferencesKey("interval_minutes")
     val PetName = stringPreferencesKey("pet_name")
+    /** "2026-10-27=MONDAY,TUESDAY;…" (see [writeWorkDayHistory]). */
+    val WorkDayHistory = stringPreferencesKey("work_day_history")
 
     val SitStartedAt = longPreferencesKey("sit_started_at")
     val SnoozeCount = intPreferencesKey("snooze_count")
@@ -53,6 +58,36 @@ internal fun MutablePreferences.writeSchedule(schedule: WorkSchedule) {
     this[PrefsKeys.WorkStartMinute] = schedule.startMinute
     this[PrefsKeys.WorkEndMinute] = schedule.endMinute
 }
+
+/** Bad entries are skipped; nothing stored means "the current work days, since forever". */
+internal fun Preferences.toWorkDayHistory(): WorkDayHistory {
+    val changes = this[PrefsKeys.WorkDayHistory].orEmpty()
+        .split(HISTORY_SEPARATOR)
+        .mapNotNull { entry ->
+            val from = entry.substringBefore(HISTORY_ASSIGN, missingDelimiterValue = "")
+            val date = runCatching { LocalDate.parse(from) }.getOrNull() ?: return@mapNotNull null
+            val days = entry.substringAfter(HISTORY_ASSIGN).split(HISTORY_DAY_SEPARATOR)
+                .mapNotNull { enumOrNull<DayOfWeek>(it) }
+                .toSet()
+            WorkDaysChange(date, days)
+        }
+        .sortedBy { it.from }
+    return WorkDayHistory(changes, toSittingSettings().schedule.days)
+}
+
+internal fun MutablePreferences.writeWorkDayHistory(history: WorkDayHistory) {
+    if (history.changes.isEmpty()) {
+        remove(PrefsKeys.WorkDayHistory)
+        return
+    }
+    this[PrefsKeys.WorkDayHistory] = history.changes.joinToString(HISTORY_SEPARATOR) { change ->
+        change.from.toString() + HISTORY_ASSIGN + change.days.sorted().joinToString(HISTORY_DAY_SEPARATOR) { it.name }
+    }
+}
+
+private const val HISTORY_SEPARATOR = ";"
+private const val HISTORY_ASSIGN = "="
+private const val HISTORY_DAY_SEPARATOR = ","
 
 internal fun Preferences.toSitState(): SitState = SitState(
     sitStartedAt = instant(PrefsKeys.SitStartedAt),

@@ -95,6 +95,74 @@
     <string name="cd_snooze">Snooze 10 minutes</string>
     <string name="cd_close">Close</string>
 
+    <!-- Break session (BreakSession.dc.html). Plain, gentle wording: no medical claims. -->
+    <string name="session_step">Step %1$d of %2$d</string>
+    <string name="session_safety">Move gently. Stop if anything hurts.</string>
+    <string name="session_pause">Pause</string>
+    <string name="session_resume">Resume</string>
+    <string name="session_next">Next step</string>
+    <string name="session_done">Done</string>
+    <!-- Countdown, e.g. 0:11 -->
+    <string name="session_countdown" translatable="false">%1$d:%2$02d</string>
+    <string name="cd_close_break">Close break</string>
+    <!-- Read by TalkBack when a new step starts: "Step 2 of 4. Slowly tilt…" -->
+    <string name="cd_step_instruction">%1$s. %2$s</string>
+    <!-- Countdown for TalkBack, e.g. "1 minute 30 seconds left" -->
+    <string name="cd_time_left">%1$s left</string>
+    <string name="cd_minutes_seconds">%1$s %2$s</string>
+    <plurals name="cd_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="cd_seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
+
+    <string name="step_stand_up_1">Sit near the front of your chair with your feet flat on the floor.</string>
+    <string name="step_stand_up_2">Lean forward a little and push up through your legs.</string>
+    <string name="step_stand_up_3">Stand up tall and let your arms hang loose.</string>
+    <string name="step_stand_up_4">Reach both arms up and take a slow breath.</string>
+    <string name="step_walk_1">Stand up and walk around, or march on the spot.</string>
+    <string name="step_walk_2">Keep going. Swing your arms and breathe easy.</string>
+    <string name="step_neck_1">Sit tall and let your shoulders drop.</string>
+    <string name="step_neck_2">Slowly tilt your head toward your right shoulder. Breathe out and hold.</string>
+    <string name="step_neck_3">Bring your head back to the middle.</string>
+    <string name="step_neck_4">Now tilt gently toward your left shoulder and hold.</string>
+    <string name="step_shoulders_1">Slowly roll your shoulders up, back and down.</string>
+    <string name="step_shoulders_2">Now roll them the other way: down, back and up.</string>
+    <string name="step_wrist_1">Hold your right arm out, palm up. Gently ease the fingers back with your other hand.</string>
+    <string name="step_wrist_2">Now the left arm, just as gently.</string>
+    <string name="step_eyes_1">Look at something far away, about 6 metres (20 feet) from you.</string>
+    <string name="step_eyes_2">Blink slowly a few times.</string>
+    <string name="step_eyes_3">Close your eyes and let them rest.</string>
+    <string name="step_water_1">Fetch a glass of water.</string>
+    <string name="step_water_2">Take a few slow sips.</string>
+
+    <!-- Celebration after a break -->
+    <string name="celebrate_title">Great job!</string>
+    <!-- %1$s is the pet's name -->
+    <string name="celebrate_subtitle">%1$s feels so much better.</string>
+    <plurals name="celebrate_sparks">
+        <item quantity="one">+%d spark</item>
+        <item quantity="other">+%d sparks</item>
+    </plurals>
+    <!-- %1$d is the streak length in work days, %2$d the bonus sparks -->
+    <plurals name="celebrate_streak_bonus">
+        <item quantity="one">%1$d-day streak bonus +%2$d</item>
+        <item quantity="other">%1$d-day streak bonus +%2$d</item>
+    </plurals>
+    <!-- %1$d breaks done today, %2$d needed for the streak -->
+    <plurals name="streak_progress">
+        <item quantity="one">%1$d of %2$d break for your streak</item>
+        <item quantity="other">%1$d of %2$d breaks for your streak</item>
+    </plurals>
+    <plurals name="streak_today_counts">
+        <item quantity="one">Today counts! %d-day streak</item>
+        <item quantity="other">Today counts! %d-day streak</item>
+    </plurals>
+    <string name="celebrate_continue">Continue</string>
+
     <!-- Content descriptions -->
     <string name="cd_done">Done</string>
     <string name="cd_mark_done">Mark as done</string>

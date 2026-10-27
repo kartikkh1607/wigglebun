@@ -60,7 +60,7 @@ class SitRepositoryTest {
     private val dataStore = inMemoryPreferencesDataStore(scope)
     private val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
     private val clock = AppClock()
-    private val settings = SettingsRepository(dataStore)
+    private val settings = SettingsRepository(dataStore, clock)
     private val store = SitStateStore(dataStore)
     private val alarms = context.getSystemService<AlarmManager>()!!
     private val permissions = MovementPermissions(context)

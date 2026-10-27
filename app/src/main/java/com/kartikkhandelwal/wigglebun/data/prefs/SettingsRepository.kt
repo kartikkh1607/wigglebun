@@ -4,7 +4,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
+import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDayHistory
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -19,6 +21,7 @@ import javax.inject.Singleton
 @Singleton
 class SettingsRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
+    private val clock: AppClock,
 ) {
     private val prefs: Flow<Preferences> = dataStore.data.catch { e ->
         // A corrupt/unreadable file must not crash the app: fall back to defaults.
@@ -30,10 +33,19 @@ class SettingsRepository @Inject constructor(
     /** Null until the user names the pet in onboarding (M9). */
     val petName: Flow<String?> = prefs.map { it[PrefsKeys.PetName] }.distinctUntilChanged()
 
+    /** Work days over time, so the streak judges past days by the days in force back then. */
+    val workDayHistory: Flow<WorkDayHistory> = prefs.map { it.toWorkDayHistory() }.distinctUntilChanged()
+
     suspend fun current(): SittingSettings = settings.first()
 
+    /** Changing the work days takes effect today and is recorded in [workDayHistory]. */
     suspend fun setSchedule(schedule: WorkSchedule) {
-        dataStore.edit { it.writeSchedule(schedule) }
+        val today = clock.instant().atZone(clock.zone).toLocalDate()
+        dataStore.edit {
+            val history = it.toWorkDayHistory().withChange(schedule.days, today)
+            it.writeSchedule(schedule)
+            it.writeWorkDayHistory(history)
+        }
     }
 
     suspend fun setInterval(minutes: Int) {

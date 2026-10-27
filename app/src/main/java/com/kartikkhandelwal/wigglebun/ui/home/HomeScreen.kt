@@ -23,8 +23,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
@@ -40,7 +43,9 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -49,6 +54,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -97,15 +103,20 @@ class HomeViewModel @Inject constructor(
         focused.value = null
     }
 
+    private val _events = Channel<HomeEvent>(Channel.BUFFERED)
+
+    /** One-shot navigation requests, collected by the route. */
+    val events: Flow<HomeEvent> = _events.receiveAsFlow()
+
     /**
-     * The single place a "Done" request lands (card check button and focused card).
-     * A break type already done today can be done again from the focused card: it resets the
-     * timer and celebrates (sparks only the first time each day, CLAUDE.md §5.4, from M6).
-     * M6: open the Break session here instead of completing straight away.
+     * The single place a "Done" request lands (card check button, focused card, stiff CTA): it
+     * opens the guided break session, which completes the break through RecordBreakDone.
+     * A type already done today can be done again: it resets the timer and celebrates, but pays
+     * sparks only the first time each day (CLAUDE.md §5.4).
      */
     fun requestDone(type: BreakType) {
         focused.value = null
-        viewModelScope.launch { actions.done(type) }
+        _events.trySend(HomeEvent.StartSession(type))
     }
 
     fun skipFocused() {
@@ -120,13 +131,18 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { actions.snooze() }
     }
 
-    /** "Take a 2-min break" (stiff CTA) opens the 2-min walk card. */
-    fun takeBreak() = openBreak(BreakType.WALK)
+    /** "Take a 2-min break" (stiff CTA) starts the 2-min walk session. */
+    fun takeBreak() = requestDone(BreakType.WALK)
+}
+
+sealed interface HomeEvent {
+    data class StartSession(val type: BreakType) : HomeEvent
 }
 
 /** Navigation and debug hooks Home needs from the app shell. */
 class HomeNavigation(
     val onOpenMenu: () -> Unit = {},
+    val onStartBreak: (BreakType) -> Unit = {},
     val debugEntry: @Composable () -> Unit = {},
 )
 
@@ -137,6 +153,17 @@ fun HomeScreenRoute(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(viewModel, lifecycleOwner) {
+        // Only while visible, so a navigation request is never handled behind another screen.
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.events.collect { event ->
+                when (event) {
+                    is HomeEvent.StartSession -> navigation.onStartBreak(event.type)
+                }
+            }
+        }
+    }
     val loaded = state
     if (loaded == null) {
         // Only the background until the real state arrives (a few ms from DataStore).

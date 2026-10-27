@@ -38,6 +38,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreen
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreenEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkEdge
+import com.kartikkhandelwal.wigglebun.ui.theme.SessionEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Sun
 import com.kartikkhandelwal.wigglebun.ui.theme.SunEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
@@ -61,6 +62,15 @@ enum class ChunkyButtonStyle(
     ),
     Done(face = DoneGreen, edge = DoneGreenEdge, content = Card, edgeHeight = Dimens.ButtonEdge),
     Highlight(face = Sun, edge = SunEdge, content = Ink, edgeHeight = Dimens.ButtonEdge),
+
+    /** Secondary on the blue break-session background (BreakSession.dc.html "Pause"). */
+    SessionSecondary(
+        face = Card,
+        edge = SessionEdge,
+        content = Ink,
+        edgeHeight = Dimens.SecondaryButtonEdge,
+        borderColor = SessionEdge,
+    ),
 }
 
 @Composable

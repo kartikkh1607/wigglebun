@@ -27,9 +27,22 @@ internal class PetGeometry(
 ) {
     /** Body + ears, unioned so the overlapping ear circles never leave winding holes. */
     val silhouette: Path = Path.combine(PathOperation.Union, parse(spec.bodyPath), ovals(spec.ears))
-    val feet: Path = ovals(spec.feet)
-    val armsSide: Path = ovals(spec.armsSide)
-    val armsUp: Path = ovals(spec.armsUp)
+    private val feetStanding: Path = ovals(spec.feet)
+    private val armsSide: Path = ovals(spec.armsSide)
+
+    /** Indexed by [ArmPose.ordinal]. */
+    val arms: List<Path> = ArmPose.entries.map { pose ->
+        when (pose) {
+            ArmPose.Side -> armsSide
+            ArmPose.Up -> ovals(spec.armsUp)
+            else -> spec.poseArms[pose]?.let(::ovals) ?: armsSide
+        }
+    }
+
+    /** Indexed by [FeetPose.ordinal]. */
+    val feet: List<Path> = FeetPose.entries.map { pose ->
+        if (pose == FeetPose.Standing) feetStanding else spec.poseFeet[pose]?.let(::ovals) ?: feetStanding
+    }
     val earsInner: Path = ovals(spec.earsInner)
     val cheeks: Path = ovals(spec.cheeks)
 
@@ -44,9 +57,10 @@ internal class PetGeometry(
     val eyeLines: List<Path?> = EyeShape.entries.map { shape ->
         shape.pathData?.let { data ->
             val one = parse(data)
+            val right = if (shape.mirrorRight) parse(data).apply { transform(Matrix().apply { scale(-1f, 1f) }) } else one
             Path().apply {
                 addPath(one, spec.eyeLeft)
-                addPath(one, spec.eyeRight)
+                addPath(right, spec.eyeRight)
             }
         }
     }

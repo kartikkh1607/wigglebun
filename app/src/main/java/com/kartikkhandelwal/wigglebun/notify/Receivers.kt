@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.kartikkhandelwal.wigglebun.data.ApplicationScope
+import com.kartikkhandelwal.wigglebun.data.repo.RecordBreakDone
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import dagger.hilt.EntryPoint
@@ -19,20 +20,26 @@ import kotlinx.coroutines.launch
 internal interface ReceiverEntryPoint {
     fun sitRepository(): SitRepository
 
+    fun recordBreakDone(): RecordBreakDone
+
     @ApplicationScope
     fun scope(): CoroutineScope
 }
 
 /**
  * Runs [block] off the main thread. goAsync() keeps the process alive until finish()
- * (the system allows ~10 s), which is plenty for a DataStore write and an alarm.
+ * (the system allows ~10 s), which is plenty for a DataStore write, a few Room rows and an alarm.
  */
-internal fun BroadcastReceiver.runAsync(context: Context, block: suspend (SitRepository) -> Unit) {
+internal fun BroadcastReceiver.runAsync(context: Context, block: suspend (SitRepository) -> Unit) =
+    runWithApp(context) { block(it.sitRepository()) }
+
+/** [runAsync] with access to everything in [ReceiverEntryPoint]. */
+internal fun BroadcastReceiver.runWithApp(context: Context, block: suspend (ReceiverEntryPoint) -> Unit) {
     val pending = goAsync()
     val entryPoint = EntryPointAccessors.fromApplication(context.applicationContext, ReceiverEntryPoint::class.java)
     entryPoint.scope().launch {
         try {
-            block(entryPoint.sitRepository())
+            block(entryPoint)
         } finally {
             pending.finish()
         }
@@ -71,11 +78,12 @@ class BreakActionReceiver : BroadcastReceiver() {
         val type = intent.getStringExtra(EXTRA_BREAK_TYPE)
             ?.let { name -> BreakType.entries.firstOrNull { it.name == name } }
             ?: BreakType.STAND_UP
-        runAsync(context) { repo ->
+        runWithApp(context) { app ->
             when (intent.action) {
-                ACTION_DONE -> repo.done(type)
-                ACTION_SNOOZE -> repo.snooze()
-                ACTION_SKIP -> repo.skip(type)
+                // Completes straight away (no session) and pays like an in-app Done, at most once.
+                ACTION_DONE -> app.recordBreakDone()(type)
+                ACTION_SNOOZE -> app.sitRepository().snooze()
+                ACTION_SKIP -> app.sitRepository().skip(type)
             }
         }
     }

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakSky
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Fredoka
@@ -39,6 +40,9 @@ import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 
 /** Energy drains/refills with a slow tween so the colour visibly moves (CLAUDE.md §5.2: ≥ 600 ms). */
 private const val ENERGY_TWEEN_MS = 700
+
+/** Poses settle with a little overshoot, well within the ~1.2 s hold (CLAUDE.md §7). */
+private const val POSE_DAMPING = 0.6f
 
 /**
  * The pet, drawn layer by layer from its [PetSpec] (CLAUDE.md §7).
@@ -49,6 +53,8 @@ private const val ENERGY_TWEEN_MS = 700
  *   design/pet_moods/bun_<mood>.svg.
  * @param sleepZSide RIGHT as in bun_sleep.svg; Home uses LEFT so the z's stay clear of the
  *   plant pot in the desk scene.
+ * @param pose break-session pose (CLAUDE.md §7); its rotation, scale and lift spring from the
+ *   previous pose, its arm / eye / feet layers swap at once. Null = the mood alone.
  */
 @Composable
 fun PetView(
@@ -59,6 +65,7 @@ fun PetView(
     name: String = stringResource(spec.defaultName),
     animated: Boolean = !LocalInspectionMode.current,
     sleepZSide: SleepZSide = SleepZSide.RIGHT,
+    pose: PoseSpec? = null,
 ) {
     val moodSpec = mood.spec()
     val energyState = animateFloatAsState(
@@ -75,6 +82,11 @@ fun PetView(
         },
         label = "petLean",
     )
+    val poseSpring = if (animated) spring<Float>(dampingRatio = POSE_DAMPING, stiffness = Spring.StiffnessLow) else snap()
+    val poseRotation = animateFloatAsState(pose?.rotationDeg ?: 0f, poseSpring, label = "poseRotation")
+    val poseScaleX = animateFloatAsState(pose?.scaleX ?: 1f, poseSpring, label = "poseScaleX")
+    val poseScaleY = animateFloatAsState(pose?.scaleY ?: 1f, poseSpring, label = "poseScaleY")
+    val poseLift = animateFloatAsState(pose?.liftY ?: 0f, poseSpring, label = "poseLift")
 
     val textMeasurer = rememberTextMeasurer()
     val geometry = remember(spec, textMeasurer) {
@@ -117,6 +129,11 @@ fun PetView(
             motion = motion,
             still = !animated,
             sleepZSide = sleepZSide,
+            pose = pose,
+            poseRotation = poseRotation.value,
+            poseScaleX = poseScaleX.value,
+            poseScaleY = poseScaleY.value,
+            poseLift = poseLift.value,
         )
     }
 }
@@ -184,6 +201,33 @@ internal fun PetAllMoodsPreview() {
                     mood = mood,
                     modifier = Modifier.size(120.dp, 126.dp),
                 )
+            }
+        }
+    }
+}
+
+/** Every break-session pose, in the order of the three frame SVGs, on the session background. */
+@Preview(name = "All poses", widthDp = 420)
+@Composable
+internal fun PetAllPosesPreview() {
+    val poses = listOf(
+        Poses.NeckCentre, Poses.NeckTiltRight, Poses.NeckCentre, Poses.NeckTiltLeft,
+        Poses.Sit, Poses.PushUp, Poses.Stand, Poses.ReachUp,
+        Poses.ShouldersNeutral, Poses.ShouldersUp, Poses.ShouldersBack, Poses.ShouldersDown,
+        Poses.Stand, Poses.WristRight, Poses.Stand, Poses.WristLeft,
+        Poses.MarchA, Poses.MarchB, Poses.MarchC, Poses.EyesClosed,
+    )
+    WigglebunTheme {
+        FlowRow(
+            modifier = Modifier
+                .background(BreakSky)
+                .padding(Dimens.ScreenPadding),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ListGap),
+            verticalArrangement = Arrangement.spacedBy(Dimens.ListGap),
+            maxItemsInEachRow = 4,
+        ) {
+            poses.forEach { pose ->
+                PetView(energy = 1f, mood = Mood.STRETCH, pose = pose, modifier = Modifier.size(88.dp, 92.dp))
             }
         }
     }

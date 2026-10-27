@@ -35,6 +35,9 @@ private const val CONFETTI_POP_SEC = 0.45f
  * the pre-built paths in [geometry].
  *
  * @param still draw the exact pose of design/pet_moods/bun_<mood>.svg (no idle motion).
+ * @param pose break-session pose: its arm / eye / feet layers replace the mood's. Its transform
+ *   comes in as [poseRotation], [poseScaleX], [poseScaleY], [poseLift] (spring-animated by the
+ *   caller); with no pose they are 0, 1, 1, 0 and the drawing is exactly the mood's.
  */
 internal fun DrawScope.drawPet(
     geometry: PetGeometry,
@@ -45,6 +48,11 @@ internal fun DrawScope.drawPet(
     motion: PetMotion,
     still: Boolean,
     sleepZSide: SleepZSide,
+    pose: PoseSpec? = null,
+    poseRotation: Float = 0f,
+    poseScaleX: Float = 1f,
+    poseScaleY: Float = 1f,
+    poseLift: Float = 0f,
 ) {
     val scale = min(size.width / spec.viewBoxWidth, size.height / spec.viewBoxHeight)
     val left = (size.width - spec.viewBoxWidth * scale) / 2f
@@ -61,16 +69,17 @@ internal fun DrawScope.drawPet(
             translate(0f, motion.jumpY)
             scale(motion.jumpScaleX, motion.jumpScaleY, Offset(spec.pivot.x, spec.groundY))
         }) {
-            // Feet stay planted: they don't lean or breathe (CLAUDE.md §7).
-            drawPath(geometry.feet, partColor(spec, spec.feetColoredAbove, fillTop))
+            // Feet stay planted: they don't lean, breathe or take the pose transform (CLAUDE.md §7).
+            val feet = pose?.feet ?: FeetPose.Standing
+            drawPath(geometry.feet[feet.ordinal], partColor(spec, spec.feetColoredAbove, fillTop))
 
             val breath = motion.breath
             withTransform({
-                rotate(leanDeg, spec.pivot)
-                translate(0f, -motion.bobAmplitude * breath)
-                scale(1f, 1f + motion.breathAmplitude * breath, spec.pivot)
+                rotate(leanDeg + poseRotation, spec.pivot)
+                translate(0f, poseLift - motion.bobAmplitude * breath)
+                scale(poseScaleX, poseScaleY * (1f + motion.breathAmplitude * breath), spec.pivot)
             }) {
-                drawBody(geometry, spec, mood, energy, fillTop, motion, still)
+                drawBody(geometry, spec, mood, pose, energy, fillTop, motion, still)
             }
         }
 
@@ -82,13 +91,18 @@ private fun DrawScope.drawBody(
     geometry: PetGeometry,
     spec: PetSpec,
     mood: MoodSpec,
+    pose: PoseSpec?,
     energy: Float,
     fillTop: Float,
     motion: PetMotion,
     still: Boolean,
 ) {
-    val arms = if (mood.arms == ArmPose.Up) geometry.armsUp else geometry.armsSide
-    drawPath(arms, partColor(spec, spec.armsColoredAbove, fillTop))
+    val armPose = pose?.arms ?: mood.arms
+    val arms = geometry.arms[armPose.ordinal]
+    // Rolled-back arms sit behind the body in the darker edge colour (more_stretch_frames.svg).
+    val armColor = if (armPose == ArmPose.RollBack) spec.bodyEdgeColor else partColor(spec, spec.armsColoredAbove, fillTop)
+    val armsInFront = pose?.armsInFront == true
+    if (!armsInFront) drawPath(arms, armColor)
 
     // Energy fill: grey silhouette, body colour from fillTop down, darker edge line at fillTop.
     // The fill rects are drawn SrcAtop inside a layer holding only the silhouette, instead of
@@ -110,10 +124,12 @@ private fun DrawScope.drawBody(
         )
     }
     drawIntoCanvas { canvas -> canvas.restore() }
+    // Hands on the lap (sit pose) are drawn over the body.
+    if (armsInFront) drawPath(arms, armColor)
 
     drawPath(geometry.earsInner, spec.earInnerColor)
 
-    val eyeLine = geometry.eyeLines[mood.eyes.ordinal]
+    val eyeLine = geometry.eyeLines[(pose?.eyes ?: mood.eyes).ordinal]
     if (eyeLine == null) {
         scale(1f, 1f - 0.9f * motion.blink, Offset(spec.pivot.x, spec.eyeLeft.y)) {
             drawPath(geometry.eyeDots, spec.featureColor)
