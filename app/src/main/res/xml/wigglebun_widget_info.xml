@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Small 2×2 by default, resizable to the 4×2 medium layout (CLAUDE.md §8).
+     updatePeriodMillis is 0: WidgetRefreshWorker and the app redraw it instead
+     (the system minimum here is 30 min and it would also run outside work hours). -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:maxResizeWidth="320dp"
+    android:maxResizeHeight="160dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:previewImage="@drawable/bun_mood_happy"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

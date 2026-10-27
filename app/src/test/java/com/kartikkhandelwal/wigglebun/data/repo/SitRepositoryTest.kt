@@ -31,6 +31,7 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.SnoozeResult
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.notify.ReminderNotifier
 import com.kartikkhandelwal.wigglebun.notify.ReminderScheduler
+import com.kartikkhandelwal.wigglebun.widget.WidgetRefresher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -66,6 +67,7 @@ class SitRepositoryTest {
     private val permissions = MovementPermissions(context)
     private val movementStore = MovementStore(dataStore)
     private val stepCounter = StepCounter(context, permissions)
+    private val widgetUpdates = CountingWidgetRefresher()
     private val repo = SitRepository(
         engine = SittingEngine(clock),
         clock = clock,
@@ -77,6 +79,7 @@ class SitRepositoryTest {
         movementStore = movementStore,
         movementTracker = MovementTracker(permissions, TransitionRegistrar(context, permissions), stepCounter, movementStore),
         stepCounter = stepCounter,
+        widget = widgetUpdates,
         scope = scope,
     )
 
@@ -259,5 +262,31 @@ class SitRepositoryTest {
         val posted = shadowOf(context.getSystemService<NotificationManager>()!!).allNotifications
         assertEquals(1, posted.size)
         assertNotNull(store.current().lastNotifiedDue)
+    }
+
+    @Test
+    fun everyStateChangeRedrawsTheWidget() = runBlocking {
+        settings.setSchedule(WorkSchedule.AlwaysOn)
+        repo.onAppStart()
+        val afterStart = widgetUpdates.count
+        assertTrue(afterStart > 0)
+
+        repo.done(BreakType.WALK)
+        assertTrue(widgetUpdates.count > afterStart)
+        val afterDone = widgetUpdates.count
+
+        repo.skip(BreakType.NECK)
+        assertTrue(widgetUpdates.count > afterDone)
+    }
+}
+
+/** Counts redraw requests instead of touching Glance. */
+internal class CountingWidgetRefresher : WidgetRefresher {
+    @Volatile
+    var count = 0
+        private set
+
+    override fun requestUpdate() {
+        count++
     }
 }

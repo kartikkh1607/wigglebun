@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.theme
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 object Dimens {
     val ScreenPadding = 16.dp
@@ -28,6 +29,23 @@ object Dimens {
     val TabIcon = 22.dp
     val TabPetIcon = 24.dp
     val TabLabelGap = 4.dp
+
+    /** Home-screen widget (Glance). No mockup: sized from the tokens above. Card radius is in widget_background.xml. */
+    object Widget {
+        val SmallMinWidth = 110.dp
+        val MediumMinWidth = 250.dp
+        val MinHeight = 110.dp
+        val Padding = 12.dp
+        val MediumPetWidth = 96.dp
+        val Gap = 10.dp
+        val ButtonHeight = 36.dp
+        val ButtonHorizontalPadding = 14.dp
+
+        // Glance can't use bundled fonts, so the system font at the app's type sizes.
+        val TitleSize = 22.sp
+        val LabelSize = 15.sp
+        val ButtonTextSize = 15.sp
+    }
 
     /** Home screen, measured from design/mockups_source/Main.dc.html and FocusCard.dc.html. */
     object Home {

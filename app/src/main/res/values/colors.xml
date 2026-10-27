@@ -4,4 +4,9 @@
     <color name="cream">#FFFFF4E8</color>
     <!-- Notification accent; matches Coral in ui/theme/Color.kt -->
     <color name="notification_accent">#FFE5603A</color>
+    <!-- Widget shape drawables (Glance can't draw shapes from Compose colours); match ui/theme/Color.kt -->
+    <color name="widget_card">#FFFFFFFF</color>
+    <color name="widget_card_edge">#FFEFE3D4</color>
+    <color name="widget_button">#FFFFC857</color>
+    <color name="widget_button_edge">#FFD69E2A</color>
 </resources>

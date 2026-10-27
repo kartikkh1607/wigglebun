@@ -93,6 +93,12 @@ dependencies {
     // Activity Recognition Transition API (CLAUDE.md §3).
     implementation(libs.play.services.location)
 
+    // Home-screen widget (CLAUDE.md §8) and its 15-minute refresh.
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.preview)
+    implementation(libs.androidx.work.runtime.ktx)
+    debugImplementation(libs.androidx.glance.appwidget.preview)
+
     testImplementation(libs.junit)
     testImplementation(libs.androidx.junit)
     testImplementation(libs.robolectric)

@@ -17,6 +17,7 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.SnoozeResult
 import com.kartikkhandelwal.wigglebun.notify.ReminderNotifier
 import com.kartikkhandelwal.wigglebun.notify.ReminderScheduler
+import com.kartikkhandelwal.wigglebun.widget.WidgetRefresher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -38,7 +39,7 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Owns the sit timer: runs the [SittingEngine] over the persisted state and settings,
  * applies Done / Snooze / Skip and movement, writes the BreakLog, posts reminders and keeps
- * the alarm and movement tracking in step with work hours.
+ * the alarm, movement tracking and home-screen widget in step with work hours.
  */
 @Singleton
 class SitRepository @Inject constructor(
@@ -52,6 +53,7 @@ class SitRepository @Inject constructor(
     private val movementStore: MovementStore,
     private val movementTracker: MovementTracker,
     private val stepCounter: StepCounter,
+    private val widget: WidgetRefresher,
     @ApplicationScope private val scope: CoroutineScope,
 ) {
     // UI buttons, notification actions and movement events can all arrive at once.
@@ -235,8 +237,10 @@ class SitRepository @Inject constructor(
         movementStore.setBaseline(stepCounter.readTotal()?.let(stepCounter::baselineNow))
     }
 
+    /** Runs after every change to the sit state, so it also redraws the widget. */
     private fun armAlarm(state: SitState, settings: SittingSettings) {
         scheduler.schedule(engine.status(state, settings).nextWakeAt)
+        widget.requestUpdate()
     }
 
     private companion object {

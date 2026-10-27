@@ -165,6 +165,22 @@
     </plurals>
     <string name="celebrate_continue">Continue</string>
 
+    <!-- Home-screen widget -->
+    <string name="widget_label">Wigglebun</string>
+    <string name="widget_description">See how your pet is doing and take a Bun Break.</string>
+    <string name="widget_since_break">since last break</string>
+    <string name="widget_take_break">Take a break</string>
+    <string name="widget_sleeping_short">Zzz</string>
+    <!-- e.g. "Bun is asleep" -->
+    <string name="widget_asleep">%1$s is asleep</string>
+    <string name="widget_asleep_detail">Outside work hours</string>
+    <!-- e.g. "Bun, tired" -->
+    <string name="widget_cd_pet">%1$s, %2$s</string>
+    <string name="widget_mood_happy">happy</string>
+    <string name="widget_mood_tired">tired</string>
+    <string name="widget_mood_stiff">getting stiff</string>
+    <string name="widget_mood_sleeping">sleeping</string>
+
     <!-- Content descriptions -->
     <string name="cd_done">Done</string>
     <string name="cd_mark_done">Mark as done</string>

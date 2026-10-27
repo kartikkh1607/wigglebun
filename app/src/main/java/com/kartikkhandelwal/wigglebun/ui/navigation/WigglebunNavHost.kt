@@ -3,6 +3,7 @@ package com.kartikkhandelwal.wigglebun.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -15,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.ui.breaksession.BreakSessionScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.collection.CollectionScreen
 import com.kartikkhandelwal.wigglebun.ui.components.TabBarItem
@@ -36,6 +38,9 @@ fun WigglebunNavHost(
     navController: NavHostController = rememberNavController(),
     /** Overridable so previews/screenshot tests can show a static, Hilt-free Home. */
     homeContent: @Composable (HomeNavigation) -> Unit = { HomeScreenRoute(it) },
+    /** A break to open straight away (from the widget); [onStartBreakHandled] clears it. */
+    startBreak: BreakType? = null,
+    onStartBreakHandled: () -> Unit = {},
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val selectedTab = TopLevelTab.entries.firstOrNull { tab ->
@@ -51,6 +56,15 @@ fun WigglebunNavHost(
             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
             launchSingleTop = true
             restoreState = true
+        }
+    }
+
+    fun openBreak(type: BreakType) = navController.navigate(BreakSessionRoute(type.name)) { launchSingleTop = true }
+
+    LaunchedEffect(startBreak) {
+        if (startBreak != null) {
+            openBreak(startBreak)
+            onStartBreakHandled()
         }
     }
 
@@ -79,7 +93,7 @@ fun WigglebunNavHost(
                 homeContent(
                     HomeNavigation(
                         onOpenMenu = { openTab(TopLevelTab.Settings) },
-                        onStartBreak = { type -> navController.navigate(BreakSessionRoute(type.name)) { launchSingleTop = true } },
+                        onStartBreak = ::openBreak,
                         debugEntry = { DebugHomeEntry(navController) },
                     ),
                 )
