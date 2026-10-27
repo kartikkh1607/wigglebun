@@ -171,8 +171,7 @@
     <string name="widget_since_break">since last break</string>
     <string name="widget_take_break">Take a break</string>
     <string name="widget_sleeping_short">Zzz</string>
-    <!-- e.g. "Bun is asleep" -->
-    <string name="widget_asleep">%1$s is asleep</string>
+    <string name="widget_sleeping_title">Sleeping</string>
     <string name="widget_asleep_detail">Outside work hours</string>
     <!-- e.g. "Bun, tired" -->
     <string name="widget_cd_pet">%1$s, %2$s</string>

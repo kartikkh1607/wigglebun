@@ -38,13 +38,15 @@ object Dimens {
         val Padding = 12.dp
         val MediumPetWidth = 96.dp
         val Gap = 10.dp
-        val ButtonHeight = 36.dp
+        // Medium text column must fit 110dp minus padding: title + label + gap + button.
+        val ColumnGap = 6.dp
+        val ButtonHeight = 32.dp
         val ButtonHorizontalPadding = 14.dp
 
         // Glance can't use bundled fonts, so the system font at the app's type sizes.
-        val TitleSize = 22.sp
-        val LabelSize = 15.sp
-        val ButtonTextSize = 15.sp
+        val TitleSize = 20.sp
+        val LabelSize = 14.sp
+        val ButtonTextSize = 14.sp
     }
 
     /** Home screen, measured from design/mockups_source/Main.dc.html and FocusCard.dc.html. */
