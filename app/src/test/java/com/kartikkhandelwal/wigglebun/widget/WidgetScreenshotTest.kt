@@ -2,8 +2,9 @@ package com.kartikkhandelwal.wigglebun.widget
 
 import android.app.Application
 import android.content.Context
-import android.view.View
+import android.os.Looper
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
@@ -13,6 +14,8 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import kotlin.math.roundToInt
@@ -37,13 +40,12 @@ class WidgetScreenshotTest {
         val density = context.resources.displayMetrics.density
         val width = (size.width.value * density).roundToInt()
         val height = (size.height.value * density).roundToInt()
-        val host = FrameLayout(context)
-        host.addView(remoteViews.apply(context, host), FrameLayout.LayoutParams(width, height))
-        host.measure(
-            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
-        )
-        host.layout(0, 0, width, height)
+        // Roborazzi captures views inside an Activity window, like a launcher hosting the widget.
+        val activity = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
+        val host = FrameLayout(activity)
+        host.addView(remoteViews.apply(activity, host), FrameLayout.LayoutParams(width, height))
+        activity.setContentView(host, FrameLayout.LayoutParams(width, height))
+        shadowOf(Looper.getMainLooper()).idle()
         host.captureRoboImage("widget_$name.png")
     }
 

@@ -84,16 +84,12 @@ private fun MediumContent(state: WidgetUiState) {
         Spacer(GlanceModifier.width(Dimens.Widget.Gap))
         Column(modifier = GlanceModifier.defaultWeight(), verticalAlignment = Alignment.CenterVertically) {
             if (state.isSleeping) {
-                Text(
-                    text = context.getString(R.string.widget_asleep, state.petName),
-                    style = titleStyle(),
-                    maxLines = 2,
-                )
+                Text(text = context.getString(R.string.widget_sleeping_title), style = titleStyle(), maxLines = 1)
                 Text(text = context.getString(R.string.widget_asleep_detail), style = labelStyle(InkMuted), maxLines = 2)
             } else {
                 Text(text = timeText(context, state), style = titleStyle(), maxLines = 1)
                 Text(text = context.getString(R.string.widget_since_break), style = labelStyle(InkMuted), maxLines = 1)
-                Spacer(GlanceModifier.height(Dimens.Widget.Gap))
+                Spacer(GlanceModifier.height(Dimens.Widget.ColumnGap))
                 BreakButton(state.suggestedBreak)
             }
         }
