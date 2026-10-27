@@ -26,6 +26,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Wigglebun"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -45,6 +46,18 @@
         <receiver
             android:name=".activity.MovementReceiver"
             android:exported="false" />
+        <!-- Home-screen widget (Glance). Exported so the launcher's AppWidgetManager can reach it. -->
+        <receiver
+            android:name=".widget.WigglebunWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/wigglebun_widget_info" />
+        </receiver>
         <!-- Exported so the system can deliver these; they are protected broadcasts that
              only the system can send, so other apps can't trigger it. -->
         <receiver

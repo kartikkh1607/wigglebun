@@ -49,6 +49,7 @@ internal class TestDataLayer(context: Application) : AutoCloseable {
     private val permissions = MovementPermissions(context)
     private val stepCounter = StepCounter(context, permissions)
     private val movementStore = MovementStore(dataStore)
+    val widgetUpdates = CountingWidgetRefresher()
     val sitRepository = SitRepository(
         engine = SittingEngine(clock),
         clock = clock,
@@ -60,6 +61,7 @@ internal class TestDataLayer(context: Application) : AutoCloseable {
         movementStore = movementStore,
         movementTracker = MovementTracker(permissions, TransitionRegistrar(context, permissions), stepCounter, movementStore),
         stepCounter = stepCounter,
+        widget = widgetUpdates,
         scope = scope,
     )
     val recordBreakDone = RecordBreakDone(sitRepository, breaks, wallet, settings, clock)
