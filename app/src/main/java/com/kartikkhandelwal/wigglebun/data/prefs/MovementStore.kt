@@ -13,6 +13,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
@@ -35,18 +36,24 @@ data class MovementInfo(
         get() = log.firstOrNull()?.let { latest -> if (latest.entered) latest.activity else null }
 }
 
-/** Movement detection settings and diagnostics (same single DataStore). */
+/**
+ * Movement detection. The on/off switch is a user setting (backed up with the other settings);
+ * everything else is bookkeeping for this phone's sensors (boot count, elapsed-realtime
+ * watermark, step baseline, movement log) and lives in [deviceStore], which is excluded from
+ * backup: restored on another phone it would be wrong, and the log is activity data.
+ */
 @Singleton
 class MovementStore @Inject constructor(
-    private val dataStore: DataStore<Preferences>,
+    private val settingsStore: DataStore<Preferences>,
+    @DeviceLocal private val dataStore: DataStore<Preferences>,
 ) {
-    val info: Flow<MovementInfo> = dataStore.data
-        .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
-        .map { it.toMovementInfo() }
+    val info: Flow<MovementInfo> = combine(settingsStore.data.orEmpty(), dataStore.data.orEmpty()) { settings, device ->
+        device.toMovementInfo().copy(enabled = settings[Keys.Enabled] ?: true)
+    }
 
     suspend fun current(): MovementInfo = info.first()
 
-    suspend fun setEnabled(enabled: Boolean) = dataStore.edit { it[Keys.Enabled] = enabled }
+    suspend fun setEnabled(enabled: Boolean) = settingsStore.edit { it[Keys.Enabled] = enabled }
 
     suspend fun setRegistered(registered: Boolean) = dataStore.edit { it[Keys.Registered] = registered }
 
@@ -91,8 +98,10 @@ class MovementStore @Inject constructor(
         this[Keys.Log] = log.joinToString("\n") { "${it.at.toEpochMilli()},${it.activity.name},${if (it.entered) 1 else 0}" }
     }
 
+    private fun Flow<Preferences>.orEmpty() = catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
+
+    /** [MovementInfo.enabled] comes from the settings store, see [info]. */
     private fun Preferences.toMovementInfo() = MovementInfo(
-        enabled = this[Keys.Enabled] ?: true,
         registered = this[Keys.Registered] ?: false,
         baseline = this[Keys.BaselineSteps]?.let { StepBaseline(it, this[Keys.BaselineBoot] ?: -1) },
         log = this[Keys.Log].orEmpty().lineSequence().mapNotNull(::parseLogLine).toList(),
@@ -106,7 +115,7 @@ class MovementStore @Inject constructor(
         return MovementTransition(activity, entered = parts[2] == "1", at = Instant.ofEpochMilli(millis))
     }
 
-    private object Keys {
+    internal object Keys {
         val Enabled = booleanPreferencesKey("movement_enabled")
         val Registered = booleanPreferencesKey("movement_registered")
         val BaselineSteps = longPreferencesKey("step_baseline")
@@ -118,5 +127,10 @@ class MovementStore @Inject constructor(
 
     companion object {
         const val LOG_SIZE = 20
+
+        /** Keys that lived in the settings file before the device-local file existed. */
+        internal val MovedToDeviceStore: List<Preferences.Key<*>> = listOf(
+            Keys.Registered, Keys.BaselineSteps, Keys.BaselineBoot, Keys.Log, Keys.WatermarkNanos, Keys.WatermarkBoot,
+        )
     }
 }

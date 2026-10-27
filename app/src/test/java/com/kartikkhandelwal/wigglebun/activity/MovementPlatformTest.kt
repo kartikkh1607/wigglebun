@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -73,7 +74,7 @@ class MovementPlatformTest {
 
     @Test
     fun transitionLogKeepsNewestTwenty() = runBlocking {
-        val store = MovementStore(inMemoryPreferencesDataStore(scope))
+        val store = MovementStore(inMemoryPreferencesDataStore(scope), inMemoryPreferencesDataStore(scope))
         val base = Instant.parse("2026-10-26T05:00:00Z")
         repeat(25) { i ->
             store.appendLog(listOf(MovementTransition(MovementActivity.WALKING, entered = i % 2 == 0, at = base.plusSeconds(i * 60L))))
@@ -82,5 +83,20 @@ class MovementPlatformTest {
         assertEquals(MovementStore.LOG_SIZE, log.size)
         assertEquals(base.plusSeconds(24 * 60L), log.first().at)
         assertEquals(MovementActivity.WALKING, store.current().currentActivity) // newest (i=24) is an enter
+    }
+
+    /** The switch is a backed-up setting; the log is phone-only (excluded from backup). */
+    @Test
+    fun switchGoesToSettingsAndLogToDeviceStore() = runBlocking {
+        val settings = inMemoryPreferencesDataStore(scope)
+        val device = inMemoryPreferencesDataStore(scope)
+        val store = MovementStore(settings, device)
+        store.setEnabled(false)
+        store.appendLog(listOf(MovementTransition(MovementActivity.WALKING, entered = true, at = Instant.parse("2026-10-26T05:00:00Z"))))
+
+        assertEquals(false, store.current().enabled)
+        assertEquals(1, store.current().log.size)
+        assertEquals(1, settings.data.first().asMap().size)
+        assertEquals(1, device.data.first().asMap().size)
     }
 }

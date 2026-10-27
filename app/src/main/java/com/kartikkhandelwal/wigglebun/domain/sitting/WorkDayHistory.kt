@@ -29,6 +29,7 @@ data class WorkDayHistory(
     }
 
     companion object {
-        val SINCE_FOREVER: LocalDate = LocalDate.EPOCH
+        // Not LocalDate.EPOCH: that field only exists on API 34+ and crashes older phones.
+        val SINCE_FOREVER: LocalDate = LocalDate.of(1970, 1, 1)
     }
 }

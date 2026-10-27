@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.activity
 
 import android.util.Log
+import com.kartikkhandelwal.wigglebun.BuildConfig
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,11 +35,14 @@ class MovementTracker @Inject constructor(
         val granted = permissions.granted()
         val playServices = permissions.playServicesAvailable()
         val allowed = info.enabled && isWorkTime && granted
-        Log.i(
-            TAG,
-            "sync enabled=${info.enabled} workTime=$isWorkTime permission=$granted playServices=$playServices " +
-                "registered=${info.registered} thisProcess=$registeredInThisProcess",
-        )
+        // Debug builds only: runs on every check, and release logs shouldn't describe the user's activity.
+        if (BuildConfig.DEBUG) {
+            Log.i(
+                TAG,
+                "sync enabled=${info.enabled} workTime=$isWorkTime permission=$granted playServices=$playServices " +
+                    "registered=${info.registered} thisProcess=$registeredInThisProcess",
+            )
+        }
 
         // Step counter: best effort, only while our process lives (see StepCounter).
         if (allowed) stepCounter.startCounting() else stepCounter.stopCounting()

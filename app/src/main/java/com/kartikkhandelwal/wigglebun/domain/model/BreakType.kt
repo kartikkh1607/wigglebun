@@ -17,6 +17,9 @@ enum class BreakType(val durationMinutes: Int, val defaultReward: Int, val categ
     companion object {
         /** Rotates the suggested break so consecutive reminders vary (deterministic per minute). */
         fun suggestedFor(epochMinute: Long): BreakType = entries[Math.floorMod(epochMinute, entries.size.toLong()).toInt()]
+
+        /** Parses a stored/sent name (route arg, intent extra); null if unknown. */
+        fun fromName(name: String?): BreakType? = entries.firstOrNull { it.name == name }
     }
 }
 

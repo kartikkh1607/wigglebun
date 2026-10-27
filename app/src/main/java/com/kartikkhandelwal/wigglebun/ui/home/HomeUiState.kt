@@ -9,6 +9,7 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import kotlin.math.roundToInt
 
 /** Mood chip on the timer pill (copy and colours from Main.dc.html). */
 enum class MoodChip { GREAT, TIRED, STIFF, WALK }
@@ -82,7 +83,7 @@ fun toHomeUiState(
     } else {
         PillState.Sitting(
             minutes = status.sitMinutes,
-            progress = status.sitFraction.coerceIn(0f, 1f),
+            progress = quantize(status.sitFraction.coerceIn(0f, 1f)),
             chip = when {
                 status.isOnWalk -> MoodChip.WALK
                 status.mood == Mood.STIFF -> MoodChip.STIFF
@@ -94,7 +95,7 @@ fun toHomeUiState(
 
     return HomeUiState(
         petName = petName,
-        energy = status.energy,
+        energy = quantize(status.energy),
         mood = status.mood,
         pill = pill,
         showBreakCta = status.isWorkTime && status.mood == Mood.STIFF && !status.isOnWalk,
@@ -110,3 +111,12 @@ fun toHomeUiState(
         },
     )
 }
+
+/**
+ * The sit timer ticks every second, but energy and progress move by ~0.03% a second. Rounding to
+ * 0.5% steps keeps most ticks equal to the previous state, so the StateFlow skips them and Home
+ * isn't recomposed every second (the ≥ 600 ms energy tween hides the steps).
+ */
+internal fun quantize(fraction: Float): Float = (fraction * QUANTA).roundToInt() / QUANTA
+
+private const val QUANTA = 200f

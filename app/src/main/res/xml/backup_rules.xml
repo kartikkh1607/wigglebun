@@ -1,13 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
--->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Auto Backup for Android 11 and older (API 30-). Keep in sync with data_extraction_rules.xml.
+     Backed up: settings, pet name, sit timer (datastore/wigglebun_prefs) and the break log and
+     sparks (Room), so a new phone keeps the user's progress.
+     Not backed up: datastore/wigglebun_device, this phone's sensor bookkeeping and movement log
+     (wrong on another phone, and activity data stays on the device). -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <exclude domain="file" path="datastore/wigglebun_device.preferences_pb" />
 </full-backup-content>
