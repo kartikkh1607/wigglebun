@@ -129,6 +129,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 ### 5.4 Economy
 
 - Currency: one soft currency (working name: "sparks"). Earned only by completing breaks and streak milestones.
+- A break type earns its spark reward only the first time it is completed each day; repeat Done resets the timer and celebrates but gives no sparks.
 - Spend on: new pets (collection) in v1; outfits in v2.
 - Streak: number of work days in a row with at least N breaks (default 4).
 

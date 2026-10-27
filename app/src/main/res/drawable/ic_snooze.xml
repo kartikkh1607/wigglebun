@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Snooze action (FocusCard.dc.html). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M4,13 a8,8 0,1 0,16 0 a8,8 0,1 0,-16 0 M12,9 V13 L15,15 M4,4 L7,6 M20,4 L17,6"
+        android:strokeColor="#FF2B2A3A"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

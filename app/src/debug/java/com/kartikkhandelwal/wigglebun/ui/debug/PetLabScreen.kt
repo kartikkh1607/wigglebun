@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -115,6 +116,7 @@ private fun PetLabContent(state: PetLabState, actions: PetLabActions) {
             .fillMaxSize()
             .background(Cream)
             .verticalScroll(rememberScrollState())
+            .statusBarsPadding()
             .padding(Dimens.ScreenPadding),
         verticalArrangement = Arrangement.spacedBy(Dimens.ListGap),
         horizontalAlignment = Alignment.CenterHorizontally,

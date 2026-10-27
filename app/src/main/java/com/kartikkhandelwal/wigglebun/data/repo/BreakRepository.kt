@@ -6,6 +6,8 @@ import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,4 +24,10 @@ class BreakRepository @Inject constructor(
     }
 
     fun observeSince(from: Instant): Flow<List<BreakLogEntity>> = dao.observeSince(from.toEpochMilli())
+
+    /** Everything logged on [date] in [zone] (local midnight to midnight, DST-safe). */
+    fun observeDay(date: LocalDate, zone: ZoneId): Flow<List<BreakLogEntity>> = dao.observeBetween(
+        date.atStartOfDay(zone).toInstant().toEpochMilli(),
+        date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
+    )
 }

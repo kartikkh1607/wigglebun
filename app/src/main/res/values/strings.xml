@@ -44,14 +44,56 @@
     <string name="action_snooze">Snooze 10 min</string>
     <string name="action_skip">Skip</string>
 
-    <!-- Home (placeholder until M5) -->
+    <!-- Home -->
     <string name="home_time_since_break">Time since last break</string>
     <plurals name="home_minutes">
         <item quantity="one">%d min</item>
         <item quantity="other">%d min</item>
     </plurals>
-    <!-- %1$s is the pet's name -->
-    <string name="home_asleep">%1$s is asleep. No reminders outside work hours.</string>
+    <!-- Mood chip on the timer pill; %1$s is the pet's name -->
+    <string name="home_chip_great">%1$s feels great</string>
+    <string name="home_chip_tired">%1$s is getting tired</string>
+    <string name="home_chip_stiff">%1$s is stiff</string>
+    <string name="home_chip_walk">%1$s is out on a walk</string>
+    <!-- Outside work hours (no timer, no guilt) -->
+    <string name="home_asleep_title">%1$s is asleep</string>
+    <!-- %1$s is a time like 9:00 -->
+    <string name="home_work_starts_today">Work hours start today at %1$s</string>
+    <string name="home_work_starts_tomorrow">Work hours start tomorrow at %1$s</string>
+    <!-- %1$s is a weekday like Monday, %2$s a time -->
+    <string name="home_work_starts_on">Work hours start %1$s at %2$s</string>
+    <string name="home_no_work_hours">No work hours set</string>
+    <string name="home_take_break">Take a 2-min break</string>
+    <string name="home_breaks_title">Breaks for today</string>
+    <string name="home_breaks_done">%1$d of %2$d done</string>
+    <string name="home_break_skipped">Skipped today</string>
+    <string name="home_reward">+%1$d</string>
+
+    <!-- Focused break card -->
+    <string name="break_category_movement">Movement</string>
+    <string name="break_category_stretch">Stretch</string>
+    <string name="break_category_eyes">Eyes</string>
+    <string name="break_category_water">Water</string>
+    <!-- e.g. "Reminds you every 45 min · 9 AM–6 PM" (24-hour: "9:00–18:00") -->
+    <!-- U+00A0 keeps "·" with "min"; U+2060 (word joiner) keeps the time range together, so a
+         narrow screen wraps before the range, never inside it -->
+    <string name="focus_reminds">Reminds you every %1$d min · %2$s\u2060–\u2060%3$s</string>
+    <string name="focus_skip">Skip</string>
+    <string name="focus_done">Done</string>
+    <string name="focus_snooze">Snooze 10m</string>
+
+    <!-- Home content descriptions (TalkBack) -->
+    <string name="cd_open_menu">Open menu</string>
+    <plurals name="cd_sparks">
+        <item quantity="one">%d spark</item>
+        <item quantity="other">%d sparks</item>
+    </plurals>
+    <string name="cd_mark_break_done">Mark %1$s as done</string>
+    <string name="cd_break_done">%1$s, done</string>
+    <!-- TalkBack says "Double tap to open break options" on a break card -->
+    <string name="cd_open_break">open break options</string>
+    <string name="cd_snooze">Snooze 10 minutes</string>
+    <string name="cd_close">Close</string>
 
     <!-- Content descriptions -->
     <string name="cd_done">Done</string>

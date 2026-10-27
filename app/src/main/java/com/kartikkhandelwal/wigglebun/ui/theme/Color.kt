@@ -57,3 +57,11 @@ val TopButtonEdge = Color(0xFFE8DCCD)
 val TabBarBorder = Color(0xFFF3E9DD)
 val TabActive = Color(0xFFFDE6CF)
 val SparkEdge = Color(0xFFE5A52A)
+
+// Home (Main.dc.html, FocusCard.dc.html)
+val PetShadow = Color(0xFFE6D9C8)
+/** Focused card overlay backdrop: rgba(33, 32, 48, 0.72). */
+val Scrim = Color(0xB8212030)
+val ActionEdge = Color(0xFFCFC6BA)
+val CloseBorder = Color(0xFF8F8CA8)
+val MovementChipText = Color(0xFF2B7A57)

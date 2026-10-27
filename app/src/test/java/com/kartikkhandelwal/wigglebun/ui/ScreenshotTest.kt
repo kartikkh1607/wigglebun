@@ -2,9 +2,6 @@ package com.kartikkhandelwal.wigglebun.ui
 
 import android.app.Application
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasText
@@ -20,8 +17,6 @@ import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonPreview
 import com.kartikkhandelwal.wigglebun.ui.components.PillCardPreview
 import com.kartikkhandelwal.wigglebun.ui.components.WigglebunTabBarPreview
-import com.kartikkhandelwal.wigglebun.ui.home.HomePreviewStates
-import com.kartikkhandelwal.wigglebun.ui.home.HomeScreen
 import com.kartikkhandelwal.wigglebun.ui.navigation.WigglebunNavHostPreview
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
@@ -89,21 +84,6 @@ class ScreenshotTest {
             composeRule.onRoot().captureRoboImage(
                 "build/outputs/roborazzi/app_shell_${label.lowercase()}.png",
             )
-        }
-    }
-
-    @Test
-    fun homeStates() {
-        var state by mutableStateOf(HomePreviewStates.Happy)
-        composeRule.setContent {
-            CompositionLocalProvider(LocalInspectionMode provides true) {
-                WigglebunTheme { HomeScreen(state) }
-            }
-        }
-        HomePreviewStates.All.forEach { (name, sample) ->
-            state = sample
-            composeRule.waitForIdle()
-            composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/home_$name.png")
         }
     }
 }

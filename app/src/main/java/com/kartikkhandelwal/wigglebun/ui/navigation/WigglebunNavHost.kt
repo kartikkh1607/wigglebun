@@ -20,6 +20,7 @@ import com.kartikkhandelwal.wigglebun.ui.components.TabBarItem
 import com.kartikkhandelwal.wigglebun.ui.debug.DebugHomeEntry
 import com.kartikkhandelwal.wigglebun.ui.debug.debugDestinations
 import com.kartikkhandelwal.wigglebun.ui.components.WigglebunTabBar
+import com.kartikkhandelwal.wigglebun.ui.home.HomeNavigation
 import com.kartikkhandelwal.wigglebun.ui.home.HomePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreen
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreenRoute
@@ -33,14 +34,21 @@ fun WigglebunNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     /** Overridable so previews/screenshot tests can show a static, Hilt-free Home. */
-    homeContent: @Composable (debugEntry: @Composable () -> Unit) -> Unit = { debugEntry ->
-        HomeScreenRoute(debugEntry = debugEntry)
-    },
+    homeContent: @Composable (HomeNavigation) -> Unit = { HomeScreenRoute(it) },
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentTab = TopLevelTab.entries.firstOrNull { tab ->
         backStackEntry?.destination?.hierarchy?.any { it.hasRoute(tab.route::class) } == true
     } ?: TopLevelTab.Home
+
+    fun openTab(tab: TopLevelTab) {
+        navController.navigate(tab.route) {
+            // Standard bottom-tab behaviour: one back stack per tab, state restored on return.
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -51,23 +59,24 @@ fun WigglebunNavHost(
                     TabBarItem(stringResource(it.label), it.icon, it.tintIcon)
                 },
                 selectedIndex = currentTab.ordinal,
-                onSelect = { index ->
-                    navController.navigate(TopLevelTab.entries[index].route) {
-                        // Standard bottom-tab behaviour: one back stack per tab, state restored on return.
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
+                onSelect = { index -> openTab(TopLevelTab.entries[index]) },
             )
         },
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = HomeRoute,
-            modifier = Modifier.padding(innerPadding),
+            // Edge-to-edge: screens handle the status bar themselves (Home's scene runs under it).
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
         ) {
-            composable<HomeRoute> { homeContent { DebugHomeEntry(navController) } }
+            composable<HomeRoute> {
+                homeContent(
+                    HomeNavigation(
+                        onOpenMenu = { openTab(TopLevelTab.Settings) },
+                        debugEntry = { DebugHomeEntry(navController) },
+                    ),
+                )
+            }
             composable<CollectionRoute> { CollectionScreen() }
             composable<PetRoute> { PetProfileScreen() }
             composable<SettingsRoute> { SettingsScreen() }
@@ -80,6 +89,6 @@ fun WigglebunNavHost(
 @Composable
 internal fun WigglebunNavHostPreview() {
     WigglebunTheme {
-        WigglebunNavHost(homeContent = { HomeScreen(HomePreviewStates.Tired, debugEntry = it) })
+        WigglebunNavHost(homeContent = { HomeScreen(HomePreviewStates.Tired, debugEntry = it.debugEntry) })
     }
 }

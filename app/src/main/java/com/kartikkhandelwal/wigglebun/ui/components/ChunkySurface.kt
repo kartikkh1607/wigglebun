@@ -42,6 +42,8 @@ internal fun ChunkySurface(
     modifier: Modifier = Modifier,
     border: BorderStroke? = null,
     onClick: (() -> Unit)? = null,
+    /** What TalkBack says after "Double tap to"; null uses the default ("activate"). */
+    onClickLabel: String? = null,
     enabled: Boolean = true,
     role: Role = Role.Button,
     interactionSource: MutableInteractionSource? = null,
@@ -66,6 +68,7 @@ internal fun ChunkySurface(
             interactionSource = source,
             indication = null, // the press-down motion is the feedback
             enabled = enabled,
+            onClickLabel = onClickLabel,
             role = role,
             onClick = onClick,
         )

@@ -47,6 +47,8 @@ private const val ENERGY_TWEEN_MS = 700
  * @param animated idle breathing, blinking, lean spring, celebrate jump, z's and sweat.
  *   Off in previews and screenshot tests, which then show the exact still pose of
  *   design/pet_moods/bun_<mood>.svg.
+ * @param sleepZSide RIGHT as in bun_sleep.svg; Home uses LEFT so the z's stay clear of the
+ *   plant pot in the desk scene.
  */
 @Composable
 fun PetView(
@@ -56,6 +58,7 @@ fun PetView(
     spec: PetSpec = PetSpecs.Bun,
     name: String = stringResource(spec.defaultName),
     animated: Boolean = !LocalInspectionMode.current,
+    sleepZSide: SleepZSide = SleepZSide.RIGHT,
 ) {
     val moodSpec = mood.spec()
     val energyState = animateFloatAsState(
@@ -113,6 +116,7 @@ fun PetView(
             leanDeg = leanState.value,
             motion = motion,
             still = !animated,
+            sleepZSide = sleepZSide,
         )
     }
 }

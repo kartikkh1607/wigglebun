@@ -41,6 +41,13 @@ val WigglebunTypography = Typography(
         lineHeight = 22.sp,
     ),
     // Nunito: card title ExtraBold 17, body SemiBold 15, labels Bold 13–15
+    // Fredoka SemiBold 28: focused card title
+    headlineMedium = TextStyle(
+        fontFamily = Fredoka,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 28.sp,
+        lineHeight = 34.sp,
+    ),
     titleMedium = TextStyle(
         fontFamily = Nunito,
         fontWeight = FontWeight.ExtraBold,
@@ -52,6 +59,20 @@ val WigglebunTypography = Typography(
         fontWeight = FontWeight.SemiBold,
         fontSize = 15.sp,
         lineHeight = 21.sp,
+    ),
+    // Rewards ("+5"), overlay button labels
+    titleSmall = TextStyle(
+        fontFamily = Nunito,
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 15.sp,
+        lineHeight = 20.sp,
+    ),
+    // Break card sub line ("2 min")
+    bodySmall = TextStyle(
+        fontFamily = Nunito,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 14.sp,
+        lineHeight = 19.sp,
     ),
     bodyMedium = TextStyle(
         fontFamily = Nunito,
@@ -73,3 +94,18 @@ val WigglebunTypography = Typography(
         lineHeight = 16.sp,
     ),
 )
+
+/** Styles from the mockups that don't map onto a Material slot. */
+object WigglebunTextStyles {
+    /** Mood chip on the timer pill (13 sp, 800). */
+    val Chip = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, lineHeight = 17.sp)
+
+    /** Sparks counter (16 sp, 800). */
+    val Sparks = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, lineHeight = 20.sp)
+
+    /** "2 of 7 done" (14 sp, 700). */
+    val Count = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 14.sp, lineHeight = 19.sp)
+
+    /** Focused card sub line (15 sp, 700). */
+    val FocusSub = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 20.sp)
+}

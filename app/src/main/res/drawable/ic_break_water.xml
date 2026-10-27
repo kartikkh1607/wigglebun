@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drink water (new, same style): a glass with a water line. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M6.5,4 H17.5 L16,20 H8 Z M7.2,10 C9.5,11 11.5,9 13.5,10 C15,10.7 16,10.3 16.8,10"
+        android:strokeColor="#FF2B2A3A"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

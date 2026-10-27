@@ -23,6 +23,8 @@ private const val COLOR_BLEND_BAND = 6f
 
 /** Sleeping z's drift up and fade on this loop; sweat drips on its own. */
 private const val Z_LOOP_SEC = 2.4f
+/** The small z sits this far from the big one, both across and up (bun_sleep.svg). */
+private const val Z_STEP = 20f
 private const val SWEAT_LOOP_SEC = 1.8f
 private const val CONFETTI_POP_SEC = 0.45f
 
@@ -42,6 +44,7 @@ internal fun DrawScope.drawPet(
     leanDeg: Float,
     motion: PetMotion,
     still: Boolean,
+    sleepZSide: SleepZSide,
 ) {
     val scale = min(size.width / spec.viewBoxWidth, size.height / spec.viewBoxHeight)
     val left = (size.width - spec.viewBoxWidth * scale) / 2f
@@ -71,7 +74,7 @@ internal fun DrawScope.drawPet(
             }
         }
 
-        if (mood.sleepZ) drawSleepZs(geometry, spec, motion, still)
+        if (mood.sleepZ) drawSleepZs(geometry, spec, sleepZSide, motion, still)
     }
 }
 
@@ -137,18 +140,33 @@ private fun DrawScope.drawBody(
     }
 }
 
-private fun DrawScope.drawSleepZs(geometry: PetGeometry, spec: PetSpec, motion: PetMotion, still: Boolean) {
-    // Positions from bun_sleep.svg: big z at the anchor, small z up and to the right.
-    val x = spec.sleepZAnchor.x
-    val y = spec.sleepZAnchor.y
-    drawSleepZ(geometry.sleepZLarge, x, y, motion, still, loopOffsetSec = 0f)
-    drawSleepZ(geometry.sleepZSmall, x + 20f, y - 20f, motion, still, loopOffsetSec = Z_LOOP_SEC / 2f)
+private fun DrawScope.drawSleepZs(geometry: PetGeometry, spec: PetSpec, side: SleepZSide, motion: PetMotion, still: Boolean) {
+    val large = geometry.sleepZLarge
+    val small = geometry.sleepZSmall
+    when (side) {
+        SleepZSide.RIGHT -> {
+            // Positions from bun_sleep.svg: big z at the anchor, small z up and to the right.
+            val x = spec.sleepZAnchor.x
+            val y = spec.sleepZAnchor.y
+            drawSleepZ(large, x, y, driftX = 1f, motion, still, loopOffsetSec = 0f)
+            drawSleepZ(small, x + Z_STEP, y - Z_STEP, driftX = 1f, motion, still, loopOffsetSec = Z_LOOP_SEC / 2f)
+        }
+        SleepZSide.LEFT -> {
+            // Mirror image: the anchor is the big z's right end, small z up and to the left.
+            val x = spec.sleepZAnchorLeft.x
+            val y = spec.sleepZAnchorLeft.y
+            drawSleepZ(large, x - large.size.width, y, driftX = -1f, motion, still, loopOffsetSec = 0f)
+            drawSleepZ(small, x - Z_STEP - small.size.width, y - Z_STEP, driftX = -1f, motion, still, loopOffsetSec = Z_LOOP_SEC / 2f)
+        }
+    }
 }
 
+/** @param driftX 1 drifts right while rising, -1 left (away from the head either way). */
 private fun DrawScope.drawSleepZ(
     layout: TextLayoutResult,
     baselineX: Float,
     baselineY: Float,
+    driftX: Float,
     motion: PetMotion,
     still: Boolean,
     loopOffsetSec: Float,
@@ -159,7 +177,7 @@ private fun DrawScope.drawSleepZ(
     if (!still) {
         // Rest position (the SVG pose) is the middle of the loop.
         val t = ((motion.loopSec + loopOffsetSec) % Z_LOOP_SEC) / Z_LOOP_SEC
-        dx = 6f * (t - 0.5f)
+        dx = driftX * 6f * (t - 0.5f)
         dy = -16f * (t - 0.5f)
         alpha = sin(PI.toFloat() * t)
     }

@@ -30,6 +30,9 @@ interface BreakLogDao {
     @Query("SELECT * FROM break_log WHERE completedAt >= :fromEpochMillis ORDER BY completedAt DESC")
     fun observeSince(fromEpochMillis: Long): Flow<List<BreakLogEntity>>
 
+    @Query("SELECT * FROM break_log WHERE completedAt >= :fromEpochMillis AND completedAt < :untilEpochMillis ORDER BY completedAt")
+    fun observeBetween(fromEpochMillis: Long, untilEpochMillis: Long): Flow<List<BreakLogEntity>>
+
     @Query("SELECT COUNT(*) FROM break_log WHERE outcome = 'DONE' AND completedAt >= :fromEpochMillis")
     suspend fun countDoneSince(fromEpochMillis: Long): Int
 }

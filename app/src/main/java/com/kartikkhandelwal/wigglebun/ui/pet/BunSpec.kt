@@ -54,5 +54,6 @@ object PetSpecs {
         groundY = 202f,
         sweatAnchor = Offset(150f, 70f),
         sleepZAnchor = Offset(150f, 40f),
+        sleepZAnchorLeft = Offset(39f, 46f),
     )
 }

@@ -15,6 +15,9 @@ data class OvalSpec(
     val rotationDeg: Float = 0f,
 )
 
+/** Which side of the head the sleeping z's float on. */
+enum class SleepZSide { RIGHT, LEFT }
+
 /**
  * Everything needed to draw one pet with [PetView]. All coordinates are in the pet's SVG
  * viewBox (Bun: 0 0 200 210). Collection pets (Pip, Toast, Nimbus, ...) get their own spec;
@@ -63,7 +66,13 @@ data class PetSpec(
     /** Lowest point of the feet; squash and stretch scale about this. */
     val groundY: Float,
     val sweatAnchor: Offset,
+    /** Baseline-left of the big sleeping z; the small one floats up and to the right. */
     val sleepZAnchor: Offset,
+    /**
+     * [SleepZSide.LEFT]: baseline-right of the big z; the small one floats up and to the left.
+     * Lower and further out than a straight mirror so the z's sit on plain wall in the desk scene.
+     */
+    val sleepZAnchorLeft: Offset,
 ) {
     fun fillTop(energy: Float): Float = fillTopFull + (1f - energy.coerceIn(0f, 1f)) * fillRange
 }
