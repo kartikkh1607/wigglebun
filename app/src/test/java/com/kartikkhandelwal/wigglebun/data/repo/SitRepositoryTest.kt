@@ -48,7 +48,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 /** Repository wiring: engine + DataStore + Room + notifier + alarm, as the receivers use it. */
@@ -278,15 +281,73 @@ class SitRepositoryTest {
         repo.skip(BreakType.NECK)
         assertTrue(widgetUpdates.count > afterDone)
     }
+
+    /**
+     * M7 review: the widget's 15-minute refresh runs only during work hours. Each step is what
+     * the reminder alarm runs at that boundary (checkReminder); moving the schedule stands in
+     * for the clock moving.
+     */
+    @Test
+    fun periodicWidgetRefreshRunsOnlyDuringWorkHours() = runBlocking {
+        val zone = ZoneId.systemDefault()
+        val shadow = shadowOf(alarms)
+
+        // Before work (starts in an hour): no refresh, and the alarm is set for the start.
+        val beforeWork = sessionFromNow(startIn = 60, endIn = 120)
+        settings.setSchedule(beforeWork)
+        repo.onAppStart()
+        assertEquals(false, widgetUpdates.periodicRefresh)
+        val start = beforeWork.nextSessionAfter(Instant.now(), zone)!!.start
+        assertEquals(start.toEpochMilli(), shadow.peekNextScheduledAlarm()!!.triggerAtMs)
+
+        // The session has started (ends in 10 min, before the 45-min reminder): refresh on,
+        // and the alarm is set for the end.
+        val atWork = sessionFromNow(startIn = -60, endIn = 10)
+        settings.setSchedule(atWork)
+        repo.checkReminder()
+        assertEquals(true, widgetUpdates.periodicRefresh)
+        val end = atWork.sessionAt(Instant.now(), zone)!!.end
+        assertEquals(end.toEpochMilli(), shadow.peekNextScheduledAlarm()!!.triggerAtMs)
+
+        // The session has ended: refresh off.
+        settings.setSchedule(sessionFromNow(startIn = -120, endIn = -60))
+        repo.checkReminder()
+        assertEquals(false, widgetUpdates.periodicRefresh)
+
+        // Immediate redraws still happen outside work hours.
+        val redraws = widgetUpdates.count
+        repo.skip(BreakType.NECK)
+        assertTrue(widgetUpdates.count > redraws)
+    }
+
+    /** Every day, from [startIn] to [endIn] minutes from now in local time (wrapping past midnight). */
+    private fun sessionFromNow(startIn: Int, endIn: Int): WorkSchedule {
+        val now = LocalTime.now()
+        val minute = now.hour * 60 + now.minute
+        return WorkSchedule(
+            days = DayOfWeek.entries.toSet(),
+            startMinute = Math.floorMod(minute + startIn, WorkSchedule.MINUTES_PER_DAY),
+            endMinute = Math.floorMod(minute + endIn, WorkSchedule.MINUTES_PER_DAY),
+        )
+    }
 }
 
-/** Counts redraw requests instead of touching Glance. */
+/** Counts redraw requests and records the periodic-refresh switch, instead of touching Glance. */
 internal class CountingWidgetRefresher : WidgetRefresher {
     @Volatile
     var count = 0
         private set
 
+    /** The last [syncPeriodicRefresh] value; null until the first sync. */
+    @Volatile
+    var periodicRefresh: Boolean? = null
+        private set
+
     override fun requestUpdate() {
         count++
+    }
+
+    override suspend fun syncPeriodicRefresh(isWorkTime: Boolean) {
+        periodicRefresh = isWorkTime
     }
 }

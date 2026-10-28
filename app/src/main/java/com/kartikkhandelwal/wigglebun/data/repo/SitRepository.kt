@@ -103,14 +103,17 @@ class SitRepository @Inject constructor(
 
     /**
      * The central check, run on every alarm, boot/update, app start and action:
-     * apply the step fallback, sync movement tracking with work hours, post a due reminder,
-     * then arm the next wake-up (next reminder or work-hours boundary).
+     * apply the step fallback, sync movement tracking and the widget's periodic refresh with
+     * work hours, post a due reminder, then arm the next wake-up (next reminder or work-hours
+     * boundary, so this runs again when a session starts and when it ends).
      */
     suspend fun checkReminder() = mutex.withLock {
         val settings = settingsRepository.current()
         var state = applySteps(store.current(), settings)
 
-        val tracking = movementTracker.sync(engine.status(state, settings).isWorkTime)
+        val isWorkTime = engine.status(state, settings).isWorkTime
+        widget.syncPeriodicRefresh(isWorkTime)
+        val tracking = movementTracker.sync(isWorkTime)
         if (!tracking && (state.movingSince != null || state.activeMoving.isNotEmpty())) {
             // Not tracking any more, so an open walk will never get its exit event.
             state = store.update { engine.clearMovement(it) }

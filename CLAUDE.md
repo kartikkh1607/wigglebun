@@ -193,7 +193,7 @@ Animation:
 
 - Small (2×2): pet mood image + "32 min" since last break + tap → app.
 - Medium (4×2): pet + time + "Take a break" button (opens Break session).
-- Glance cannot run Compose animations; use one static PNG per mood per pet. Bun's are ready in `design/widget_png/bun_mood_<mood>.png` (480×504, transparent): copy them to `res/drawable-nodpi`.
+- Glance cannot run Compose animations; use one static PNG per mood per pet (480×504, transparent) in `res/drawable-nodpi`. Bun's `bun_mood_<mood>.png` are rendered from `PetView` by `WidgetPetImageTest` as Roborazzi references: `recordRoborazziDebug` rewrites them, `verifyRoborazziDebug` fails when they no longer match `PetView`. Don't copy the older `design/widget_png` exports over them.
 - Update via WorkManager every 15 min during work hours and immediately after a break/snooze.
 
 ---

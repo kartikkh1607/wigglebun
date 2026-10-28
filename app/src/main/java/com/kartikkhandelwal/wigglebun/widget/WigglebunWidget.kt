@@ -59,12 +59,15 @@ class WigglebunWidget : GlanceAppWidget() {
     }
 }
 
-/** Starts the 15-minute refresh while at least one widget is on the home screen. */
+/** Runs the 15-minute refresh while at least one widget is on the home screen (work hours only). */
 class WigglebunWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = WigglebunWidget()
 
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
+        // Scheduled without checking work hours (that needs the saved state, too slow for a
+        // receiver callback): if this is outside them, the first run sees the sleeping pet and
+        // cancels itself until the next session starts.
         WidgetRefreshWorker.schedule(context)
     }
 

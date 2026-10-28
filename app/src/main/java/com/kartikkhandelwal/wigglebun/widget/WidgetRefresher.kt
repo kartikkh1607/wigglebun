@@ -19,9 +19,16 @@ import javax.inject.Singleton
 
 private const val TAG = "Widget"
 
-/** Redraws the home-screen widget after anything that changes the pet (Done, Snooze, Skip, walks, alarms). */
-fun interface WidgetRefresher {
+/** Keeps the home-screen widget current. */
+interface WidgetRefresher {
+    /** Redraw now, after anything that changes the pet (Done, Snooze, Skip, walks, alarms). */
     fun requestUpdate()
+
+    /**
+     * Run the 15-minute refresh only during work hours. Outside them the pet sleeps and the widget
+     * shows no timer, so a periodic redraw would change nothing and only cost battery.
+     */
+    suspend fun syncPeriodicRefresh(isWorkTime: Boolean)
 }
 
 @Singleton
@@ -49,6 +56,17 @@ class GlanceWidgetRefresher @Inject constructor(
 
     override fun requestUpdate() {
         requests.trySend(Unit)
+    }
+
+    override suspend fun syncPeriodicRefresh(isWorkTime: Boolean) {
+        // A failure here must not stop the caller (SitRepository.checkReminder) arming the alarm.
+        try {
+            if (isWorkTime && hasWidgets(context)) WidgetRefreshWorker.schedule(context) else WidgetRefreshWorker.cancel(context)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "Widget refresh sync failed", e) // the next alarm or app start retries
+        }
     }
 
     companion object {

@@ -2,6 +2,8 @@
 <resources>
     <!-- Window background before Compose draws; matches Cream in ui/theme/Color.kt -->
     <color name="cream">#FFFFF4E8</color>
+    <!-- Adaptive launcher icon background; matches Cream -->
+    <color name="ic_launcher_background">#FFFFF4E8</color>
     <!-- Notification accent; matches Coral in ui/theme/Color.kt -->
     <color name="notification_accent">#FFE5603A</color>
     <!-- Widget shape drawables (Glance can't draw shapes from Compose colours); match ui/theme/Color.kt -->
