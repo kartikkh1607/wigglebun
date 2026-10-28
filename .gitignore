@@ -16,3 +16,4 @@ local.properties
 /.idea/claudeCodeEditorTabs.xml
 /.idea/deploymentTargetSelector.xml
 /.idea/appInsightsSettings.xml
+/.idea/deviceManager.xml
