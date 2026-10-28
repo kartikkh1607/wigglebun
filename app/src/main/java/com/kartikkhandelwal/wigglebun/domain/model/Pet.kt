@@ -17,6 +17,14 @@ enum class PetId(val key: String) {
 }
 
 /**
+ * Longest name the user can give their pet (M9 onboarding limits the field to it). At the default
+ * font size on a 390 dp phone, a 12-letter name fits the Home timer card's mood chip on one line
+ * ("Wigglebottom is getting tired"). Longer names, narrower phones and larger fonts still work:
+ * sentences shorten the name with "…" rather than grow (see PetNameSentence).
+ */
+const val MAX_PET_NAME_LENGTH = 12
+
+/**
  * The pet that is "with you": shown on Home, in break sessions, notifications and the widget.
  * [chosenName] is the name the user gave in onboarding (M9); it belongs to Bun, the pet they named.
  * Every other pet keeps its own name.

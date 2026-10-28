@@ -12,6 +12,7 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.ui.pet.TestPetNames
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
@@ -99,4 +100,21 @@ class CollectionScreenshotTest {
     @Test
     @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 1.3f)
     fun smallPhoneFontScale130Sheet() = capture("small_font_sheet", sheet(states.sheet(states.OneAffordable, PetId.NIMBUS)))
+
+    /**
+     * Bun named with the widest allowed name, owned but not with you: the card name and sheet title
+     * stay on one line, "Choose …" shortens only the name.
+     */
+    @Test
+    fun longNameSheet() = capture(
+        "long_name_sheet",
+        sheet(
+            toCollectionUiState(
+                owned = PetId.entries.toSet(),
+                active = ActivePet(PetId.TOAST, chosenName = TestPetNames.WIDEST),
+                sparks = 40,
+                selection = SheetSelection(PetId.BUN, SheetStep.DETAILS),
+            ),
+        ),
+    )
 }

@@ -12,6 +12,7 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.ui.pet.TestPetNames
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
@@ -127,4 +128,24 @@ class HomeScreenshotTest {
     @Test fun asleepToast() = capture("asleep_toast", withPet(HomePreviewStates.Asleep, PetId.TOAST))
 
     @Test fun asleepNimbus() = capture("asleep_nimbus", withPet(HomePreviewStates.Asleep, PetId.NIMBUS))
+
+    // ---- Long pet names (MAX_PET_NAME_LENGTH): the timer card keeps its height ----
+
+    private fun named(state: HomeUiState, name: String) = home(state.copy(pet = ActivePet(PetId.BUN, chosenName = name)))
+
+    /** A 12-letter name fits the chip whole at the default font size. */
+    @Test fun longName() = capture("long_name", named(HomePreviewStates.Tired, TestPetNames.LONG))
+
+    @Test
+    @Config(fontScale = 1.3f)
+    fun longNameFontScale130() = capture("long_name_font_1_3", named(HomePreviewStates.Tired, TestPetNames.LONG))
+
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi")
+    fun longNameSmallPhone() = capture("long_name_small_phone", named(HomePreviewStates.Tired, TestPetNames.LONG))
+
+    /** The widest 12 letters: only the name is shortened, the mood words stay. */
+    @Test fun widestName() = capture("widest_name", named(HomePreviewStates.Tired, TestPetNames.WIDEST))
+
+    @Test fun widestNameAsleep() = capture("widest_name_asleep", named(HomePreviewStates.Asleep, TestPetNames.WIDEST))
 }

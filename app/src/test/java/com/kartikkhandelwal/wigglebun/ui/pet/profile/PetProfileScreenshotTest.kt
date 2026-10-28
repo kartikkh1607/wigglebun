@@ -7,6 +7,9 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.ui.pet.TestPetNames
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
@@ -37,4 +40,10 @@ class PetProfileScreenshotTest {
     @Test
     @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 1.3f)
     fun smallPhoneFontScale130() = capture("small_font", PetProfilePreviewStates.BusyWeek)
+
+    /** The widest allowed name stays on one line. */
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 1.3f)
+    fun longNameSmallPhoneFontScale130() =
+        capture("long_name_small_font", PetProfilePreviewStates.EmptyWeek.copy(pet = ActivePet(PetId.BUN, chosenName = TestPetNames.WIDEST)))
 }

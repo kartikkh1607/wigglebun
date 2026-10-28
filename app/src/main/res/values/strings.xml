@@ -59,6 +59,9 @@
         <item quantity="one">%d min</item>
         <item quantity="other">%d min</item>
     </plurals>
+    <!-- A pet name cut short so a sentence doesn't wrap, e.g. "Wigglebo…" -->
+    <string name="pet_name_shortened">%1$s…</string>
+
     <!-- Mood chip on the timer pill; %1$s is the pet's name -->
     <string name="home_chip_great">%1$s feels great</string>
     <string name="home_chip_tired">%1$s is getting tired</string>

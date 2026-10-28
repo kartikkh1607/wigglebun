@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.collection
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
@@ -34,6 +36,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
 import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
+import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
@@ -102,7 +105,7 @@ fun PetSheetContent(
             }
             SheetStep.CONFIRM -> {
                 PetView(energy = 1f, mood = Mood.HAPPY, spec = pet.spec, name = name, modifier = Modifier.size(C.SheetSmallPetSize))
-                SheetTitle(stringResource(R.string.adopt_confirm_title, name))
+                SheetTitleSentence(R.string.adopt_confirm_title, name)
                 SheetBody(pluralStringResource(R.plurals.adopt_confirm_body, sheet.pet.price, sheet.pet.price, sparks))
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = C.SheetButtonTop),
@@ -133,8 +136,14 @@ fun PetSheetContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(C.SheetGap),
                 ) {
-                    SheetTitle(stringResource(R.string.adopted_title, name))
-                    SheetBody(stringResource(R.string.adopted_body, name))
+                    SheetTitleSentence(R.string.adopted_title, name)
+                    PetNameSentence(
+                        R.string.adopted_body,
+                        name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = InkMuted,
+                        textAlign = TextAlign.Center,
+                    )
                 }
                 ChunkyButton(
                     text = stringResource(R.string.adopted_done),
@@ -146,9 +155,23 @@ fun PetSheetContent(
     }
 }
 
+/** The pet's name alone: one line, cut with "…" if it must be. */
 @Composable
 private fun SheetTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.headlineMedium, color = Ink, textAlign = TextAlign.Center)
+    Text(
+        text,
+        style = MaterialTheme.typography.headlineMedium,
+        color = Ink,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+/** A title with the name in it ("Adopt Pip?"): only the name is ever shortened. */
+@Composable
+private fun SheetTitleSentence(@StringRes template: Int, name: String) {
+    PetNameSentence(template, name, style = MaterialTheme.typography.headlineMedium, color = Ink, textAlign = TextAlign.Center)
 }
 
 @Composable
@@ -160,7 +183,10 @@ private fun SheetBody(text: String) {
 private fun MainAction(action: SheetAction, name: String, enabled: Boolean, onChoose: () -> Unit, onAdopt: () -> Unit) {
     val modifier = Modifier.fillMaxWidth().padding(top = C.SheetButtonTop)
     when (action) {
-        SheetAction.Choose -> ChunkyButton(stringResource(R.string.sheet_choose, name), onClick = onChoose, enabled = enabled, modifier = modifier)
+        // One line in the button: a long name is shortened ("Choose Wigglebo…").
+        SheetAction.Choose -> ChunkyButton(onClick = onChoose, enabled = enabled, modifier = modifier) {
+            PetNameSentence(R.string.sheet_choose, name, maxLines = 1)
+        }
         SheetAction.WithYou -> ChunkyButton(
             text = stringResource(R.string.sheet_with_you),
             onClick = {},

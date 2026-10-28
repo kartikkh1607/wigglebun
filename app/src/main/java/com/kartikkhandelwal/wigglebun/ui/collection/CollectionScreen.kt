@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -174,7 +175,15 @@ private fun PetCard(pet: CollectionPetUi, chosenName: String?, onClick: () -> Un
             } else {
                 PetView(energy = 1f, mood = Mood.HAPPY, spec = active.spec, name = name, animated = false, modifier = Modifier.size(C.PetSize))
             }
-            Text(name, style = WigglebunTextStyles.PetCardName, color = Ink, textAlign = TextAlign.Center)
+            // One line, so a long name never makes this row of cards taller.
+            Text(
+                name,
+                style = WigglebunTextStyles.PetCardName,
+                color = Ink,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             StatusPill(pet)
         }
     }

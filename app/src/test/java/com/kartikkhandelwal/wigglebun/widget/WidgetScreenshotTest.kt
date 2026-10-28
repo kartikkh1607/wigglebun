@@ -11,6 +11,7 @@ import androidx.glance.appwidget.GlanceRemoteViews
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.kartikkhandelwal.wigglebun.ui.pet.TestPetNames
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,4 +68,23 @@ class WidgetScreenshotTest {
 
     @Test
     fun mediumToastTired() = capture("medium_toast_tired", WidgetPreviewStates.ToastTired, WigglebunWidget.MEDIUM)
+
+    // ---- A max-length pet name (MAX_PET_NAME_LENGTH). The widget only says it to TalkBack (in the
+    // pet image's description), so these guard that a long name never reaches the layout. ----
+
+    private val longName = WidgetPreviewStates.Tired.copy(petName = TestPetNames.WIDEST)
+
+    @Test
+    fun smallLongName() = capture("small_long_name", longName, WigglebunWidget.SMALL)
+
+    @Test
+    fun mediumLongName() = capture("medium_long_name", longName, WigglebunWidget.MEDIUM)
+
+    @Test
+    @Config(fontScale = 1.3f)
+    fun smallLongNameFontScale130() = capture("small_long_name_font_1_3", longName, WigglebunWidget.SMALL)
+
+    @Test
+    @Config(fontScale = 1.3f)
+    fun mediumLongNameFontScale130() = capture("medium_long_name_font_1_3", longName, WigglebunWidget.MEDIUM)
 }

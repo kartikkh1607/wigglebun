@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -113,11 +114,14 @@ fun PetProfileScreen(state: PetProfileUiState, modifier: Modifier = Modifier) {
             ) { drawOval(PetShadow) }
             PetView(energy = state.energy, mood = state.mood, spec = state.pet.spec, name = name, modifier = Modifier.size(P.PetSize))
         }
+        // The name alone: one line, cut with "…" if it must be (TalkBack reads it whole).
         Text(
             name,
             style = WigglebunTextStyles.ScreenTitle,
             color = Ink,
             textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = P.NameTop).semantics { heading() },
         )
         Row(

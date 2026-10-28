@@ -150,13 +150,13 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 1. **Splash** – logo only.
 2. **Onboarding**
-   - Wake-up moment: pet asleep as a round blob → user taps → pet stretches awake and introduces itself, asks the user's name, user names the pet.
+   - Wake-up moment: pet asleep as a round blob → user taps → pet stretches awake and introduces itself, asks the user's name, user names the pet. The name field allows at most `MAX_PET_NAME_LENGTH` (12, `domain/model/Pet.kt`) characters.
    - One question per screen: work hours, break interval. Bottom sheets for pickers. "Skip" always visible.
    - Permissions are **not** asked here (ask just-in-time, see Settings/Home cards).
    - First 1-minute stretch with the pet → celebrate → **paywall with free trial** (see 5.5).
 3. **Home** (tab 1)
    - Top half: desk scene background `design/desk_scene.jpg` (convert to WebP, put in `res/drawable-nodpi`, crop to fill ~340 dp height) with the pet standing on the floor in the centre (pet = sitting meter, see 5.2). Menu button top-left, sparks counter pill top-right.
-   - Under it: pill showing "Time since last break: 32 min" + thin progress.
+   - Under it: pill showing "Time since last break: 32 min" + thin progress. The minutes take their own width and the mood chip ("Bun is getting tired") sits at the right edge in the rest of the row.
    - "Breaks for today" list: cards with icon, title, reward, chunky check button.
    - Tapping a card opens a **focused card overlay** with three big actions: Skip · Done · Snooze.
 4. **Break session** – full-screen guided stretch with pet doing the move, step text, countdown ring, "Done" → celebrate + reward.
@@ -261,6 +261,8 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 **Chunky buttons / cards:** solid offset "edge" below (cards 3–4 dp `CardEdge`, buttons 4–5 dp in the darker shade). On press: translateY by the edge height and remove the edge (80 ms), release springs back.
 
 **Motion:** no linear easing; pop-ins with slight overshoot; Home list items stagger in (40 ms apart); energy changes tween ≥ 600 ms.
+
+**Pet names in text:** a name never changes a card's height. A sentence with the name in it ("Bun is getting tired", "Choose Bun") uses `PetNameSentence`, which shortens only the name with "…" when it would add a line ("Wigglebo… is getting tired"); the words around it still wrap at large font sizes, and TalkBack reads the whole name. A name shown alone (titles, collection cards, tab label) uses `maxLines = 1` with `TextOverflow.Ellipsis`. Screenshot tests use `TestPetNames.LONG` / `WIDEST` (12 letters).
 
 ---
 

@@ -63,6 +63,7 @@ import com.kartikkhandelwal.wigglebun.ui.components.SparksPill
 import com.kartikkhandelwal.wigglebun.ui.iconRes
 import com.kartikkhandelwal.wigglebun.ui.labelRes
 import com.kartikkhandelwal.wigglebun.ui.tint
+import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpec
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.SleepZSide
@@ -213,24 +214,28 @@ private fun SittingContent(pill: PillState.Sitting, petName: String, showBreakCt
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(H.CardGap),
             ) {
+                // The minutes take only their own width, so the chip has room for a
+                // MAX_PET_NAME_LENGTH name at the default font size.
                 Text(
                     pluralStringResource(R.plurals.home_minutes, pill.minutes, pill.minutes),
                     style = MaterialTheme.typography.displayMedium,
                     color = Ink,
-                    modifier = Modifier.weight(1f),
                 )
-            // Both sides may shrink, so long pet names and large fonts wrap instead of clipping.
-            Text(
-                text = stringResource(pill.chip.textRes(), petName),
-                style = WigglebunTextStyles.Chip,
-                color = Ink,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .clip(WigglebunShapes.Pill)
-                    .background(chipBackground)
-                    .padding(horizontal = H.ChipPaddingHorizontal, vertical = H.ChipPaddingVertical),
-            )
+                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                    // A long name is shortened rather than wrapped, so the card keeps its height;
+                    // large fonts still wrap the words.
+                    PetNameSentence(
+                        template = pill.chip.textRes(),
+                        name = petName,
+                        style = WigglebunTextStyles.Chip,
+                        color = Ink,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .clip(WigglebunShapes.Pill)
+                            .background(chipBackground)
+                            .padding(horizontal = H.ChipPaddingHorizontal, vertical = H.ChipPaddingVertical),
+                    )
+                }
             }
         }
         ProgressBar(pill.progress, barColor)
@@ -275,7 +280,7 @@ private fun AsleepContent(pill: PillState.Asleep, petName: String, today: LocalD
         modifier = Modifier.semantics(mergeDescendants = true) {},
         verticalArrangement = Arrangement.spacedBy(H.PillLabelGap),
     ) {
-        Text(stringResource(R.string.home_asleep_title, petName), style = MaterialTheme.typography.titleLarge, color = Ink)
+        PetNameSentence(R.string.home_asleep_title, petName, style = MaterialTheme.typography.titleLarge, color = Ink)
         Text(workStartsText(pill.nextStart, today), style = MaterialTheme.typography.bodyMedium, color = InkMuted)
     }
 }

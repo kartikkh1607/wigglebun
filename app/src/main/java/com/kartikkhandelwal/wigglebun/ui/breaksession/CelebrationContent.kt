@@ -28,6 +28,7 @@ import com.kartikkhandelwal.wigglebun.domain.rewards.Streak
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
+import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpec
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
@@ -76,8 +77,9 @@ internal fun CelebrationContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(stringResource(R.string.celebrate_title), style = MaterialTheme.typography.displayMedium, color = Ink, textAlign = TextAlign.Center)
-                Text(
-                    stringResource(R.string.celebrate_subtitle, petName),
+                PetNameSentence(
+                    R.string.celebrate_subtitle,
+                    petName,
                     style = MaterialTheme.typography.bodyLarge,
                     color = SessionMuted,
                     textAlign = TextAlign.Center,
