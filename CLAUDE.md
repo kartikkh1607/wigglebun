@@ -144,9 +144,9 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 - Model: **hard paywall + free trial.** The app's core loop requires an active trial or subscription.
 - Paywall appears in the **first session, right after one value moment** (pet wakes up, user names it, does the first 1-minute stretch, pet celebrates). Most trial starts happen on install day, so this first paywall is the most important screen in the app.
-- Products: yearly subscription with free trial (default, highlighted), monthly subscription, lifetime one-time. Trial length and prices decided in Play Console (consider a longer trial, e.g. 14 days).
+- Products: yearly subscription with a **7-day free trial** (default, highlighted), monthly subscription, lifetime one-time. Prices decided in Play Console. The trial length lives in code in one place, `billing/Trial.kt` (`FREE_TRIAL_DAYS`); the Play Console offer's free phase must match it.
 - In Play Console, make sure the yearly base plan has an offer with a **free phase**; in code, check the offer actually has a free trial phase before showing "Start free trial" text.
-- **Trial-end reminder:** Android does not send one. Schedule our own local notification 2 days before trial ends ("Your free trial ends on …"). Honest and reduces refunds/1-star reviews.
+- **Trial-end reminder:** Android does not send one. Schedule our own local notification 2 days before trial ends (`Trial.END_REMINDER_DAYS_BEFORE`), i.e. on day 5 of the 7 ("Your free trial ends on …"). Honest and reduces refunds/1-star reviews.
 - Paywall must show: price after trial, billing period, how to cancel (Play Store → Subscriptions), restore purchases, terms + privacy links.
 - If the user closes the paywall: show a calm "locked" home with the sleeping pet and a single "Start free trial" button. No dark patterns, no fake timers.
 - Entitlement checks go through RevenueCat (`CustomerInfo`), cached for offline use.
@@ -169,7 +169,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 4. **Break session** – full-screen guided stretch with pet doing the move, step text, countdown ring, "Done" → celebrate + reward.
 5. **Collection** (tab 2) – grid of pet silhouettes; locked ones shown as grey silhouettes with a price; tap to preview.
 6. **Pet profile** (tab 3, tab label = pet's name) – name, streak card, total breaks, weekly bar chart.
-7. **Menu / Settings** – cards: "Add the widget", "Enable notifications", "Enable movement detection" (each opens the permission flow), work hours, interval, break types toggles, Premium card ("Try 7 days free"), privacy policy, about ("Made with love in India").
+7. **Menu / Settings** – cards: "Add the widget", "Enable notifications", "Enable movement detection" (each opens the permission flow), work hours, interval, break types toggles, Premium card ("Try 7 days free", from `Trial.FREE_TRIAL_DAYS`), privacy policy, about ("Made with love in India").
 8. **Paywall** – pet illustration, 3 benefits, plan selector (yearly highlighted), "Start free trial" CTA, price after trial in plain text, how to cancel, restore purchases, terms/privacy links.
 
 **Not in v1:** friends, seasons/events, outfits, furniture, adventure map, AI coach, iOS.
@@ -320,7 +320,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 
 - ~~App name~~ Decided: Wigglebun (pending domain + trademark check by Kartik)
 - ~~Final colour palette and font~~ Decided: see section 11
-- Prices and trial length
+- Prices (~~trial length~~ decided: 7 days)
 - Which 3 pets ship in v1
 - Streak milestone bonuses (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks are placeholders in `domain/rewards/RewardRules.kt`)
 - ~~Pet prices~~ Decided: Pip 75 / Toast 175 / Nimbus 300 sparks (`domain/rewards/PetPrices.kt`)
