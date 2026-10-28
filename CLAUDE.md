@@ -185,7 +185,7 @@ Animation:
 - Celebrate: squash & stretch jump (scale 1.1×0.85 → 0.92×1.1 → 1×1) + Canvas confetti, 3 s.
 - Break session poses: `design/neck_stretch_frames.svg`, `design/stand_up_frames.svg`, `design/more_stretch_frames.svg` (shoulder rolls, wrist stretch, march in place). Each pose is the same layers with a transform (rotation, or scaleX/scaleY about the feet) and different arm/eye layers. Implement poses as data (`PoseSpec(rotation, scaleX, scaleY, arms, eyes)`) and animate between them with springs, holding each pose ~1.2 s. Do **not** invent new body shapes.
 - Collection pets (Pip, Toast, Nimbus, ...): same system, own silhouette + own colour.
-- Performance: no gradients; test on a mid-range device; keep frame time < 16 ms.
+- Performance: no gradients; test on a mid-range device; keep frame time < 16 ms. `PetGeometry` builds every path, stroke and paint once per `PetSpec` (remembered; size-independent because drawing happens in viewBox units), so a frame only issues draw calls. Toast's crust adds one small offscreen layer and one path stroke per frame; precomputing the stroke as a fill path would change pixels (Skia strokes at the canvas scale), so measure on a phone before optimising it.
 
 ---
 
