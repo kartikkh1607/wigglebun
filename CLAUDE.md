@@ -130,8 +130,15 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 - Currency: one soft currency (working name: "sparks"). Earned only by completing breaks and streak milestones.
 - A break type earns its spark reward only the first time it is completed each day; repeat Done resets the timer and celebrates but gives no sparks.
-- Spend on: new pets (collection) in v1; outfits in v2.
+- Spend on: new pets (collection) in v1; outfits in v2. Pet prices (`domain/rewards/PetPrices.kt`): Pip 75, Toast 175, Nimbus 300 sparks. Targets are in work days; `EconomyTest` pins them (see the table below).
 - Streak: number of work days in a row with at least N breaks (default 4).
+- Work days to afford each pet, bought cheapest first (`EconomyTest`; every day a work day):
+
+  | User | Breaks a day | Sparks a day | Pip (75) | Toast (+175) | Nimbus (+300) |
+  |---|---|---|---|---|---|
+  | Light | 3 types, below the streak goal | 15 | day 5 | day 17 | day 37 |
+  | Normal | 4 types incl. Walk, streak kept | 25 + milestones | day 3 | day 8 | day 16 |
+  | Heavy | all 7 types, streak kept | 40 + milestones | day 2 | day 6 | day 12 |
 
 ### 5.5 Premium (hard paywall with free trial)
 
@@ -316,4 +323,4 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 - Prices and trial length
 - Which 3 pets ship in v1
 - Streak milestone bonuses (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks are placeholders in `domain/rewards/RewardRules.kt`)
-- Pet prices (Pip 150 / Toast 200 / Nimbus 300 sparks are placeholders in `domain/rewards/PetPrices.kt`)
+- ~~Pet prices~~ Decided: Pip 75 / Toast 175 / Nimbus 300 sparks (`domain/rewards/PetPrices.kt`)

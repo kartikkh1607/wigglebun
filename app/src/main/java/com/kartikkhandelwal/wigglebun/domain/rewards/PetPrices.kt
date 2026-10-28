@@ -3,14 +3,15 @@ package com.kartikkhandelwal.wigglebun.domain.rewards
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 
 /**
- * Adoption prices in sparks (CLAUDE.md §5.4) and their ledger keys. The prices are placeholders:
- * final prices are an open decision (CLAUDE.md §15).
+ * Adoption prices in sparks (CLAUDE.md §5.4) and their ledger keys. Approved prices: a normal
+ * user (4 break types a day, streak kept) adopts Pip on work day 3, Toast on day 8 and Nimbus on
+ * day 16 (EconomyTest).
  */
 object PetPrices {
     fun of(pet: PetId): Int = when (pet) {
         PetId.BUN -> 0
-        PetId.PIP -> 150
-        PetId.TOAST -> 200
+        PetId.PIP -> 75
+        PetId.TOAST -> 175
         PetId.NIMBUS -> 300
     }
 

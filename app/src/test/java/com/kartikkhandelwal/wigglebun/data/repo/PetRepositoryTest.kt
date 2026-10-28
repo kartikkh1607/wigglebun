@@ -8,6 +8,7 @@ import com.kartikkhandelwal.wigglebun.data.prefs.PrefsKeys
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
+import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -34,6 +35,8 @@ class PetRepositoryTest {
     @After
     fun tearDown() = app.close()
 
+    private val pipPrice = PetPrices.of(PetId.PIP)
+
     private fun earn(amount: Int) = runBlocking {
         app.wallet.award("break:test:$amount", amount, SparkReason.BREAK, Instant.now())
     }
@@ -46,7 +49,7 @@ class PetRepositoryTest {
 
     @Test
     fun adoptingChargesOnceAndMakesThePetActive() = runBlocking {
-        earn(200)
+        earn(pipPrice + 50)
         val redrawsBefore = app.widgetUpdates.count
         assertEquals(AdoptResult.Adopted, pets.adopt(PetId.PIP))
         assertEquals(setOf(PetId.BUN, PetId.PIP), pets.owned.first())
@@ -61,11 +64,11 @@ class PetRepositoryTest {
 
     @Test
     fun adoptingWithoutEnoughSparksChangesNothing() = runBlocking {
-        earn(120)
+        earn(pipPrice - 30)
         assertEquals(AdoptResult.NotEnoughSparks(missing = 30), pets.adopt(PetId.PIP))
         assertEquals(setOf(PetId.BUN), pets.owned.first())
         assertEquals(PetId.BUN, pets.activePet.first().id)
-        assertEquals(120, app.balance())
+        assertEquals(pipPrice - 30, app.balance())
     }
 
     @Test
@@ -100,7 +103,7 @@ class PetRepositoryTest {
         app.dataStore.edit { it[PrefsKeys.PetName] = "Mochi" }
         assertEquals("Mochi", pets.activePet.first().customName)
 
-        earn(150)
+        earn(pipPrice)
         pets.adopt(PetId.PIP)
         val pip = pets.activePet.first()
         assertEquals(PetId.PIP, pip.id)
@@ -110,7 +113,7 @@ class PetRepositoryTest {
     /** Two taps on "Adopt" racing through the repository: one charge, both end on Pip. */
     @Test
     fun racingAdoptsChargeOnce() = runBlocking {
-        earn(150)
+        earn(pipPrice)
         val results = (1..2).map { async(Dispatchers.IO) { pets.adopt(PetId.PIP) } }.awaitAll()
         assertEquals(listOf(AdoptResult.Adopted, AdoptResult.AlreadyOwned).sortedBy { it.toString() }, results.sortedBy { it.toString() })
         assertEquals(0, app.balance())

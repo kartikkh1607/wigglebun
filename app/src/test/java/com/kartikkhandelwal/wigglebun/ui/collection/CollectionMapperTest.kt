@@ -21,7 +21,7 @@ class CollectionMapperTest {
         val s = state(setOf(PetId.BUN, PetId.TOAST), active = PetId.TOAST, sparks = 0)
         assertEquals(listOf(PetId.BUN, PetId.PIP, PetId.TOAST, PetId.NIMBUS), s.pets.map { it.id })
         assertEquals(listOf(PetStatus.OWNED, PetStatus.LOCKED, PetStatus.ACTIVE, PetStatus.LOCKED), s.pets.map { it.status })
-        assertEquals(listOf(0, 150, 200, 300), s.pets.map { it.price })
+        assertEquals(listOf(0, 75, 175, 300), s.pets.map { it.price })
         assertNull(s.sheet)
     }
 
@@ -29,14 +29,14 @@ class CollectionMapperTest {
     fun sheetButtonFollowsStatusAndBalance() {
         val onlyBun = setOf(PetId.BUN)
         assertEquals(SheetAction.WithYou, state(onlyBun, PetId.BUN, 0, sheetFor = PetId.BUN).sheet?.action)
-        assertEquals(SheetAction.Adopt(150), state(onlyBun, PetId.BUN, 150, sheetFor = PetId.PIP).sheet?.action)
+        assertEquals(SheetAction.Adopt(75), state(onlyBun, PetId.BUN, 75, sheetFor = PetId.PIP).sheet?.action)
         assertEquals(SheetAction.NeedMore(140), state(onlyBun, PetId.BUN, 160, sheetFor = PetId.NIMBUS).sheet?.action)
         assertEquals(SheetAction.Choose, state(setOf(PetId.BUN, PetId.PIP), PetId.PIP, 0, sheetFor = PetId.BUN).sheet?.action)
     }
 
     @Test
-    fun pricesArePlaceholdersInOnePlace() {
-        assertEquals(listOf(0, 150, 200, 300), PetId.entries.map(PetPrices::of))
+    fun pricesLiveInOnePlace() {
+        assertEquals(listOf(0, 75, 175, 300), PetId.entries.map(PetPrices::of))
         assertEquals("unlock:pip", PetPrices.unlockKey(PetId.PIP))
         assertEquals(PetId.NIMBUS, PetPrices.petForUnlockKey("unlock:nimbus"))
         assertNull(PetPrices.petForUnlockKey("break:2026-10-28:WALK"))

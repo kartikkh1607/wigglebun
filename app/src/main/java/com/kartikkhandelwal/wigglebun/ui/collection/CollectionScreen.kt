@@ -165,7 +165,7 @@ private fun PetCard(pet: CollectionPetUi, chosenName: String?, onClick: () -> Un
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = C.CardPaddingHorizontal, end = C.CardPaddingHorizontal, top = C.CardPaddingTop, bottom = C.CardPaddingBottom)
-                // One TalkBack stop per card: "Pip, adopt for 150 sparks".
+                // One TalkBack stop per card: "Pip, adopt for 75 sparks".
                 .clearAndSetSemantics { contentDescription = description },
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(C.CardGap),
@@ -238,10 +238,10 @@ private fun StatusPill(pet: CollectionPetUi) {
 
 /** Sample states for previews and screenshot tests, built through the real mapper. */
 internal object CollectionPreviewStates {
-    /** Fresh install: only Bun, 120 sparks (nothing affordable yet). */
-    val OnlyBun = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 120, selection = null)
+    /** Fresh install: only Bun, 40 sparks (nothing affordable yet). */
+    val OnlyBun = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 40, selection = null)
 
-    /** 160 sparks: Pip (150) is affordable, Toast and Nimbus are not. */
+    /** 160 sparks: Pip (75) is affordable, Toast and Nimbus are not. */
     val OneAffordable = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 160, selection = null)
 
     /** Every pet adopted, Toast with you. */

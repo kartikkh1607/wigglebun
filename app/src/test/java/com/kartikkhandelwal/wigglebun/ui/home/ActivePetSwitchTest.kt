@@ -11,6 +11,7 @@ import com.kartikkhandelwal.wigglebun.data.repo.TestDataLayer
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
+import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
 import com.kartikkhandelwal.wigglebun.widget.WidgetUiState
 import kotlinx.coroutines.CoroutineScope
@@ -70,7 +71,7 @@ class ActivePetSwitchTest {
 
         val redrawsBefore = app.widgetUpdates.count
         runBlocking {
-            app.wallet.award("break:test", 200, SparkReason.BREAK, Instant.now())
+            app.wallet.award("break:test", PetPrices.of(PetId.PIP) + 50, SparkReason.BREAK, Instant.now())
             app.pets.adopt(PetId.PIP)
         }
         waitUntil { home.state.value?.pet?.id == PetId.PIP }
