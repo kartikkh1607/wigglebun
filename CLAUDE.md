@@ -132,6 +132,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 - A break type earns its spark reward only the first time it is completed each day; repeat Done resets the timer and celebrates but gives no sparks.
 - Spend on: new pets (collection) in v1; outfits in v2. Pet prices (`domain/rewards/PetPrices.kt`): Pip 75, Toast 175, Nimbus 300 sparks. Targets are in work days; `EconomyTest` pins them (see the table below).
 - Streak: number of work days in a row with at least N breaks (default 4).
+- Streak bonuses (`domain/rewards/RewardRules.kt`): the 3 / 7 / 14 / 30-day milestones (20 / 50 / 100 / 250 sparks) pay **once per lifetime** (ledger key `milestone:<days>`), so breaking a streak on purpose and rebuilding it never pays them again. After 30 days, every further 30 days of the **same unbroken streak** (day 60, 90, …) pays +250 (key `streak:<days>:<start>`). DB v4 migrated older installs: each milestone's first per-streak payment was renamed to its lifetime key, so nothing is paid twice and no sparks are taken back.
 - Work days to afford each pet, bought cheapest first (`EconomyTest`; every day a work day):
 
   | User | Breaks a day | Sparks a day | Pip (75) | Toast (+175) | Nimbus (+300) |
@@ -322,5 +323,5 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 - ~~Final colour palette and font~~ Decided: see section 11
 - Prices (~~trial length~~ decided: 7 days)
 - Which 3 pets ship in v1
-- Streak milestone bonuses (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks are placeholders in `domain/rewards/RewardRules.kt`)
+- Streak milestone amounts (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks, once per lifetime, then +250 per further 30 days of one streak; amounts are placeholders in `domain/rewards/RewardRules.kt`)
 - ~~Pet prices~~ Decided: Pip 75 / Toast 175 / Nimbus 300 sparks (`domain/rewards/PetPrices.kt`)

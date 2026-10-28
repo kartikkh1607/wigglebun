@@ -5,9 +5,11 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -18,6 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import java.io.File
+import java.time.Instant
 
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class)
@@ -58,7 +61,7 @@ class BreakLogDbTest {
         val tables = tables(db)
         assertTrue("break_log" in tables)
         assertFalse("placeholder" in tables)
-        assertEquals(3, db.openHelper.readableDatabase.version)
+        assertEquals(4, db.openHelper.readableDatabase.version)
         db.close()
     }
 
@@ -73,13 +76,46 @@ class BreakLogDbTest {
         val db = Room.databaseBuilder(context, AppDatabase::class.java, file.absolutePath).build()
         assertEquals(listOf(DoneBreakRow(BreakType.NECK, 42)), db.breakLogDao().doneBreaks())
         assertTrue("spark_ledger" in tables(db))
-        assertEquals(3, db.openHelper.readableDatabase.version)
+        assertEquals(4, db.openHelper.readableDatabase.version)
 
         val ledger = db.sparkLedgerDao()
         val row = SparkLedgerEntity(amount = 5, reason = SparkReason.BREAK, key = "break:2026-10-27:NECK", createdAt = 1)
         assertTrue(ledger.insert(row) > 0)
         assertEquals(-1L, ledger.insert(row.copy(createdAt = 2))) // unique key: ignored
         assertEquals(5, ledger.observeBalance().first())
+        db.close()
+    }
+
+    /**
+     * v3 → v4: milestones become once per lifetime. An install that was paid the 3-day bonus twice
+     * (two streaks) and the 7-day bonus once keeps every spark, and the first payment of each
+     * moves to the lifetime key, so neither can be paid again.
+     */
+    @Test
+    fun migratesFromVersion3WithoutPayingMilestonesTwice() = runBlocking {
+        val file = freshFile("migration-v3-test.db")
+        createFromSchema(file, version = 3) { sqlite ->
+            fun row(key: String, amount: Int, reason: String = "STREAK") =
+                sqlite.execSQL("INSERT INTO spark_ledger (amount, reason, `key`, createdAt) VALUES ($amount, '$reason', '$key', 1)")
+            row("break:2026-10-21:NECK", 5, reason = "BREAK")
+            row("streak:3:2026-10-19", 20)
+            row("streak:7:2026-10-19", 50)
+            row("streak:3:2026-11-02", 20)
+        }
+
+        val db = Room.databaseBuilder(context, AppDatabase::class.java, file.absolutePath).build()
+        val ledger = db.sparkLedgerDao()
+        assertEquals(4, db.openHelper.readableDatabase.version)
+        assertEquals(95, ledger.balance())
+        assertEquals(
+            listOf("break:2026-10-21:NECK", "milestone:3", "milestone:7", "streak:3:2026-11-02"),
+            ledger.all().map { it.key },
+        )
+        // What RecordBreakDone does on the next 3- or 7-day streak: nothing more is paid.
+        val wallet = WalletRepository(ledger)
+        assertEquals(0, wallet.award(RewardRules.milestoneKey(3), 20, SparkReason.STREAK, Instant.EPOCH))
+        assertEquals(0, wallet.award(RewardRules.milestoneKey(7), 50, SparkReason.STREAK, Instant.EPOCH))
+        assertEquals(100, wallet.award(RewardRules.milestoneKey(14), 100, SparkReason.STREAK, Instant.EPOCH))
         db.close()
     }
 

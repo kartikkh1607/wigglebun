@@ -17,7 +17,7 @@ data class BreakDoneResult(
     val type: BreakType,
     /** 0 when this type was already completed today (CLAUDE.md §5.4). */
     val sparksEarned: Int,
-    /** Milestones paid by this break (usually none). */
+    /** Milestones and 30-day repeat bonuses paid by this break (usually none). */
     val bonuses: List<Milestone>,
     val streak: Streak,
 )
@@ -56,9 +56,9 @@ class RecordBreakDone @Inject constructor(
         val bonuses = if (start == null) {
             emptyList()
         } else {
-            RewardRules.milestonesReached(streak.days).filter { milestone ->
-                wallet.award(RewardRules.streakKey(milestone.days, start), milestone.bonus, SparkReason.STREAK, at) > 0
-            }
+            RewardRules.bonusesFor(streak.days, start)
+                .filter { bonus -> wallet.award(bonus.key, bonus.milestone.bonus, SparkReason.STREAK, at) > 0 }
+                .map { it.milestone }
         }
         return BreakDoneResult(type, earned, bonuses, streak)
     }

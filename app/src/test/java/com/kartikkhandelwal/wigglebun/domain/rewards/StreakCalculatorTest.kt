@@ -115,25 +115,22 @@ class StreakCalculatorTest {
     }
 
     @Test
-    fun milestoneKeyIsStableWhileTheStreakLastsAndNewAfterABreak() {
+    fun repeatKeyIsStableWhileTheStreakLastsAndNewAfterABreak() {
         val first3 = done(day(21), 4) + done(day(22), 4) + done(day(23), 4)
         val onDay3 = streak(first3, today = day(23))
         val onDay4 = streak(first3 + done(day(26), 4), today = day(26))
         assertEquals(3, onDay3.days)
         assertEquals(4, onDay4.days)
-        val milestone3 = RewardRules.milestonesReached(onDay3.days).single()
         val firstStart = checkNotNull(onDay3.startDate)
-        // Same streak, same key: the ledger's unique key pays the 3-day bonus only once.
-        assertEquals(
-            RewardRules.streakKey(milestone3.days, firstStart),
-            RewardRules.streakKey(milestone3.days, checkNotNull(onDay4.startDate)),
-        )
+        // Same streak, same start date: a repeat bonus key can't be earned twice by one streak.
+        assertEquals(firstStart, onDay4.startDate)
+        assertEquals(RewardRules.repeatKey(60, firstStart), RewardRules.repeatKey(60, checkNotNull(onDay4.startDate)))
 
-        // A missed day, then a new 3-day streak: a new key, so it can pay again.
+        // A missed day, then a new streak: a new start date.
         val later = first3 + done(day(26), 1) + done(day(27), 4) + done(day(28), 4) + done(day(29), 4)
         val newStreak = streak(later, today = day(29))
         assertEquals(3, newStreak.days)
-        assertNotEquals(RewardRules.streakKey(3, firstStart), RewardRules.streakKey(3, checkNotNull(newStreak.startDate)))
+        assertNotEquals(RewardRules.repeatKey(60, firstStart), RewardRules.repeatKey(60, checkNotNull(newStreak.startDate)))
     }
 
     @Test
@@ -147,12 +144,5 @@ class StreakCalculatorTest {
         val s = streak(done(day(26), 3) + done(day(27), 3), today = day(27), goal = threeTypes)
         assertEquals(2, s.days)
         assertTrue(s.todayCounts)
-    }
-
-    @Test
-    fun milestonesReachedAreCumulative() {
-        assertEquals(emptyList<Milestone>(), RewardRules.milestonesReached(2))
-        assertEquals(listOf(3, 7), RewardRules.milestonesReached(13).map { it.days })
-        assertEquals(listOf(3, 7, 14, 30), RewardRules.milestonesReached(45).map { it.days })
     }
 }
