@@ -13,8 +13,10 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.kartikkhandelwal.wigglebun.MainActivity
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.ui.labelRes
+import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -51,9 +53,9 @@ class ReminderNotifier @Inject constructor(
 
     /** Returns true if the reminder was posted. */
     @SuppressLint("MissingPermission") // checked in canPost()
-    fun showReminder(petName: String?, suggested: BreakType, snoozesLeft: Int): Boolean {
+    fun showReminder(pet: ActivePet, suggested: BreakType, snoozesLeft: Int): Boolean {
         if (!canPost()) return false
-        val name = petName ?: context.getString(R.string.pet_default_name)
+        val name = pet.displayName(context)
         val texts = context.resources.getStringArray(R.array.reminder_texts)
         val text = texts[Random.nextInt(texts.size)].format(name)
         val suggestion = context.getString(

@@ -66,6 +66,20 @@ class PetViewScreenshotTest {
         composeRule.onRoot().captureRoboImage("pet_all_poses.png")
     }
 
+    /** Bun's poses on the collection pets: every arm must stay visible (M8). */
+    @Test fun allPosesPip() = capturePoses(PetSpecs.Pip, "pip")
+
+    @Test fun allPosesToast() = capturePoses(PetSpecs.Toast, "toast")
+
+    @Test fun allPosesNimbus() = capturePoses(PetSpecs.Nimbus, "nimbus")
+
+    private fun capturePoses(spec: PetSpec, name: String) {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalInspectionMode provides true) { PetAllPosesPreview(spec) }
+        }
+        composeRule.onRoot().captureRoboImage("pet_all_poses_$name.png")
+    }
+
     /** One live frame mid-hop with confetti flying, to sanity-check the animation drawing. */
     @Test
     fun celebrateAnimatedFrame() {

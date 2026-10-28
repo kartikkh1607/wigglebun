@@ -25,6 +25,55 @@ data class PoseSpec(
     val feet: FeetPose = FeetPose.Standing,
 )
 
+/**
+ * Both arms of one break-session pose. A null side keeps the pet's own resting arm
+ * ([PetSpec.armsSide]), so a one-arm pose (wrist stretch, march) leaves Pip's wing a wing.
+ */
+@Immutable
+data class PoseArms(val left: List<OvalSpec>?, val right: List<OvalSpec>?)
+
+/**
+ * Arm and feet layers of the break-session poses, read off design/stand_up_frames.svg and
+ * more_stretch_frames.svg (drawn for Bun). Every pet reuses them, nudged by
+ * [PetSpec.poseArmOffsets] only where its body would hide an arm.
+ */
+object PoseLayers {
+    val arms: Map<ArmPose, PoseArms> = mapOf(
+        ArmPose.Lap to PoseArms(
+            left = listOf(OvalSpec(52f, 150f, 10f, 16f, rotationDeg = 50f)),
+            right = listOf(OvalSpec(148f, 150f, 10f, 16f, rotationDeg = -50f)),
+        ),
+        ArmPose.Shrug to PoseArms(
+            left = listOf(OvalSpec(44f, 104f, 10f, 18f, rotationDeg = -8f)),
+            right = listOf(OvalSpec(156f, 104f, 10f, 18f, rotationDeg = 8f)),
+        ),
+        ArmPose.RollBack to PoseArms(
+            left = listOf(OvalSpec(44f, 126f, 8f, 14f, rotationDeg = 40f)),
+            right = listOf(OvalSpec(156f, 126f, 8f, 14f, rotationDeg = -40f)),
+        ),
+        ArmPose.RollDown to PoseArms(
+            left = listOf(OvalSpec(38f, 140f, 10f, 17f, rotationDeg = 18f)),
+            right = listOf(OvalSpec(162f, 140f, 10f, 17f, rotationDeg = -18f)),
+        ),
+        ArmPose.ReachRight to PoseArms(
+            left = null,
+            right = listOf(OvalSpec(180f, 126f, 24f, 10f), OvalSpec(203f, 114f, 8f, 12f)),
+        ),
+        ArmPose.ReachLeft to PoseArms(
+            left = listOf(OvalSpec(20f, 126f, 24f, 10f), OvalSpec(-3f, 114f, 8f, 12f)),
+            right = null,
+        ),
+        ArmPose.MarchLeft to PoseArms(left = listOf(OvalSpec(38f, 124f, 10f, 17f, rotationDeg = 10f)), right = null),
+        ArmPose.MarchRight to PoseArms(left = null, right = listOf(OvalSpec(162f, 124f, 10f, 17f, rotationDeg = -10f))),
+    )
+
+    val feet: Map<FeetPose, List<OvalSpec>> = mapOf(
+        FeetPose.Sit to listOf(OvalSpec(74f, 194f, 15f, 9f), OvalSpec(126f, 194f, 15f, 9f)),
+        FeetPose.LiftLeft to listOf(OvalSpec(80f, 180f, 12f, 9f), OvalSpec(120f, 192f, 13f, 10f)),
+        FeetPose.LiftRight to listOf(OvalSpec(80f, 192f, 13f, 10f), OvalSpec(120f, 180f, 12f, 9f)),
+    )
+}
+
 /** Key poses read off design/neck_stretch_frames.svg, stand_up_frames.svg and more_stretch_frames.svg. */
 object Poses {
     // Neck stretch: relaxed closed eyes, upper body tilts ±20°.

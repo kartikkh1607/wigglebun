@@ -170,4 +170,68 @@ object Dimens {
         val StreakCardTop = 8.dp
         val StreakCardPadding = 16.dp
     }
+
+    /** Collection tab, measured from design/mockups_source/Collection.dc.html. */
+    object Collection {
+        val HeaderPaddingTop = 22.dp
+        val HeaderPaddingHorizontal = 20.dp
+        val HeaderPaddingBottom = 4.dp
+        val SubtitlePaddingBottom = 16.dp
+        val GridGap = 12.dp
+        val CardPaddingTop = 10.dp
+        val CardPaddingHorizontal = 10.dp
+        val CardPaddingBottom = 14.dp
+        val CardGap = 6.dp
+        val CardEdge = 4.dp
+        val ActiveBorder = 3.dp
+        val PetSize = 112.dp
+        val PillPaddingHorizontal = 12.dp
+        val PillPaddingVertical = 4.dp
+        val PillIcon = 14.dp
+        val PillIconGap = 4.dp
+        val ListBottomPadding = 24.dp
+
+        // Pet sheet (no mockup: sheet radius from CLAUDE.md §11, buttons as elsewhere)
+        val SheetPaddingHorizontal = 24.dp
+        val SheetPaddingBottom = 24.dp
+        val SheetGap = 8.dp
+        val SheetPetSize = 168.dp
+        val SheetSmallPetSize = 120.dp
+        val SheetButtonTop = 12.dp
+        val SheetButtonIcon = 20.dp
+        val SheetButtonIconGap = 6.dp
+    }
+
+    /** Pet profile tab (no mockup: Home's card style, CLAUDE.md §6.6). */
+    object Profile {
+        val TopPadding = 16.dp
+        val PetSize = 180.dp
+        val PetShadowWidth = 112.dp
+        val PetShadowHeight = 14.dp
+        /** The shadow sits under the feet: the viewBox ground (y ≈ 200 of 210) at 180 dp. */
+        val PetShadowOffset = 168.dp
+        val NameTop = 4.dp
+        val CardsTop = 16.dp
+        val CardGap = 12.dp
+        val CardPadding = 16.dp
+        val CardEdge = 4.dp
+        val CardLabelGap = 4.dp
+        val ProgressTop = 10.dp
+        val ProgressHeight = 8.dp
+        val ChartTop = 12.dp
+        /** Tallest bar; the day's total sits above it. */
+        val BarMaxHeight = 104.dp
+        /** Bars stay thinner than 24 dp and get a 4 dp rounded tip (dataviz mark specs). */
+        val BarWidth = 22.dp
+        val BarRadius = 4.dp
+        /** Surface-coloured gap between stacked segments, so neighbours never blur together. */
+        val BarGapInStack = 2.dp
+        val EmptyBarHeight = 4.dp
+        val BarLabelGap = 6.dp
+        val LegendTop = 12.dp
+        val LegendGap = 12.dp
+        val LegendDot = 10.dp
+        val LegendDotGap = 6.dp
+        val ListBottomPadding = 24.dp
+    }
 }

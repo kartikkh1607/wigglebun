@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.ui.breaksession
 
 import androidx.annotation.StringRes
 import com.kartikkhandelwal.wigglebun.data.repo.BreakDoneResult
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
@@ -9,8 +10,8 @@ import com.kartikkhandelwal.wigglebun.ui.pet.PoseSpec
 
 data class BreakSessionUiState(
     val type: BreakType,
-    /** Null until the user names the pet (M9). */
-    val petName: String?,
+    /** The active pet; null for the few ms until it loads (the pet isn't drawn until then). */
+    val pet: ActivePet?,
     val stepIndex: Int,
     val stepCount: Int,
     @StringRes val instruction: Int,
@@ -36,7 +37,7 @@ data class BreakSessionUiState(
 /** Pure mapping from the timer to what the screen shows (unit-tested). */
 fun sessionUiState(
     type: BreakType,
-    petName: String?,
+    pet: ActivePet?,
     timer: SessionTimer,
     now: Long,
     result: BreakDoneResult?,
@@ -45,7 +46,7 @@ fun sessionUiState(
     val pose = step.poses.getOrNull(timer.poseIndex(now, step.poses.size, POSE_HOLD_MILLIS))
     return BreakSessionUiState(
         type = type,
-        petName = petName,
+        pet = pet,
         stepIndex = timer.stepIndex,
         stepCount = timer.stepCount,
         instruction = step.text,

@@ -44,8 +44,9 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
-import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
+import com.kartikkhandelwal.wigglebun.ui.pet.displayName
+import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Coral
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
@@ -80,6 +81,7 @@ class PetLabActions(
     val onPermissionResult: () -> Unit = {},
     val onMovementEnabled: (Boolean) -> Unit = {},
     val onSimulateWalk: () -> Unit = {},
+    val onAddSparks: () -> Unit = {},
 )
 
 /** Debug-only playground for PetView and the sitting engine. */
@@ -105,6 +107,7 @@ fun PetLabScreen(viewModel: PetLabViewModel = hiltViewModel()) {
             onPermissionResult = { viewModel.onPermissionResult() },
             onMovementEnabled = { viewModel.setMovementEnabled(it) },
             onSimulateWalk = { viewModel.simulateWalk() },
+            onAddSparks = { viewModel.addSparks() },
         ),
     )
 }
@@ -126,6 +129,8 @@ private fun PetLabContent(state: PetLabState, actions: PetLabActions) {
         PetView(
             energy = state.petEnergy,
             mood = state.petMood,
+            spec = state.pet.spec,
+            name = state.pet.displayName(),
             animated = state.animated,
             modifier = Modifier.size(220.dp, 231.dp),
         )
@@ -295,7 +300,7 @@ private fun ManualCard(state: PetLabState, actions: PetLabActions) {
             text = stringResource(
                 R.string.pet_lab_energy,
                 state.manual.energy,
-                PetSpecs.Bun.fillTop(state.manual.energy),
+                state.pet.spec.fillTop(state.manual.energy),
             ),
             style = MaterialTheme.typography.labelMedium,
             color = InkMuted,
@@ -334,6 +339,12 @@ private fun ManualCard(state: PetLabState, actions: PetLabActions) {
             text = stringResource(R.string.pet_lab_celebrate),
             onClick = actions.onCelebrate,
             style = ChunkyButtonStyle.Highlight,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        ChunkyButton(
+            text = stringResource(R.string.pet_lab_add_sparks),
+            onClick = actions.onAddSparks,
+            style = ChunkyButtonStyle.Secondary,
             modifier = Modifier.fillMaxWidth(),
         )
     }

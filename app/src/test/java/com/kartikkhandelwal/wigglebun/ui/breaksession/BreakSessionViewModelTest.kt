@@ -46,7 +46,7 @@ class BreakSessionViewModelTest {
         savedStateHandle = SavedStateHandle(mapOf("type" to type.name)),
         recordBreakDone = app.recordBreakDone,
         elapsed = elapsed,
-        settingsRepository = app.settings,
+        petRepository = app.pets,
     ).also { viewModels += it }
 
     /** Runs main-thread work (viewModelScope) until [condition] holds; IO work resumes there. */

@@ -83,6 +83,7 @@ class SitRepositoryTest {
         movementTracker = MovementTracker(permissions, TransitionRegistrar(context, permissions), stepCounter, movementStore),
         stepCounter = stepCounter,
         widget = widgetUpdates,
+        petRepository = PetRepository(WalletRepository(db.sparkLedgerDao()), settings, clock, widgetUpdates),
         scope = scope,
     )
 

@@ -54,6 +54,7 @@ class SitRepository @Inject constructor(
     private val movementTracker: MovementTracker,
     private val stepCounter: StepCounter,
     private val widget: WidgetRefresher,
+    private val petRepository: PetRepository,
     @ApplicationScope private val scope: CoroutineScope,
 ) {
     // UI buttons, notification actions and movement events can all arrive at once.
@@ -123,7 +124,7 @@ class SitRepository @Inject constructor(
         val due = status.reminderDue
         if (status.shouldNotify && due != null) {
             notifier.showReminder(
-                petName = settingsRepository.petName.first(),
+                pet = petRepository.activePet.first(),
                 suggested = BreakType.suggestedFor(due.epochSecond / 60),
                 snoozesLeft = status.snoozesLeft,
             )

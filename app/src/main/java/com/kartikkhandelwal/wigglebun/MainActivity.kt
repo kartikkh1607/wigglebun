@@ -8,16 +8,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.ui.navigation.AppShellViewModel
 import com.kartikkhandelwal.wigglebun.ui.navigation.WigglebunNavHost
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val shell: AppShellViewModel by viewModels()
 
     /** A break the widget asked to start; cleared once the nav host has opened it. */
     private var pendingBreak by mutableStateOf<BreakType?>(null)
@@ -30,8 +35,9 @@ class MainActivity : ComponentActivity() {
         val lightBars = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         enableEdgeToEdge(statusBarStyle = lightBars, navigationBarStyle = lightBars)
         setContent {
+            val activePet by shell.activePet.collectAsStateWithLifecycle()
             WigglebunTheme {
-                WigglebunNavHost(startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
+                WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
             }
         }
     }

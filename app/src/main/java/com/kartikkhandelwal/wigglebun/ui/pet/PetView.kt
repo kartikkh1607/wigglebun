@@ -33,9 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakSky
+import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Fredoka
+import com.kartikkhandelwal.wigglebun.ui.theme.LockedSilhouette
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 
 /** Energy drains/refills with a slow tween so the colour visibly moves (CLAUDE.md §5.2: ≥ 600 ms). */
@@ -88,21 +90,7 @@ fun PetView(
     val poseScaleY = animateFloatAsState(pose?.scaleY ?: 1f, poseSpring, label = "poseScaleY")
     val poseLift = animateFloatAsState(pose?.liftY ?: 0f, poseSpring, label = "poseLift")
 
-    val textMeasurer = rememberTextMeasurer()
-    val geometry = remember(spec, textMeasurer) {
-        // Density(1) makes 1 sp = 1 px, so the z sizes are in viewBox units like everything else.
-        fun measureZ(size: Float) = textMeasurer.measure(
-            text = "z",
-            style = TextStyle(
-                color = spec.sleepZColor,
-                fontFamily = Fredoka,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = size.sp,
-            ),
-            density = Density(1f),
-        )
-        PetGeometry(spec, sleepZLarge = measureZ(24f), sleepZSmall = measureZ(16f))
-    }
+    val geometry = rememberPetGeometry(spec)
 
     val motion = remember { PetMotion() }
     val currentMood by rememberUpdatedState(mood)
@@ -138,6 +126,38 @@ fun PetView(
     }
 }
 
+/**
+ * A pet that isn't adopted yet: a flat grey silhouette (Collection.dc.html), no face, no motion.
+ * [description] is read by TalkBack.
+ */
+@Composable
+fun LockedPetView(spec: PetSpec, description: String, modifier: Modifier = Modifier) {
+    val geometry = rememberPetGeometry(spec)
+    Canvas(modifier.semantics { contentDescription = description }) {
+        drawLockedPet(geometry, spec, LockedSilhouette)
+    }
+}
+
+/** Built once per pet; the sleeping z's are measured in viewBox units. */
+@Composable
+private fun rememberPetGeometry(spec: PetSpec): PetGeometry {
+    val textMeasurer = rememberTextMeasurer()
+    return remember(spec, textMeasurer) {
+        // Density(1) makes 1 sp = 1 px, so the z sizes are in viewBox units like everything else.
+        fun measureZ(size: Float) = textMeasurer.measure(
+            text = "z",
+            style = TextStyle(
+                color = spec.sleepZColor,
+                fontFamily = Fredoka,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = size.sp,
+            ),
+            density = Density(1f),
+        )
+        PetGeometry(spec, sleepZLarge = measureZ(24f), sleepZSmall = measureZ(16f))
+    }
+}
+
 /** Energy of the still poses in design/pet_moods and design/widget_png. */
 internal fun Mood.previewEnergy(): Float = when (this) {
     Mood.TIRED -> 0.55f
@@ -147,11 +167,12 @@ internal fun Mood.previewEnergy(): Float = when (this) {
 
 /** The pet at widget-PNG proportions (200×210, the SVG viewBox) on the app background. */
 @Composable
-internal fun PetMoodPreview(mood: Mood) {
+internal fun PetMoodPreview(mood: Mood, spec: PetSpec = PetSpecs.Bun) {
     WigglebunTheme {
         PetView(
             energy = mood.previewEnergy(),
             mood = mood,
+            spec = spec,
             modifier = Modifier
                 .testTag("pet")
                 .background(Cream)
@@ -186,7 +207,7 @@ private fun PetSleepingPreview() = PetMoodPreview(Mood.SLEEPING)
 
 @Preview(name = "All moods", widthDp = 420)
 @Composable
-internal fun PetAllMoodsPreview() {
+internal fun PetAllMoodsPreview(spec: PetSpec = PetSpecs.Bun) {
     WigglebunTheme {
         FlowRow(
             modifier = Modifier
@@ -199,6 +220,7 @@ internal fun PetAllMoodsPreview() {
                 PetView(
                     energy = mood.previewEnergy(),
                     mood = mood,
+                    spec = spec,
                     modifier = Modifier.size(120.dp, 126.dp),
                 )
             }
@@ -209,7 +231,7 @@ internal fun PetAllMoodsPreview() {
 /** Every break-session pose, in the order of the three frame SVGs, on the session background. */
 @Preview(name = "All poses", widthDp = 420)
 @Composable
-internal fun PetAllPosesPreview() {
+internal fun PetAllPosesPreview(spec: PetSpec = PetSpecs.Bun) {
     val poses = listOf(
         Poses.NeckCentre, Poses.NeckTiltRight, Poses.NeckCentre, Poses.NeckTiltLeft,
         Poses.Sit, Poses.PushUp, Poses.Stand, Poses.ReachUp,
@@ -227,7 +249,34 @@ internal fun PetAllPosesPreview() {
             maxItemsInEachRow = 4,
         ) {
             poses.forEach { pose ->
-                PetView(energy = 1f, mood = Mood.STRETCH, pose = pose, modifier = Modifier.size(88.dp, 92.dp))
+                PetView(energy = 1f, mood = Mood.STRETCH, spec = spec, pose = pose, modifier = Modifier.size(88.dp, 92.dp))
+            }
+        }
+    }
+}
+
+@Preview(name = "Pip moods", widthDp = 420)
+@Composable
+private fun PipMoodsPreview() = PetAllMoodsPreview(PetSpecs.Pip)
+
+@Preview(name = "Toast moods", widthDp = 420)
+@Composable
+private fun ToastMoodsPreview() = PetAllMoodsPreview(PetSpecs.Toast)
+
+@Preview(name = "Nimbus moods", widthDp = 420)
+@Composable
+private fun NimbusMoodsPreview() = PetAllMoodsPreview(PetSpecs.Nimbus)
+
+@Preview(name = "Locked", widthDp = 420)
+@Composable
+private fun LockedPetsPreview() {
+    WigglebunTheme {
+        FlowRow(
+            modifier = Modifier.background(Card).padding(Dimens.ScreenPadding),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ListGap),
+        ) {
+            listOf(PetSpecs.Pip, PetSpecs.Toast, PetSpecs.Nimbus).forEach { spec ->
+                LockedPetView(spec, description = stringResource(spec.defaultName), modifier = Modifier.size(112.dp))
             }
         }
     }

@@ -60,4 +60,11 @@ class WidgetScreenshotTest {
 
     @Test
     fun mediumSleeping() = capture("medium_sleeping", WidgetPreviewStates.Sleeping, WigglebunWidget.MEDIUM)
+
+    /** M8: a collection pet on the widget (its own images, same ground line as Bun). */
+    @Test
+    fun smallToastHappy() = capture("small_toast_happy", WidgetPreviewStates.ToastHappy, WigglebunWidget.SMALL)
+
+    @Test
+    fun mediumToastTired() = capture("medium_toast_tired", WidgetPreviewStates.ToastTired, WigglebunWidget.MEDIUM)
 }

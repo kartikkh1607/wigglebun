@@ -42,6 +42,10 @@ interface BreakLogDao {
     /** Every completed break (type + time), for the streak. A few thousand rows per year at most. */
     @Query("SELECT type, completedAt FROM break_log WHERE outcome = 'DONE' ORDER BY completedAt")
     suspend fun doneBreaks(): List<DoneBreakRow>
+
+    /** [doneBreaks], kept up to date (Pet profile: streak, total and chart). */
+    @Query("SELECT type, completedAt FROM break_log WHERE outcome = 'DONE' ORDER BY completedAt")
+    fun observeDoneBreaks(): Flow<List<DoneBreakRow>>
 }
 
 data class DoneBreakRow(val type: BreakType, val completedAt: Long)

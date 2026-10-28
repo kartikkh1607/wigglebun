@@ -4,7 +4,9 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -23,8 +25,6 @@ private const val COLOR_BLEND_BAND = 6f
 
 /** Sleeping z's drift up and fade on this loop; sweat drips on its own. */
 private const val Z_LOOP_SEC = 2.4f
-/** The small z sits this far from the big one, both across and up (bun_sleep.svg). */
-private const val Z_STEP = 20f
 private const val SWEAT_LOOP_SEC = 1.8f
 private const val CONFETTI_POP_SEC = 0.45f
 
@@ -127,6 +127,9 @@ private fun DrawScope.drawBody(
             blendMode = BlendMode.SrcAtop,
         )
     }
+    val crust = spec.crust
+    val crustStroke = geometry.crustStroke
+    if (crust != null && crustStroke != null) drawCrust(geometry, crust, crustStroke, fillTop)
     drawIntoCanvas { canvas -> canvas.restore() }
     // Hands on the lap (sit pose) are drawn over the body.
     if (armsInFront) drawPath(arms, armColor)
@@ -145,8 +148,13 @@ private fun DrawScope.drawBody(
     drawPath(geometry.cheeks, spec.cheekColor)
 
     val mouth = geometry.mouths[mood.mouth.ordinal]
-    if (mood.mouth.filled) drawPath(mouth, spec.featureColor)
-    drawPath(mouth, spec.featureColor, style = geometry.mouthStroke)
+    val beak = spec.beak
+    if (beak != null) {
+        drawPath(mouth, beak.color) // a beak is filled only, as in pip_<mood>.svg
+    } else {
+        if (mood.mouth.filled) drawPath(mouth, spec.featureColor)
+        drawPath(mouth, spec.featureColor, style = geometry.mouthStroke)
+    }
 
     if (mood.sweat) {
         var dy = 0f
@@ -160,23 +168,71 @@ private fun DrawScope.drawBody(
     }
 }
 
+/**
+ * Toast's crust, inside the silhouette layer: a nested layer holding the silhouette stroked
+ * [CrustSpec.width] wide, drained colour first, then the crust colour from [fillTop] down (SrcAtop,
+ * so only on the stroke). The layer is composited SrcAtop, so only the inner half of the stroke
+ * lands, anti-aliased like the body fill, with no rotated clip.
+ *
+ * This is a second offscreen layer every frame, kept to the silhouette's bounds; check the frame
+ * time on a mid-range phone (CLAUDE.md §7: < 16 ms).
+ */
+private fun DrawScope.drawCrust(geometry: PetGeometry, crust: CrustSpec, stroke: Stroke, fillTop: Float) {
+    drawIntoCanvas { canvas -> canvas.saveLayer(geometry.silhouetteBounds, geometry.crustLayerPaint) }
+    drawPath(geometry.silhouette, crust.drainedColor, style = stroke)
+    drawRect(
+        color = crust.color,
+        topLeft = Offset(0f, fillTop),
+        size = Size(geometry.viewBox.width, geometry.viewBox.height - fillTop),
+        blendMode = BlendMode.SrcAtop,
+    )
+    drawIntoCanvas { canvas -> canvas.restore() }
+}
+
+/**
+ * A pet that isn't adopted yet (Collection grid): feet, side arms and silhouette in one flat
+ * [color], no face. A crust stays visible in its drained colour so the shape still reads.
+ */
+internal fun DrawScope.drawLockedPet(geometry: PetGeometry, spec: PetSpec, color: Color) {
+    val scale = min(size.width / spec.viewBoxWidth, size.height / spec.viewBoxHeight)
+    val left = (size.width - spec.viewBoxWidth * scale) / 2f
+    val top = (size.height - spec.viewBoxHeight * scale) / 2f
+    withTransform({
+        translate(left, top)
+        scale(scale, scale, Offset.Zero)
+    }) {
+        drawPath(geometry.feet[FeetPose.Standing.ordinal], color)
+        drawPath(geometry.arms[ArmPose.Side.ordinal], color)
+        drawPath(geometry.silhouette, color)
+        val crust = spec.crust
+        val stroke = geometry.crustStroke
+        if (crust != null && stroke != null) {
+            drawIntoCanvas { canvas -> canvas.saveLayer(geometry.silhouetteBounds, geometry.layerPaint) }
+            drawPath(geometry.silhouette, color)
+            drawPath(geometry.silhouette, crust.drainedColor, style = stroke, blendMode = BlendMode.SrcAtop)
+            drawIntoCanvas { canvas -> canvas.restore() }
+        }
+    }
+}
+
 private fun DrawScope.drawSleepZs(geometry: PetGeometry, spec: PetSpec, side: SleepZSide, motion: PetMotion, still: Boolean) {
     val large = geometry.sleepZLarge
     val small = geometry.sleepZSmall
+    val step = spec.sleepZStep
     when (side) {
         SleepZSide.RIGHT -> {
-            // Positions from bun_sleep.svg: big z at the anchor, small z up and to the right.
+            // Positions from <pet>_sleep.svg: big z at the anchor, small z up and to the right.
             val x = spec.sleepZAnchor.x
             val y = spec.sleepZAnchor.y
             drawSleepZ(large, x, y, driftX = 1f, motion, still, loopOffsetSec = 0f)
-            drawSleepZ(small, x + Z_STEP, y - Z_STEP, driftX = 1f, motion, still, loopOffsetSec = Z_LOOP_SEC / 2f)
+            drawSleepZ(small, x + step.x, y + step.y, driftX = 1f, motion, still, loopOffsetSec = Z_LOOP_SEC / 2f)
         }
         SleepZSide.LEFT -> {
             // Mirror image: the anchor is the big z's right end, small z up and to the left.
             val x = spec.sleepZAnchorLeft.x
             val y = spec.sleepZAnchorLeft.y
             drawSleepZ(large, x - large.size.width, y, driftX = -1f, motion, still, loopOffsetSec = 0f)
-            drawSleepZ(small, x - Z_STEP - small.size.width, y - Z_STEP, driftX = -1f, motion, still, loopOffsetSec = Z_LOOP_SEC / 2f)
+            drawSleepZ(small, x - step.x - small.size.width, y + step.y, driftX = -1f, motion, still, loopOffsetSec = Z_LOOP_SEC / 2f)
         }
     }
 }

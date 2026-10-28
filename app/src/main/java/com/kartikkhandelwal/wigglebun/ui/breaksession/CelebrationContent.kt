@@ -27,7 +27,8 @@ import com.kartikkhandelwal.wigglebun.domain.rewards.Milestone
 import com.kartikkhandelwal.wigglebun.domain.rewards.Streak
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
-import com.kartikkhandelwal.wigglebun.ui.home.SparkIcon
+import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
+import com.kartikkhandelwal.wigglebun.ui.pet.PetSpec
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
@@ -50,6 +51,7 @@ private val S = Dimens.BreakSession
 @Composable
 internal fun CelebrationContent(
     result: BreakDoneResult,
+    pet: PetSpec,
     petName: String,
     onContinue: () -> Unit,
     modifier: Modifier = Modifier,
@@ -66,7 +68,7 @@ internal fun CelebrationContent(
             // The pet gives way first on short screens, so the rewards always stay visible.
             BoxWithConstraints(Modifier.weight(1f, fill = false), contentAlignment = Alignment.Center) {
                 val petSize = minOf(S.CelebratePetSize, maxHeight)
-                PetView(energy = 1f, mood = Mood.CELEBRATE, name = petName, modifier = Modifier.size(petSize))
+                PetView(energy = 1f, mood = Mood.CELEBRATE, spec = pet, name = petName, modifier = Modifier.size(petSize))
             }
             Column(
                 // Announced once when the celebration appears.

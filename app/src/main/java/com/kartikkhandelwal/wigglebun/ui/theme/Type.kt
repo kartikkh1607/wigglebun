@@ -118,6 +118,15 @@ object WigglebunTextStyles {
     /** Session button labels shrink to at most this (from 18) rather than being cut off. */
     val SessionButtonMinFontSize = 13.sp
 
+    /** Collection / Pet profile screen title (Collection.dc.html: Fredoka 30). */
+    val ScreenTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 30.sp, lineHeight = 36.sp)
+
+    /** Pet name on a Collection card (Fredoka 19). */
+    val PetCardName = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, lineHeight = 24.sp)
+
+    /** Big numbers on the Pet profile cards ("3 days", "128"). */
+    val StatNumber = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 34.sp)
+
     /** Break session instruction (Nunito 18, 700, line height 1.45). */
     val Instruction = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 26.sp)
 }

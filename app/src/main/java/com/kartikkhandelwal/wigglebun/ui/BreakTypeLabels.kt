@@ -6,10 +6,14 @@ import androidx.compose.ui.graphics.Color
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.BreakCategory
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyes
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyesTint
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeck
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeckTint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakStandTint
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakWalk
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakWalkTint
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakWater
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakWaterTint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakWristTint
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
@@ -58,6 +62,18 @@ val BreakCategory.labelRes: Int
         BreakCategory.STRETCH -> R.string.break_category_stretch
         BreakCategory.EYES -> R.string.break_category_eyes
         BreakCategory.WATER -> R.string.break_category_water
+    }
+
+/**
+ * Weekly chart colours (CLAUDE.md §11): one per category, so stacked segments never repeat a
+ * colour (Shoulder rolls has no break-type colour of its own).
+ */
+val BreakCategory.chartColor: Color
+    get() = when (this) {
+        BreakCategory.MOVEMENT -> BreakWalk
+        BreakCategory.STRETCH -> BreakNeck
+        BreakCategory.EYES -> BreakEyes
+        BreakCategory.WATER -> BreakWater
     }
 
 /** Category chip colours: Movement as in FocusCard.dc.html; others use the break's tint + Ink. */

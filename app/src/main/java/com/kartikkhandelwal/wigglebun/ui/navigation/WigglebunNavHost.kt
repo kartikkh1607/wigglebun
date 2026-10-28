@@ -16,9 +16,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.ui.breaksession.BreakSessionScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.collection.CollectionPreviewStates
 import com.kartikkhandelwal.wigglebun.ui.collection.CollectionScreen
+import com.kartikkhandelwal.wigglebun.ui.collection.CollectionScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.components.TabBarItem
 import com.kartikkhandelwal.wigglebun.ui.debug.DebugHomeEntry
 import com.kartikkhandelwal.wigglebun.ui.debug.debugDestinations
@@ -27,7 +30,10 @@ import com.kartikkhandelwal.wigglebun.ui.home.HomeNavigation
 import com.kartikkhandelwal.wigglebun.ui.home.HomePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreen
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.pet.displayName
+import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfilePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreen
+import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsScreen
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
@@ -38,6 +44,10 @@ fun WigglebunNavHost(
     navController: NavHostController = rememberNavController(),
     /** Overridable so previews/screenshot tests can show a static, Hilt-free Home. */
     homeContent: @Composable (HomeNavigation) -> Unit = { HomeScreenRoute(it) },
+    collectionContent: @Composable () -> Unit = { CollectionScreenRoute() },
+    petContent: @Composable () -> Unit = { PetProfileScreenRoute() },
+    /** Names the pet tab; null (still loading) leaves the label blank rather than show the wrong pet. */
+    activePet: ActivePet? = ActivePet.Default,
     /** A break to open straight away (from the widget); [onStartBreakHandled] clears it. */
     startBreak: BreakType? = null,
     onStartBreakHandled: () -> Unit = {},
@@ -73,9 +83,12 @@ fun WigglebunNavHost(
         containerColor = Cream,
         bottomBar = {
             if (showTabBar) {
+                val petName = activePet?.displayName().orEmpty()
                 WigglebunTabBar(
                     items = TopLevelTab.entries.map {
-                        TabBarItem(stringResource(it.label), it.icon, it.tintIcon)
+                        // The pet tab is named after the pet that is with you (CLAUDE.md §6.6).
+                        val label = if (it == TopLevelTab.Pet) petName else stringResource(it.label)
+                        TabBarItem(label, it.icon, it.tintIcon)
                     },
                     selectedIndex = currentTab.ordinal,
                     onSelect = { index -> openTab(TopLevelTab.entries[index]) },
@@ -98,8 +111,8 @@ fun WigglebunNavHost(
                     ),
                 )
             }
-            composable<CollectionRoute> { CollectionScreen() }
-            composable<PetRoute> { PetProfileScreen() }
+            composable<CollectionRoute> { collectionContent() }
+            composable<PetRoute> { petContent() }
             composable<SettingsRoute> { SettingsScreen() }
             composable<BreakSessionRoute> { BreakSessionScreenRoute(onExit = { navController.popBackStack() }) }
             debugDestinations(navController)
@@ -111,6 +124,10 @@ fun WigglebunNavHost(
 @Composable
 internal fun WigglebunNavHostPreview() {
     WigglebunTheme {
-        WigglebunNavHost(homeContent = { HomeScreen(HomePreviewStates.Tired, debugEntry = it.debugEntry) })
+        WigglebunNavHost(
+            homeContent = { HomeScreen(HomePreviewStates.Tired, debugEntry = it.debugEntry) },
+            collectionContent = { CollectionScreen(CollectionPreviewStates.OnlyBun) },
+            petContent = { PetProfileScreen(PetProfilePreviewStates.EmptyWeek) },
+        )
     }
 }

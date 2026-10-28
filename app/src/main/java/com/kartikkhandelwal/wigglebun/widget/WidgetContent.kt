@@ -36,6 +36,7 @@ import com.kartikkhandelwal.wigglebun.MainActivity
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
@@ -166,8 +167,10 @@ internal fun WidgetMediumPreview() {
 }
 
 internal object WidgetPreviewStates {
-    val Happy = WidgetUiState(Mood.HAPPY, minutes = 8, petName = "Bun", suggestedBreak = BreakType.NECK)
-    val Tired = WidgetUiState(Mood.TIRED, minutes = 32, petName = "Bun", suggestedBreak = BreakType.NECK)
-    val Stiff = WidgetUiState(Mood.STIFF, minutes = 52, petName = "Bun", suggestedBreak = BreakType.STAND_UP)
-    val Sleeping = WidgetUiState(Mood.SLEEPING, minutes = null, petName = "Bun", suggestedBreak = BreakType.STAND_UP)
+    val Happy = WidgetUiState(Mood.HAPPY, minutes = 8, pet = PetId.BUN, petName = "Bun", suggestedBreak = BreakType.NECK)
+    val Tired = WidgetUiState(Mood.TIRED, minutes = 32, pet = PetId.BUN, petName = "Bun", suggestedBreak = BreakType.NECK)
+    val Stiff = WidgetUiState(Mood.STIFF, minutes = 52, pet = PetId.BUN, petName = "Bun", suggestedBreak = BreakType.STAND_UP)
+    val Sleeping = WidgetUiState(Mood.SLEEPING, minutes = null, pet = PetId.BUN, petName = "Bun", suggestedBreak = BreakType.STAND_UP)
+    val ToastHappy = WidgetUiState(Mood.HAPPY, minutes = 8, pet = PetId.TOAST, petName = "Toast", suggestedBreak = BreakType.NECK)
+    val ToastTired = WidgetUiState(Mood.TIRED, minutes = 32, pet = PetId.TOAST, petName = "Toast", suggestedBreak = BreakType.NECK)
 }

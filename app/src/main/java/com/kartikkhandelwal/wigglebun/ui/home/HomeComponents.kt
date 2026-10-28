@@ -58,9 +58,12 @@ import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
+import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
+import com.kartikkhandelwal.wigglebun.ui.components.SparksPill
 import com.kartikkhandelwal.wigglebun.ui.iconRes
 import com.kartikkhandelwal.wigglebun.ui.labelRes
 import com.kartikkhandelwal.wigglebun.ui.tint
+import com.kartikkhandelwal.wigglebun.ui.pet.PetSpec
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.SleepZSide
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonBorder
@@ -101,11 +104,12 @@ private val H = Dimens.Home
 
 // ---------- Desk scene ----------
 
-/** Top of Home: desk scene with Bun on the floor, menu button and sparks pill. */
+/** Top of Home: desk scene with the active pet on the floor, menu button and sparks pill. */
 @Composable
 fun DeskScene(
     energy: Float,
     mood: Mood,
+    pet: PetSpec,
     petName: String,
     sparks: Int,
     onOpenMenu: () -> Unit,
@@ -130,6 +134,7 @@ fun DeskScene(
             PetView(
                 energy = energy,
                 mood = mood,
+                spec = pet,
                 name = petName,
                 // The scene's plant pot sits just right of Bun's head; float the z's left over plain wall.
                 sleepZSide = SleepZSide.LEFT,
@@ -168,39 +173,6 @@ private fun MenuButton(onClick: () -> Unit) {
             Icon(painterResource(R.drawable.ic_menu), contentDescription = null, tint = Ink, modifier = Modifier.size(H.MenuIcon))
         }
     }
-}
-
-@Composable
-private fun SparksPill(sparks: Int) {
-    val description = pluralStringResource(R.plurals.cd_sparks, sparks, sparks)
-    ChunkySurface(
-        shape = WigglebunShapes.Pill,
-        faceColor = Card,
-        edgeColor = TopButtonEdge,
-        edgeHeight = H.TopButtonEdge,
-        modifier = Modifier.clearAndSetSemantics { contentDescription = description },
-    ) {
-        Row(
-            modifier = Modifier
-                .height(H.SparksHeight)
-                .padding(start = H.SparksPaddingStart, end = H.SparksPaddingEnd),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(H.SparksGap),
-        ) {
-            SparkIcon(H.SparksIcon)
-            Text(sparks.toString(), style = WigglebunTextStyles.Sparks, color = Ink)
-        }
-    }
-}
-
-@Composable
-internal fun SparkIcon(size: Dp) {
-    Icon(
-        painter = painterResource(R.drawable.ic_spark),
-        contentDescription = null,
-        tint = Color.Unspecified,
-        modifier = Modifier.size(size),
-    )
 }
 
 // ---------- Timer pill ----------

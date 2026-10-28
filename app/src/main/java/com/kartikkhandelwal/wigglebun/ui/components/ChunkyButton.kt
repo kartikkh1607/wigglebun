@@ -32,15 +32,18 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonBorder
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
+import com.kartikkhandelwal.wigglebun.ui.theme.CardEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.CheckIdle
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreen
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreenEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkEdge
+import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
 import com.kartikkhandelwal.wigglebun.ui.theme.SessionEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Sun
 import com.kartikkhandelwal.wigglebun.ui.theme.SunEdge
+import com.kartikkhandelwal.wigglebun.ui.theme.Track
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 
@@ -62,6 +65,12 @@ enum class ChunkyButtonStyle(
     ),
     Done(face = DoneGreen, edge = DoneGreenEdge, content = Card, edgeHeight = Dimens.ButtonEdge),
     Highlight(face = Sun, edge = SunEdge, content = Ink, edgeHeight = Dimens.ButtonEdge),
+
+    /**
+     * A button that can't be tapped yet but still says something ("With you", "30 more sparks"):
+     * flat Track face and full-strength InkMuted text instead of the 50% fade, so it stays legible.
+     */
+    Inactive(face = Track, edge = CardEdge, content = InkMuted, edgeHeight = Dimens.SecondaryButtonEdge),
 
     /** Secondary on the blue break-session background (BreakSession.dc.html "Pause"). */
     SessionSecondary(
@@ -91,7 +100,7 @@ fun ChunkyButton(
         edgeColor = style.edge,
         edgeHeight = style.edgeHeight,
         modifier = modifier
-            .alpha(if (enabled) 1f else 0.5f)
+            .alpha(if (enabled || style == ChunkyButtonStyle.Inactive) 1f else 0.5f)
             .defaultMinSize(minHeight = Dimens.ButtonHeight + style.edgeHeight),
         border = style.borderColor?.let { BorderStroke(Dimens.ButtonBorder, it) },
         onClick = onClick,

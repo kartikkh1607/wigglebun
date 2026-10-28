@@ -6,6 +6,7 @@
     <string name="pet_lab_mood_follows_energy">Mood follows energy</string>
     <string name="pet_lab_animate">Animate</string>
     <string name="pet_lab_celebrate">Celebrate</string>
+    <string name="pet_lab_add_sparks">+100 sparks</string>
     <string name="pet_lab_mood_happy">Happy</string>
     <string name="pet_lab_mood_tired">Tired</string>
     <string name="pet_lab_mood_stiff">Stiff</string>

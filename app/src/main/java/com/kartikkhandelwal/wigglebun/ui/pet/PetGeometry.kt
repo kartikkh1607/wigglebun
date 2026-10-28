@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.ui.pet
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -25,8 +26,8 @@ internal class PetGeometry(
     val sleepZLarge: TextLayoutResult,
     val sleepZSmall: TextLayoutResult,
 ) {
-    /** Body + ears, unioned so the overlapping ear circles never leave winding holes. */
-    val silhouette: Path = Path.combine(PathOperation.Union, parse(spec.bodyPath), ovals(spec.ears))
+    /** Body + ears (or tuft, puffs), unioned so overlapping shapes never leave winding holes. */
+    val silhouette: Path = Path.combine(PathOperation.Union, parse(spec.bodyPath), ovals(spec.silhouetteOvals))
     private val feetStanding: Path = ovals(spec.feet)
     private val armsSide: Path = ovals(spec.armsSide)
 
@@ -35,13 +36,13 @@ internal class PetGeometry(
         when (pose) {
             ArmPose.Side -> armsSide
             ArmPose.Up -> ovals(spec.armsUp)
-            else -> spec.poseArms[pose]?.let(::ovals) ?: armsSide
+            else -> PoseLayers.arms[pose]?.let { ovals(poseArmOvals(spec, it, spec.poseArmOffsets[pose])) } ?: armsSide
         }
     }
 
     /** Indexed by [FeetPose.ordinal]. */
     val feet: List<Path> = FeetPose.entries.map { pose ->
-        if (pose == FeetPose.Standing) feetStanding else spec.poseFeet[pose]?.let(::ovals) ?: feetStanding
+        if (pose == FeetPose.Standing) feetStanding else PoseLayers.feet[pose]?.let(::ovals) ?: feetStanding
     }
     val earsInner: Path = ovals(spec.earsInner)
     val cheeks: Path = ovals(spec.cheeks)
@@ -65,8 +66,18 @@ internal class PetGeometry(
         }
     }
 
-    /** Indexed by [MouthShape.ordinal]. */
-    val mouths: List<Path> = MouthShape.entries.map { parse(it.pathData).apply { translate(spec.mouthAnchor) } }
+    /**
+     * Indexed by [MouthShape.ordinal]. A beak (Pip) replaces every mouth: closed, or open where
+     * the mood's mouth is open (CELEBRATE).
+     */
+    val mouths: List<Path> = MouthShape.entries.map { shape ->
+        val beak = spec.beak
+        when {
+            beak == null -> parse(shape.pathData).apply { translate(spec.mouthAnchor) }
+            shape == MouthShape.Open -> parse(beak.openPath)
+            else -> parse(beak.closedPath)
+        }
+    }
 
     val sweatDrop: Path = parse(SWEAT_DROP).apply { translate(spec.sweatAnchor) }
 
@@ -74,12 +85,29 @@ internal class PetGeometry(
     val viewBox = Rect(0f, 0f, spec.viewBoxWidth, spec.viewBoxHeight)
     val layerPaint = Paint()
 
+    /** Crust layer (Toast): only as big as the silhouette, and composited onto it (SrcAtop). */
+    val silhouetteBounds: Rect = silhouette.getBounds()
+    val crustLayerPaint = Paint().apply { blendMode = BlendMode.SrcAtop }
+    val crustStroke: Stroke? = spec.crust?.let { Stroke(width = it.width, join = StrokeJoin.Round) }
+
     // Stroke widths from the mood SVGs, in viewBox units (the canvas is scaled before drawing).
     val eyeStroke = Stroke(width = 3.6f, cap = StrokeCap.Round)
     val mouthStroke = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
 
     private companion object {
         fun parse(pathData: String): Path = PathParser().parsePathString(pathData).toPath()
+
+        /**
+         * A pose's ovals for [spec]: a side without its own layer keeps the pet's resting arm;
+         * [offset] moves the pose's own ovals (mirrored for the right arm).
+         */
+        fun poseArmOvals(spec: PetSpec, arms: PoseArms, offset: Offset?): List<OvalSpec> {
+            fun List<OvalSpec>.moved(dx: Float): List<OvalSpec> =
+                if (offset == null) this else map { it.copy(cx = it.cx + dx, cy = it.cy + offset.y) }
+            val left = arms.left?.moved(offset?.x ?: 0f) ?: listOf(spec.armsSide.first())
+            val right = arms.right?.moved(-(offset?.x ?: 0f)) ?: listOf(spec.armsSide.last())
+            return left + right
+        }
 
         fun ovals(specs: List<OvalSpec>): Path = Path().apply {
             specs.forEach { oval ->

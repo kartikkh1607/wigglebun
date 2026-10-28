@@ -34,12 +34,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.data.repo.BreakDoneResult
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.rewards.Milestone
 import com.kartikkhandelwal.wigglebun.domain.rewards.Streak
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
 import com.kartikkhandelwal.wigglebun.ui.labelRes
+import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
+import com.kartikkhandelwal.wigglebun.ui.pet.displayName
+import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakSky
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
@@ -115,7 +119,8 @@ fun BreakSessionScreen(
     onDone: () -> Unit = {},
     onContinue: () -> Unit = {},
 ) {
-    val petName = state.petName ?: stringResource(R.string.pet_default_name)
+    val pet = state.pet
+    val petName = pet?.displayName().orEmpty()
     Box(
         modifier
             .fillMaxSize()
@@ -126,7 +131,7 @@ fun BreakSessionScreen(
         if (result == null) {
             SessionContent(state, petName, onClose, onTogglePause, onNext, onDone)
         } else {
-            CelebrationContent(result, petName, onContinue)
+            CelebrationContent(result, pet?.spec ?: PetSpecs.Bun, petName, onContinue)
         }
     }
 }
@@ -165,13 +170,16 @@ private fun SessionContent(
                     ringAlpha = timerAlpha,
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = S.RingTop).size(ring),
                 ) {
-                    PetView(
-                        energy = 1f,
-                        mood = state.mood,
-                        name = petName,
-                        pose = state.pose,
-                        modifier = Modifier.size(ring * PET_IN_RING),
-                    )
+                    state.pet?.let { pet ->
+                        PetView(
+                            energy = 1f,
+                            mood = state.mood,
+                            spec = pet.spec,
+                            name = petName,
+                            pose = state.pose,
+                            modifier = Modifier.size(ring * PET_IN_RING),
+                        )
+                    }
                 }
             }
             CountdownText(state.remainingMillis, Modifier.padding(top = S.TimerTop).alpha(timerAlpha))
@@ -210,7 +218,7 @@ internal object BreakSessionPreviewStates {
             countedMillis = durations[step] - remainingSeconds * MILLIS_PER_SECOND,
             runningSinceMillis = if (paused) null else 0L,
         )
-        return sessionUiState(type, petName = null, timer = timer, now = 0L, result = result)
+        return sessionUiState(type, pet = ActivePet.Default, timer = timer, now = 0L, result = result)
     }
 
     val StandUp = midStep(BreakType.STAND_UP, step = 0, remainingSeconds = 12)

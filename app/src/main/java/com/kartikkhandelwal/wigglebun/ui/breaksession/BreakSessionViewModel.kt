@@ -4,10 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.repo.BreakDoneResult
+import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.RecordBreakDone
 import com.kartikkhandelwal.wigglebun.data.time.ElapsedClock
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
 import com.kartikkhandelwal.wigglebun.ui.navigation.BreakSessionRoute
@@ -29,7 +30,7 @@ class BreakSessionViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val recordBreakDone: RecordBreakDone,
     private val elapsed: ElapsedClock,
-    settingsRepository: SettingsRepository,
+    petRepository: PetRepository,
 ) : ViewModel() {
 
     val type: BreakType = savedStateHandle.toRoute<BreakSessionRoute>().breakType
@@ -39,17 +40,17 @@ class BreakSessionViewModel @Inject constructor(
         stepCount = type.sessionSteps().size,
         now = elapsed.nowMillis(),
     )
-    private var petName: String? = null
+    private var pet: ActivePet? = null
     private var result: BreakDoneResult? = null
     private var completing = false
 
-    private val _state = MutableStateFlow(sessionUiState(type, petName, timer, elapsed.nowMillis(), result))
+    private val _state = MutableStateFlow(sessionUiState(type, pet, timer, elapsed.nowMillis(), result))
     val state: StateFlow<BreakSessionUiState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
-            settingsRepository.petName.collect {
-                petName = it
+            petRepository.activePet.collect {
+                pet = it
                 publish()
             }
         }
@@ -112,6 +113,6 @@ class BreakSessionViewModel @Inject constructor(
 
     private fun publish(now: Long = elapsed.nowMillis()) {
         timer = timer.advance(now)
-        _state.value = sessionUiState(type, petName, timer, now, result)
+        _state.value = sessionUiState(type, pet, timer, now, result)
     }
 }

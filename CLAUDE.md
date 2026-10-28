@@ -193,7 +193,8 @@ Animation:
 
 - Small (2×2): pet mood image + "32 min" since last break + tap → app.
 - Medium (4×2): pet + time + "Take a break" button (opens Break session).
-- Glance cannot run Compose animations; use one static PNG per mood per pet (480×504, transparent) in `res/drawable-nodpi`. Bun's `bun_mood_<mood>.png` are rendered from `PetView` by `WidgetPetImageTest` as Roborazzi references: `recordRoborazziDebug` rewrites them, `verifyRoborazziDebug` fails when they no longer match `PetView`. Don't copy the older `design/widget_png` exports over them.
+- Glance cannot run Compose animations; use one static PNG per mood per pet (480×504, transparent) in `res/drawable-nodpi`. Every pet's `<pet>_mood_<mood>.png` is rendered from `PetView` by `WidgetPetImageTest` as a Roborazzi reference: `recordRoborazziDebug` rewrites them, `verifyRoborazziDebug` fails when they no longer match `PetView`. Don't copy the older `design/widget_png` or `design/pets/<pet>/widget_png` exports over them.
+- The widget shows the active pet (the one "with you" in Collection); choosing or adopting a pet redraws it at once.
 - Update via WorkManager every 15 min during work hours and immediately after a break/snooze.
 
 ---
@@ -243,7 +244,9 @@ Reference mockups: `design/mockups_source/*.dc.html` (HTML source of every mocku
 | `PetPink` | `#F6A98A` | inner ears |
 | `PetBlush` | `#F7A58B` | cheeks |
 
-Break-type colours (icons, chips, weekly chart): Walk `#7DD3B0`, Neck `#7FB8F5`, Stand `#FFC857`, Eyes `#B9A3F0`, Wrist `#F68A6B`, Water `#F4A3C0`. Use their light tints for icon tiles: `#CDEFE0`, `#CFE3FB`, `#FFE3A3`, `#E6DDFB`, `#FDDCD2`, `#FCE1EC`.
+Break-type colours (icons, chips): Walk `#7DD3B0`, Neck `#7FB8F5`, Stand `#FFC857`, Eyes `#B9A3F0`, Wrist `#F68A6B`, Water `#F4A3C0`. Use their light tints for icon tiles: `#CDEFE0`, `#CFE3FB`, `#FFE3A3`, `#E6DDFB`, `#FDDCD2`, `#FCE1EC`.
+
+The weekly chart (Pet profile, "Last 7 days") uses category colours, not one per break type: Movement `#7DD3B0` (Stand up, Walk), Stretch `#7FB8F5` (Neck, Shoulders, Wrist), Eyes `#B9A3F0`, Water `#F4A3C0`; stacked Stretch, Movement, Eyes, Water from the bottom so Stretch blue and Eyes lilac never touch.
 
 Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer bar: happy `#4DB88A`, tired `#F2A93B`, stiff `#E5603A`.
 
@@ -311,3 +314,4 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 - Prices and trial length
 - Which 3 pets ship in v1
 - Streak milestone bonuses (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks are placeholders in `domain/rewards/RewardRules.kt`)
+- Pet prices (Pip 150 / Toast 200 / Nimbus 300 sparks are placeholders in `domain/rewards/PetPrices.kt`)

@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 
 /** An ellipse in viewBox units, optionally rotated about its own centre (SVG `rotate(deg cx cy)`). */
 @Immutable
@@ -19,29 +20,51 @@ data class OvalSpec(
 enum class SleepZSide { RIGHT, LEFT }
 
 /**
+ * A beak that replaces the mouth layer (Pip): [closedPath] in every mood, [openPath] (upper and
+ * lower beak) where the mood has an open mouth (CELEBRATE). Absolute viewBox path data, filled.
+ */
+@Immutable
+data class BeakSpec(val closedPath: String, val openPath: String, val color: Color)
+
+/**
+ * A band along the inside of the silhouette (Toast's crust): the silhouette stroked [width] wide
+ * and clipped to itself. It drains with the fill: [color] below fillTop, [drainedColor] above.
+ */
+@Immutable
+data class CrustSpec(val width: Float, val color: Color, val drainedColor: Color)
+
+/**
  * Everything needed to draw one pet with [PetView]. All coordinates are in the pet's SVG
- * viewBox (Bun: 0 0 200 210). Collection pets (Pip, Toast, Nimbus, ...) get their own spec;
- * face shapes ([FaceShapes]) are relative to the eye/mouth anchors so they are reused.
+ * viewBox (0 0 200 210 for every pet so far). Face shapes ([EyeShape], [MouthShape]) are
+ * relative to the eye/mouth anchors and break-session arms come from [PoseLayers], so every pet
+ * reuses them.
  */
 @Immutable
 data class PetSpec(
-    val id: String,
+    val id: PetId,
     @StringRes val defaultName: Int,
+    /** One short line about the pet (Collection sheet). */
+    @StringRes val blurb: Int,
     val viewBoxWidth: Float,
     val viewBoxHeight: Float,
 
-    /** `silhouette` layer: body path + round ears. This shape is what drains/fills. */
+    /** `silhouette` layer: this shape is what drains/fills. */
     val bodyPath: String,
-    val ears: List<OvalSpec>,
+    /** Shapes unioned with [bodyPath]: Bun's ears, Pip's feather tuft, Nimbus's three puffs. */
+    val silhouetteOvals: List<OvalSpec>,
     val feet: List<OvalSpec>,
+    /** Left arm first, then right (pose layers rely on the order). */
     val armsSide: List<OvalSpec>,
     val armsUp: List<OvalSpec>,
-    /** Break-session arm layers (both arms per pose); a missing pose falls back to [armsSide]. */
-    val poseArms: Map<ArmPose, List<OvalSpec>>,
-    /** Break-session feet layers; a missing pose falls back to [feet]. */
-    val poseFeet: Map<FeetPose, List<OvalSpec>>,
+    /**
+     * Moves a break-session arm layer where the pet's body would hide it (e.g. Toast's dome).
+     * The offset is for the left arm; the right arm gets it mirrored.
+     */
+    val poseArmOffsets: Map<ArmPose, Offset> = emptyMap(),
     val earsInner: List<OvalSpec>,
     val cheeks: List<OvalSpec>,
+    val beak: BeakSpec? = null,
+    val crust: CrustSpec? = null,
 
     val bodyColor: Color,
     val bodyEdgeColor: Color,
@@ -74,6 +97,8 @@ data class PetSpec(
     val sweatAnchor: Offset,
     /** Baseline-left of the big sleeping z; the small one floats up and to the right. */
     val sleepZAnchor: Offset,
+    /** Where the small z sits relative to the big one (right side; mirrored for the left). */
+    val sleepZStep: Offset,
     /**
      * [SleepZSide.LEFT]: baseline-right of the big z; the small one floats up and to the left.
      * Lower and further out than a straight mirror so the z's sit on plain wall in the desk scene.

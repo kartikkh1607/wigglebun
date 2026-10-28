@@ -7,14 +7,18 @@ import com.kartikkhandelwal.wigglebun.activity.StepCounter
 import com.kartikkhandelwal.wigglebun.activity.StepReading
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
+import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.RecordBreakDone
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
+import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
+import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitStatus
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
@@ -83,6 +87,8 @@ data class MovementCard(
 )
 
 data class PetLabState(
+    /** The active pet (M8): the lab draws whichever pet is with you. */
+    val pet: ActivePet = ActivePet.Default,
     val manual: ManualPet = ManualPet(),
     val followEngine: Boolean = true,
     val animated: Boolean = true,
@@ -105,6 +111,8 @@ class PetLabViewModel @Inject constructor(
     private val movementStore: MovementStore,
     private val permissions: MovementPermissions,
     private val stepCounter: StepCounter,
+    petRepository: PetRepository,
+    private val wallet: WalletRepository,
 ) : ViewModel() {
 
     private val controls = MutableStateFlow(LabControls(ManualPet(), followEngine = true, animated = true))
@@ -139,13 +147,14 @@ class PetLabViewModel @Inject constructor(
     }
 
     val state: StateFlow<PetLabState> = combine(
-        controls,
+        combine(controls, petRepository.activePet, ::Pair),
         sitRepository.status.filterNotNull(),
         settingsRepository.settings,
         clock.speed,
         movement,
-    ) { c, status, settings, speed, movementCard ->
+    ) { (c, pet), status, settings, speed, movementCard ->
         PetLabState(
+            pet = pet,
             manual = c.manual,
             followEngine = c.followEngine,
             animated = c.animated,
@@ -196,6 +205,11 @@ class PetLabViewModel @Inject constructor(
     fun skip() = viewModelScope.launch { sitRepository.skip(suggestedBreak()) }
 
     fun resetTimer() = viewModelScope.launch { sitRepository.resetTimer() }
+
+    /** Debug only: enough sparks to try adopting without doing 30 breaks first. */
+    fun addSparks() = viewModelScope.launch {
+        wallet.award("debug:${clock.millis()}", DEBUG_SPARKS, SparkReason.DEBUG, clock.instant())
+    }
 
     fun setFastClock(on: Boolean) = viewModelScope.launch {
         sitRepository.setClockSpeed(if (on) AppClock.FAST_SPEED else 1)
@@ -264,3 +278,5 @@ class PetLabViewModel @Inject constructor(
         }
     }
 }
+
+private const val DEBUG_SPARKS = 100

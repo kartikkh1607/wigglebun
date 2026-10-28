@@ -7,6 +7,15 @@
     <string name="tab_settings">Settings</string>
     <!-- Starter pet name; also the pet tab label until the user names their pet -->
     <string name="pet_default_name">Bun</string>
+    <!-- Collection pets keep their own names -->
+    <string name="pet_name_pip">Pip</string>
+    <string name="pet_name_toast">Toast</string>
+    <string name="pet_name_nimbus">Nimbus</string>
+    <!-- One line about each pet (Collection sheet) -->
+    <string name="pet_blurb_bun">A cosy bun who loves a good stretch.</string>
+    <string name="pet_blurb_pip">A chirpy bird who hops up for every break.</string>
+    <string name="pet_blurb_toast">Warm, golden and always ready to rise.</string>
+    <string name="pet_blurb_nimbus">A soft little cloud who floats along with you.</string>
 
     <!-- Pet accessibility labels; %1$s is the pet's name -->
     <string name="pet_desc_happy">%1$s, happy and full of energy</string>
@@ -35,7 +44,7 @@
     <string-array name="reminder_texts">
         <item>%1$s is getting stiff… 2-minute stretch?</item>
         <item>%1$s has been sitting with you for a while. Bun Break?</item>
-        <item>%1$s\'s ears are drooping. Stand up together?</item>
+        <item>%1$s is starting to droop. Stand up together?</item>
         <item>%1$s would love a quick wiggle. Coming?</item>
     </string-array>
     <!-- Suggested break, e.g. "Neck stretch · 2 min" -->
@@ -179,6 +188,73 @@
     <string name="widget_mood_tired">tired</string>
     <string name="widget_mood_stiff">getting stiff</string>
     <string name="widget_mood_sleeping">sleeping</string>
+
+    <!-- Collection tab (Collection.dc.html) -->
+    <string name="collection_subtitle">Earn sparks from breaks to adopt new friends.</string>
+    <string name="collection_with_you">With you</string>
+    <string name="collection_owned">Owned</string>
+    <!-- Card labels for TalkBack; %1$s is the pet's name -->
+    <string name="collection_cd_active">%1$s, with you</string>
+    <string name="collection_cd_owned">%1$s, adopted</string>
+    <plurals name="collection_cd_locked">
+        <item quantity="one">%1$s, adopt for %2$d spark</item>
+        <item quantity="other">%1$s, adopt for %2$d sparks</item>
+    </plurals>
+    <string name="collection_open_pet">see details</string>
+    <!-- Pet sheet -->
+    <string name="sheet_choose">Choose %1$s</string>
+    <string name="sheet_with_you">With you</string>
+    <!-- Followed by the sparks icon -->
+    <string name="sheet_adopt">Adopt for %1$d</string>
+    <plurals name="sheet_adopt_cd">
+        <item quantity="one">Adopt for %d spark</item>
+        <item quantity="other">Adopt for %d sparks</item>
+    </plurals>
+    <plurals name="sheet_more_sparks">
+        <item quantity="one">%d more spark</item>
+        <item quantity="other">%d more sparks</item>
+    </plurals>
+    <string name="adopt_confirm_title">Adopt %1$s?</string>
+    <!-- %1$d is the price, %2$d the current balance -->
+    <plurals name="adopt_confirm_body">
+        <item quantity="one">This uses %1$d of your %2$d sparks.</item>
+        <item quantity="other">This uses %1$d of your %2$d sparks.</item>
+    </plurals>
+    <string name="adopt_confirm_yes">Adopt</string>
+    <string name="adopt_confirm_no">Not now</string>
+    <string name="adopted_title">Welcome home, %1$s!</string>
+    <string name="adopted_body">%1$s is with you now.</string>
+    <string name="adopted_done">Yay!</string>
+
+    <!-- Pet profile tab -->
+    <string name="profile_streak">Streak</string>
+    <plurals name="profile_streak_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <!-- %d is how many different breaks a work day needs (1 once Settings can turn types off) -->
+    <plurals name="profile_streak_hint">
+        <item quantity="one">Do %d break on a work day to start a streak.</item>
+        <item quantity="other">Do %d different breaks on a work day to start a streak.</item>
+    </plurals>
+    <!-- e.g. "Today 2 of 4" (different breaks done / needed) -->
+    <string name="profile_today_progress">Today %1$d of %2$d</string>
+    <string name="profile_day_off">Today is a day off.</string>
+    <string name="profile_total">Total breaks</string>
+    <string name="profile_total_since">since you started</string>
+    <string name="profile_week_title">Last 7 days</string>
+    <plurals name="profile_week_total">
+        <item quantity="one">%d break</item>
+        <item quantity="other">%d breaks</item>
+    </plurals>
+    <string name="profile_week_empty">No breaks in the last 7 days yet.</string>
+    <!-- One day in the chart's spoken summary, e.g. "Monday, 3 breaks" -->
+    <plurals name="profile_chart_day">
+        <item quantity="one">%1$s, %2$d break</item>
+        <item quantity="other">%1$s, %2$d breaks</item>
+    </plurals>
+    <!-- %1$s lists the seven days -->
+    <string name="profile_chart_cd">Breaks in the last 7 days: %1$s</string>
 
     <!-- Content descriptions -->
     <string name="cd_done">Done</string>

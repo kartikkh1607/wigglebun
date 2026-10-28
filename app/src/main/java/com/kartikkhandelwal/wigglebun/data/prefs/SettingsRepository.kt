@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDayHistory
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
@@ -17,7 +18,7 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Work hours, break interval and pet name (CLAUDE.md §5.1). */
+/** Work hours, break interval, pet name and the active pet (CLAUDE.md §5.1). Backed up. */
 @Singleton
 class SettingsRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
@@ -33,6 +34,10 @@ class SettingsRepository @Inject constructor(
     /** Null until the user names the pet in onboarding (M9). */
     val petName: Flow<String?> = prefs.map { it[PrefsKeys.PetName] }.distinctUntilChanged()
 
+    /** The stored active pet; PetRepository checks it is owned. Unknown or missing = the starter pet. */
+    val activePetId: Flow<PetId> =
+        prefs.map { PetId.fromKey(it[PrefsKeys.ActivePet]) ?: PetId.Starter }.distinctUntilChanged()
+
     /** Work days over time, so the streak judges past days by the days in force back then. */
     val workDayHistory: Flow<WorkDayHistory> = prefs.map { it.toWorkDayHistory() }.distinctUntilChanged()
 
@@ -46,6 +51,10 @@ class SettingsRepository @Inject constructor(
             it.writeSchedule(schedule)
             it.writeWorkDayHistory(history)
         }
+    }
+
+    suspend fun setActivePet(pet: PetId) {
+        dataStore.edit { it[PrefsKeys.ActivePet] = pet.key }
     }
 
     suspend fun setInterval(minutes: Int) {

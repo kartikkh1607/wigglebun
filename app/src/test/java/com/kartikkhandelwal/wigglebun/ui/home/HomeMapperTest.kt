@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.home
 
 import com.kartikkhandelwal.wigglebun.data.db.BreakLogEntity
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
@@ -50,7 +51,7 @@ class HomeMapperTest {
         status: SitStatus,
         logs: List<BreakLogEntity> = emptyList(),
         focused: BreakType? = null,
-    ) = toHomeUiState(status, SittingSettings(), petName = null, sparks = 0, logsToday = logs, focused = focused, zone = zone)
+    ) = toHomeUiState(status, SittingSettings(), pet = ActivePet.Default, sparks = 0, logsToday = logs, focused = focused, zone = zone)
 
     private fun log(type: BreakType, outcome: BreakOutcome) =
         BreakLogEntity(type = type, completedAt = now.toEpochMilli(), reward = 0, outcome = outcome)

@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.home
 
 import com.kartikkhandelwal.wigglebun.data.db.BreakLogEntity
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
@@ -37,8 +38,8 @@ data class FocusUi(
 )
 
 data class HomeUiState(
-    /** Null until the user names the pet (M9); screens fall back to "Bun". */
-    val petName: String?,
+    /** The pet with the user (M8): drawn in the desk scene, named in the pill. */
+    val pet: ActivePet,
     val energy: Float,
     val mood: Mood,
     val pill: PillState,
@@ -67,7 +68,7 @@ fun SitStatus.isReminderDue(): Boolean {
 fun toHomeUiState(
     status: SitStatus,
     settings: SittingSettings,
-    petName: String?,
+    pet: ActivePet,
     sparks: Int,
     logsToday: List<BreakLogEntity>,
     focused: BreakType?,
@@ -94,7 +95,7 @@ fun toHomeUiState(
     }
 
     return HomeUiState(
-        petName = petName,
+        pet = pet,
         energy = quantize(status.energy),
         mood = status.mood,
         pill = pill,

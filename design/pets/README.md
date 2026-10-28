@@ -23,11 +23,15 @@ Per-pet extras (viewBox units):
 Files per pet:
 - `<name>/<name>_pet.svg`: layered base (happy), the source of truth for PetSpec.
 - `<name>/pet_moods/<name>_<mood>.svg`: happy, tired (0.55), stiff (0.18), sleep, celebrate, stretch.
-- `<name>/widget_png/<name>_mood_<mood>.png`: 480×504 transparent, for the Glance widget (M7).
+- `<name>/widget_png/<name>_mood_<mood>.png`: 480×504 transparent exports of the SVGs. The app
+  does not use these: its widget images (`res/drawable-nodpi/<name>_mood_<mood>.png`) are
+  rendered from `PetView` by `WidgetPetImageTest`, as Bun's are (CLAUDE.md §8). Don't copy these
+  over them.
 - `<name>/previews/<name>_pet.png`.
 - `all_moods_preview.png`, `collection_preview.png` (full / tired / locked silhouette): just for looking.
 - `generate_pets.py`: regenerates everything (needs `cairosvg`): `python generate_pets.py <out_dir>`.
 
 Break poses: reuse Bun's PoseSpec data. Arm positions in poses may need per-pet offsets
 (especially Toast, whose dome covers the area above y ~104). Check every pose per pet in a
-screenshot; don't invent new body shapes.
+screenshot; don't invent new body shapes. In the app these are `PetSpec.poseArmOffsets`, checked
+in `app/src/test/screenshots/pet_all_poses_<name>.png`.

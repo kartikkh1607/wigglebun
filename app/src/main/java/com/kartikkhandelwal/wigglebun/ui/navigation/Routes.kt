@@ -34,7 +34,7 @@ enum class TopLevelTab(
     Home(HomeRoute, R.string.tab_home, R.drawable.ic_tab_home),
     Collection(CollectionRoute, R.string.tab_collection, R.drawable.ic_tab_collection),
 
-    // Label is the pet's name; until onboarding stores one (M9) it is the starter pet "Bun".
+    // The label is replaced by the active pet's name (see WigglebunNavHost); this is the fallback.
     Pet(PetRoute, R.string.pet_default_name, R.drawable.ic_tab_pet, tintIcon = false),
     Settings(SettingsRoute, R.string.tab_settings, R.drawable.ic_tab_settings),
 }

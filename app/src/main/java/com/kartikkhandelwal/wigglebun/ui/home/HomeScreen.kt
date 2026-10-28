@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -29,15 +28,18 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
-import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.repo.BreakActions
 import com.kartikkhandelwal.wigglebun.data.repo.BreakRepository
+import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
 import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.ui.pet.displayName
+import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
@@ -70,6 +72,7 @@ class HomeViewModel @Inject constructor(
     settingsRepository: SettingsRepository,
     breakRepository: BreakRepository,
     walletRepository: WalletRepository,
+    petRepository: PetRepository,
     private val actions: BreakActions,
     private val clock: AppClock,
 ) : ViewModel() {
@@ -86,13 +89,13 @@ class HomeViewModel @Inject constructor(
 
     private val profile = combine(
         settingsRepository.settings,
-        settingsRepository.petName,
+        petRepository.activePet,
         walletRepository.balance,
-    ) { settings, name, sparks -> Triple(settings, name, sparks) }
+    ) { settings, pet, sparks -> Triple(settings, pet, sparks) }
 
     /** Null until the saved state has loaded (no default pet flashing on a cold start). */
-    val state: StateFlow<HomeUiState?> = combine(status, profile, logsToday, focused) { st, (settings, name, sparks), logs, focus ->
-        toHomeUiState(st, settings, name, sparks, logs, focus, clock.zone)
+    val state: StateFlow<HomeUiState?> = combine(status, profile, logsToday, focused) { st, (settings, pet, sparks), logs, focus ->
+        toHomeUiState(st, settings, pet, sparks, logs, focus, clock.zone)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun openBreak(type: BreakType) {
@@ -210,7 +213,7 @@ fun HomeScreen(
     debugEntry: @Composable () -> Unit = {},
     animateEntrance: Boolean = !LocalInspectionMode.current,
 ) {
-    val petName = state.petName ?: stringResource(R.string.pet_default_name)
+    val petName = state.pet.displayName()
     // Cards stagger in once per visit, not every time they scroll back into view.
     var entered by rememberSaveable { mutableStateOf(!animateEntrance) }
     LaunchedEffect(Unit) {
@@ -229,6 +232,7 @@ fun HomeScreen(
                 DeskScene(
                     energy = state.energy,
                     mood = state.mood,
+                    pet = state.pet.spec,
                     petName = petName,
                     sparks = state.sparks,
                     onOpenMenu = onOpenMenu,
@@ -284,7 +288,7 @@ internal object HomePreviewStates {
         done: Set<BreakType> = doneTwo,
         skipped: Set<BreakType> = emptySet(),
     ) = HomeUiState(
-        petName = null,
+        pet = ActivePet.Default,
         energy = energy,
         mood = mood,
         pill = pill,

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitState
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
@@ -24,6 +25,8 @@ internal object PrefsKeys {
     val WorkEndMinute = intPreferencesKey("work_end_minute")
     val IntervalMinutes = intPreferencesKey("interval_minutes")
     val PetName = stringPreferencesKey("pet_name")
+    /** [PetId.key] of the pet that is "with you" (M8). Missing = the starter pet. */
+    val ActivePet = stringPreferencesKey("active_pet")
     /** "2026-10-27=MONDAY,TUESDAY;…" (see [writeWorkDayHistory]). */
     val WorkDayHistory = stringPreferencesKey("work_day_history")
 

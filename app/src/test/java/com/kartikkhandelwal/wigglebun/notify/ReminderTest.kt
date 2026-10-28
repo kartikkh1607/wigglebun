@@ -9,7 +9,9 @@ import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -32,14 +34,14 @@ class ReminderTest {
     fun withoutPermissionReminderIsSkippedQuietly() {
         shadowOf(context).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
         assertFalse(notifier.canPost())
-        assertFalse(notifier.showReminder("Bun", BreakType.NECK, snoozesLeft = 3))
+        assertFalse(notifier.showReminder(ActivePet.Default, BreakType.NECK, snoozesLeft = 3))
         assertTrue(systemNotifications.allNotifications.isEmpty())
     }
 
     @Test
     fun reminderHasDoneSnoozeSkip() {
         shadowOf(context).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
-        assertTrue(notifier.showReminder("Mochi", BreakType.NECK, snoozesLeft = 3))
+        assertTrue(notifier.showReminder(ActivePet(PetId.BUN, chosenName = "Mochi"), BreakType.NECK, snoozesLeft = 3))
         val n = systemNotifications.allNotifications.single()
         assertEquals(ReminderNotifier.CHANNEL_ID, n.channelId)
         assertEquals(listOf("Done", "Snooze 10 min", "Skip"), n.actions.map { it.title.toString() })
@@ -50,10 +52,20 @@ class ReminderTest {
     @Test
     fun snoozeHiddenWhenNoneLeft() {
         shadowOf(context).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
-        notifier.showReminder(null, BreakType.WALK, snoozesLeft = 0)
+        notifier.showReminder(ActivePet.Default, BreakType.WALK, snoozesLeft = 0)
         val n = systemNotifications.allNotifications.single()
         assertEquals(listOf("Done", "Skip"), n.actions.map { it.title.toString() })
         assertTrue(n.extras.getCharSequence("android.text").toString().contains("Bun"))
+    }
+
+    /** M8: the reminder speaks as the active pet; Bun's chosen name never sticks to another pet. */
+    @Test
+    fun reminderUsesTheActivePetsName() {
+        shadowOf(context).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        notifier.showReminder(ActivePet(PetId.TOAST, chosenName = "Mochi"), BreakType.WALK, snoozesLeft = 3)
+        val text = systemNotifications.allNotifications.single().extras.getCharSequence("android.text").toString()
+        assertTrue(text, text.contains("Toast"))
+        assertFalse(text, text.contains("Mochi"))
     }
 
     @Test

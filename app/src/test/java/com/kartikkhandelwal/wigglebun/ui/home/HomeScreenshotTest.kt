@@ -10,6 +10,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
@@ -108,4 +110,21 @@ class HomeScreenshotTest {
     @Test
     @Config(fontScale = 1.3f)
     fun fontScale130Focus() = captureScreen("font_1_3_focus") { HomeWithFocusPreview(HomePreviewStates.FocusDue, inDialog = true) }
+
+    // ---- M8: the collection pets on Home ----
+
+    private fun withPet(state: HomeUiState, pet: PetId) = home(state.copy(pet = ActivePet(pet, chosenName = null)))
+
+    @Test fun tiredPip() = capture("tired_pip", withPet(HomePreviewStates.Tired, PetId.PIP))
+
+    @Test fun tiredToast() = capture("tired_toast", withPet(HomePreviewStates.Tired, PetId.TOAST))
+
+    @Test fun tiredNimbus() = capture("tired_nimbus", withPet(HomePreviewStates.Tired, PetId.NIMBUS))
+
+    /** The z's float on the left, clear of the plant pot, for every pet (sleepZAnchorLeft). */
+    @Test fun asleepPip() = capture("asleep_pip", withPet(HomePreviewStates.Asleep, PetId.PIP))
+
+    @Test fun asleepToast() = capture("asleep_toast", withPet(HomePreviewStates.Asleep, PetId.TOAST))
+
+    @Test fun asleepNimbus() = capture("asleep_nimbus", withPet(HomePreviewStates.Asleep, PetId.NIMBUS))
 }

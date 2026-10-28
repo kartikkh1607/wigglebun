@@ -8,10 +8,11 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
-import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
+import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
+import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -27,15 +28,16 @@ internal interface WidgetEntryPoint {
     fun store(): SitStateStore
 
     fun settings(): SettingsRepository
+
+    fun pets(): PetRepository
 }
 
 /** Reads the current sit state once; the widget is redrawn by [WidgetRefresher], not by a ticker. */
 internal suspend fun loadWidgetState(context: Context): WidgetUiState {
     val app = EntryPointAccessors.fromApplication(context.applicationContext, WidgetEntryPoint::class.java)
-    val settings = app.settings()
-    val status = app.engine().status(app.store().current(), settings.current())
-    val petName = settings.petName.first() ?: context.getString(R.string.pet_default_name)
-    return WidgetUiState.from(status, petName)
+    val status = app.engine().status(app.store().current(), app.settings().current())
+    val pet = app.pets().activePet.first()
+    return WidgetUiState.from(status, pet.id, pet.displayName(context))
 }
 
 /**
