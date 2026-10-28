@@ -52,7 +52,9 @@ import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
+import java.util.TimeZone
 
 /** Repository wiring: engine + DataStore + Room + notifier + alarm, as the receivers use it. */
 @RunWith(AndroidJUnit4::class)
@@ -94,6 +96,23 @@ class SitRepositoryTest {
     }
 
     private fun loggedBreaks() = runBlocking { db.breakLogDao().observeSince(0).first() }
+
+    /**
+     * Runs [block] in a zone where it is now about noon. Even AlwaysOn's work day ends at midnight,
+     * and the alarm goes off at the reminder or the day's end, whichever is first; so a test that
+     * expects the reminder failed when run within 45 minutes of local midnight.
+     */
+    private fun <T> aroundNoon(block: () -> T): T {
+        val saved = TimeZone.getDefault()
+        val utcHour = Instant.now().atZone(ZoneOffset.UTC).hour
+        val offsetHours = (12 - utcHour + 12).mod(24) - 12 // -12..+11, so local time is 12:xx
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.ofHours(offsetHours)))
+        return try {
+            block()
+        } finally {
+            TimeZone.setDefault(saved)
+        }
+    }
 
     @Test
     fun appStartStartsTimerAndArmsAlarm() = runBlocking {
@@ -160,7 +179,11 @@ class SitRepositoryTest {
 
     /** Review fix: changing settings re-arms the alarm without anyone calling checkReminder(). */
     @Test
-    fun settingsChangeReArmsTheAlarm() = runBlocking {
+    fun settingsChangeReArmsTheAlarm() = aroundNoon {
+        runBlocking { settingsChangeReArmsTheAlarmAt() }
+    }
+
+    private suspend fun settingsChangeReArmsTheAlarmAt() {
         settings.setSchedule(WorkSchedule.AlwaysOn)
         repo.onAppStart()
         val start = store.current().sitStartedAt!!
