@@ -87,4 +87,25 @@ class WidgetScreenshotTest {
     @Test
     @Config(fontScale = 1.3f)
     fun mediumLongNameFontScale130() = capture("medium_long_name_font_1_3", longName, WigglebunWidget.MEDIUM)
+
+    // ---- Font scale on the medium widget: the text keeps the user's size; the pet gives way. ----
+
+    @Test
+    fun mediumFontScale100() = capture("medium_font_1_0", WidgetPreviewStates.Tired, WigglebunWidget.MEDIUM)
+
+    @Test
+    @Config(fontScale = 1.3f)
+    fun mediumFontScale130() = capture("medium_font_1_3", WidgetPreviewStates.Tired, WigglebunWidget.MEDIUM)
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun mediumFontScale200() = capture("medium_font_2_0", WidgetPreviewStates.Tired, WigglebunWidget.MEDIUM)
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun mediumSleepingFontScale200() = capture("medium_sleeping_font_2_0", WidgetPreviewStates.Sleeping, WigglebunWidget.MEDIUM)
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun smallFontScale200() = capture("small_font_2_0", WidgetPreviewStates.Tired, WigglebunWidget.SMALL)
 }

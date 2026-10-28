@@ -27,6 +27,8 @@ import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
+import androidx.glance.semantics.contentDescription
+import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
@@ -48,16 +50,17 @@ import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
 @Composable
 fun WidgetContent(state: WidgetUiState, medium: Boolean) {
     val context = LocalContext.current
+    val fit = WidgetTextFit.of(context.resources.configuration.fontScale)
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
             // A shape drawable, not cornerRadius(): that one is ignored below Android 12.
             .background(ImageProvider(R.drawable.widget_background))
-            .padding(Dimens.Widget.Padding)
+            .padding(if (fit == WidgetTextFit.HUGE) Dimens.Widget.PaddingHugeText else Dimens.Widget.Padding)
             .clickable(openApp(context)),
         contentAlignment = Alignment.Center,
     ) {
-        if (medium) MediumContent(state) else SmallContent(state)
+        if (medium) MediumContent(state, fit) else SmallContent(state)
     }
 }
 
@@ -77,20 +80,59 @@ private fun SmallContent(state: WidgetUiState) {
     }
 }
 
+/**
+ * How the medium widget makes room for the user's font size. The text is never shrunk below it;
+ * the text column takes priority and the pet gives way, because the 4×2 widget can be as short
+ * as 110 dp and the pet is decoration (its mood is in the minutes and, for TalkBack, in words).
+ */
+internal enum class WidgetTextFit {
+    /** Up to 100%: pet at full width, every line. */
+    REGULAR,
+
+    /** Above 100% (e.g. 130%): a smaller pet so "since last break" and "Take a break" fit whole. */
+    LARGE,
+
+    /**
+     * From 160% (e.g. 200%): no pet, and the "since last break" line is left out, as on the small
+     * widget, so the minutes and the button still fit 110 dp. TalkBack still reads the whole sentence.
+     */
+    HUGE;
+
+    companion object {
+        private const val HUGE_FROM = 1.6f
+
+        fun of(fontScale: Float): WidgetTextFit = when {
+            fontScale <= 1f -> REGULAR
+            fontScale < HUGE_FROM -> LARGE
+            else -> HUGE
+        }
+    }
+}
+
 @Composable
-private fun MediumContent(state: WidgetUiState) {
+private fun MediumContent(state: WidgetUiState, fit: WidgetTextFit) {
     val context = LocalContext.current
     Row(modifier = GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-        PetImage(state, GlanceModifier.width(Dimens.Widget.MediumPetWidth).fillMaxHeight())
-        Spacer(GlanceModifier.width(Dimens.Widget.Gap))
+        if (fit != WidgetTextFit.HUGE) {
+            val petWidth = if (fit == WidgetTextFit.LARGE) Dimens.Widget.MediumPetWidthLargeText else Dimens.Widget.MediumPetWidth
+            PetImage(state, GlanceModifier.width(petWidth).fillMaxHeight())
+            Spacer(GlanceModifier.width(Dimens.Widget.Gap))
+        }
         Column(modifier = GlanceModifier.defaultWeight(), verticalAlignment = Alignment.CenterVertically) {
             if (state.isSleeping) {
                 Text(text = context.getString(R.string.widget_sleeping_title), style = titleStyle(), maxLines = 1)
                 Text(text = context.getString(R.string.widget_asleep_detail), style = labelStyle(InkMuted), maxLines = 2)
             } else {
-                Text(text = timeText(context, state), style = titleStyle(), maxLines = 1)
-                Text(text = context.getString(R.string.widget_since_break), style = labelStyle(InkMuted), maxLines = 1)
-                Spacer(GlanceModifier.height(Dimens.Widget.ColumnGap))
+                val time = timeText(context, state)
+                if (fit == WidgetTextFit.HUGE) {
+                    val spoken = context.getString(R.string.widget_cd_time_and_pet, time, petDescription(context, state))
+                    Text(text = time, style = titleStyle(), maxLines = 1, modifier = GlanceModifier.semantics { contentDescription = spoken })
+                } else {
+                    Text(text = time, style = titleStyle(), maxLines = 1)
+                    Text(text = context.getString(R.string.widget_since_break), style = labelStyle(InkMuted), maxLines = 1)
+                }
+                val gap = if (fit == WidgetTextFit.REGULAR) Dimens.Widget.ColumnGap else Dimens.Widget.ColumnGapLargeText
+                Spacer(GlanceModifier.height(gap))
                 BreakButton(state.suggestedBreak)
             }
         }
@@ -102,7 +144,7 @@ private fun PetImage(state: WidgetUiState, modifier: GlanceModifier) {
     val context = LocalContext.current
     Image(
         provider = ImageProvider(state.petImage),
-        contentDescription = context.getString(R.string.widget_cd_pet, state.petName, context.getString(moodLabel(state.mood))),
+        contentDescription = petDescription(context, state),
         contentScale = ContentScale.Fit,
         modifier = modifier,
     )
@@ -126,6 +168,9 @@ private fun BreakButton(type: BreakType) {
         )
     }
 }
+
+private fun petDescription(context: Context, state: WidgetUiState): String =
+    context.getString(R.string.widget_cd_pet, state.petName, context.getString(moodLabel(state.mood)))
 
 private fun timeText(context: Context, state: WidgetUiState): String {
     val minutes = state.minutes ?: return context.getString(R.string.widget_sleeping_short)

@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonBorder
@@ -127,9 +128,16 @@ fun ChunkyButton(
     modifier: Modifier = Modifier,
     style: ChunkyButtonStyle = ChunkyButtonStyle.Primary,
     enabled: Boolean = true,
+    /** Long labels in full-width buttons: wrap to more lines instead of clipping at large font sizes. */
+    wrap: Boolean = false,
 ) {
     ChunkyButton(onClick = onClick, modifier = modifier, style = style, enabled = enabled) {
-        Text(text = text, maxLines = 1)
+        if (wrap) {
+            // Wraps rather than clips at large font sizes (200% on a small phone): the button grows taller.
+            Text(text = text, textAlign = TextAlign.Center)
+        } else {
+            Text(text = text, maxLines = 1)
+        }
     }
 }
 

@@ -244,6 +244,7 @@ private fun SittingContent(pill: PillState.Sitting, petName: String, showBreakCt
                 text = stringResource(R.string.home_take_break),
                 onClick = onTakeBreak,
                 modifier = Modifier.fillMaxWidth().padding(top = H.CtaTopGap),
+                wrap = true,
             )
         }
     }

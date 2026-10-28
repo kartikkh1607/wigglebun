@@ -43,6 +43,12 @@ object Dimens {
         val ButtonHeight = 32.dp
         val ButtonHorizontalPadding = 14.dp
 
+        // Large font sizes (WidgetTextFit): the text keeps the user's size, so the pet and the
+        // spacing give way. 130%: smaller pet; 200%: no pet, tighter padding.
+        val MediumPetWidthLargeText = 56.dp
+        val ColumnGapLargeText = 2.dp
+        val PaddingHugeText = 8.dp
+
         // Glance can't use bundled fonts, so the system font at the app's type sizes.
         val TitleSize = 20.sp
         val LabelSize = 14.sp

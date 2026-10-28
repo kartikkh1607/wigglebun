@@ -201,6 +201,7 @@ Animation:
 
 - Small (2×2): pet mood image + "32 min" since last break + tap → app.
 - Medium (4×2): pet + time + "Take a break" button (opens Break session).
+- Large font sizes (`WidgetTextFit` in `widget/WidgetContent.kt`): text is never shrunk below the user's font scale and never truncated; the text column takes priority over the pet. Above 100% (e.g. 130%) the medium pet narrows to 56 dp so "since last break" and "Take a break" fit whole. From 160% (e.g. 200%) the pet is hidden and the "since last break" line is left out, as on the small widget; TalkBack still reads "32 min since last break. Bun, tired". Roborazzi references: `widget_medium_font_1_0/1_3/2_0`, `widget_medium_sleeping_font_2_0`, `widget_small_font_2_0`; Home at 200%: `home_*font_2_0*`.
 - Glance cannot run Compose animations; use one static PNG per mood per pet (480×504, transparent) in `res/drawable-nodpi`. Every pet's `<pet>_mood_<mood>.png` is rendered from `PetView` by `WidgetPetImageTest` as a Roborazzi reference: `recordRoborazziDebug` rewrites them, `verifyRoborazziDebug` fails when they no longer match `PetView`. Don't copy the older `design/widget_png` or `design/pets/<pet>/widget_png` exports over them.
 - The widget shows the active pet (the one "with you" in Collection); choosing or adopting a pet redraws it at once.
 - Update via WorkManager every 15 min during work hours and immediately after a break/snooze.

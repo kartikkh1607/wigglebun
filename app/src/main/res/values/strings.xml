@@ -187,6 +187,8 @@
     <string name="widget_asleep_detail">Outside work hours</string>
     <!-- e.g. "Bun, tired" -->
     <string name="widget_cd_pet">%1$s, %2$s</string>
+    <!-- Large font sizes hide the pet and the "since last break" line, so TalkBack reads them here: "32 min since last break. Bun, tired" -->
+    <string name="widget_cd_time_and_pet">%1$s since last break. %2$s</string>
     <string name="widget_mood_happy">happy</string>
     <string name="widget_mood_tired">tired</string>
     <string name="widget_mood_stiff">getting stiff</string>

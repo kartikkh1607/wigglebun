@@ -148,4 +148,36 @@ class HomeScreenshotTest {
     @Test fun widestName() = capture("widest_name", named(HomePreviewStates.Tired, TestPetNames.WIDEST))
 
     @Test fun widestNameAsleep() = capture("widest_name_asleep", named(HomePreviewStates.Asleep, TestPetNames.WIDEST))
+
+    // ---- 200% font (the largest system setting): nothing on Home may clip ----
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun fontScale200() = capture("font_2_0", home(HomePreviewStates.Stiff))
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun fontScale200Asleep() = capture("font_2_0_asleep", home(HomePreviewStates.Asleep))
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun fontScale200Focus() = captureScreen("font_2_0_focus") { HomeWithFocusPreview(HomePreviewStates.FocusDue, inDialog = true) }
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun fontScale200FocusNotDue() = captureScreen("font_2_0_focus_not_due") { HomeWithFocusPreview(HomePreviewStates.FocusNotDue, inDialog = true) }
+
+    @Test
+    @Config(fontScale = 2.0f)
+    fun longNameFontScale200() = capture("long_name_font_2_0", named(HomePreviewStates.Tired, TestPetNames.WIDEST))
+
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 2.0f)
+    fun smallPhoneFontScale200() = capture("small_phone_font_2_0", home(HomePreviewStates.Stiff))
+
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 2.0f)
+    fun smallPhoneFontScale200Focus() = captureScreen("small_phone_font_2_0_focus") {
+        HomeWithFocusPreview(HomePreviewStates.FocusDue, inDialog = true)
+    }
 }
