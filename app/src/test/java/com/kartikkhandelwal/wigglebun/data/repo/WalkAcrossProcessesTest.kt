@@ -172,4 +172,19 @@ class WalkAcrossProcessesTest {
             assertFalse(movementStore.current().registered)
         }
     }
+
+    /** Safety cap: even while tracking, a walk open for 45 min is closed by the next check. */
+    @Test
+    fun aWalkOpenPastTheCapIsClosedByTheNextCheck() = runBlocking {
+        startWalkInFirstProcess(walkedMinutes = 50)
+        val enter = checkNotNull(store.current().movingSince)
+
+        AppProcess(registrationSucceeds = true).use { second ->
+            second.awaitStartupCheck()
+            second.repo.checkReminder()
+            assertNull(store.current().movingSince)
+            assertEquals(enter.plus(SittingEngine.MAX_OPEN_WALK), store.current().sitStartedAt)
+            assertEquals(ResetReason.WALKING, store.current().lastResetReason)
+        }
+    }
 }
