@@ -19,8 +19,9 @@ import kotlin.coroutines.resume
 private const val TAG = "Movement"
 
 /** Subscribes/unsubscribes to Activity Recognition transitions (delivered to [MovementReceiver]). */
+// Open so tests can stand in for Play services (registration success or failure).
 @Singleton
-class TransitionRegistrar @Inject constructor(
+open class TransitionRegistrar @Inject constructor(
     @ApplicationContext private val context: Context,
     private val permissions: MovementPermissions,
 ) {
@@ -44,7 +45,7 @@ class TransitionRegistrar @Inject constructor(
      * Returns false on any failure (no permission, Play services missing/disabled).
      */
     @SuppressLint("MissingPermission") // checked via permissions.granted()
-    suspend fun register(): Boolean {
+    open suspend fun register(): Boolean {
         if (!permissions.granted()) return false
         return runCatching { client.requestActivityTransitionUpdates(request, pendingIntent()).awaitSuccess() }
             .onFailure { Log.w(TAG, "Transition registration failed", it) }
@@ -52,7 +53,7 @@ class TransitionRegistrar @Inject constructor(
     }
 
     @SuppressLint("MissingPermission")
-    suspend fun unregister() {
+    open suspend fun unregister() {
         runCatching { client.removeActivityTransitionUpdates(pendingIntent()).awaitSuccess() }
             .onFailure { Log.w(TAG, "Transition unregister failed", it) }
     }
