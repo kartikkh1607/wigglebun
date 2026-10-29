@@ -130,15 +130,15 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 - Currency: one soft currency (working name: "sparks"). Earned only by completing breaks and streak milestones.
 - A break type earns its spark reward only the first time it is completed each day; repeat Done resets the timer and celebrates but gives no sparks.
-- Spend on: new pets (collection) in v1; outfits in v2. Pet prices (`domain/rewards/PetPrices.kt`): Pip 75, Toast 175, Nimbus 300 sparks. Targets are in work days; `EconomyTest` pins them (see the table below).
+- Spend on: new pets (collection) in v1; outfits in v2. Pet prices (`domain/rewards/PetPrices.kt`): Pip 75, Toast 150, Nimbus 300 sparks. Targets are in work days; `EconomyTest` pins them (see the table below).
 - Streak: number of work days in a row with at least N breaks (default 4).
 - Streak bonuses (`domain/rewards/RewardRules.kt`): the 3 / 7 / 14 / 30-day milestones (20 / 50 / 100 / 250 sparks) pay **once per lifetime** (ledger key `milestone:<days>`), so breaking a streak on purpose and rebuilding it never pays them again. After 30 days, every further 30 days of the **same unbroken streak** (day 60, 90, …) pays +250 (key `streak:<days>:<start>`). DB v4 migrated older installs: each milestone's first per-streak payment was renamed to its lifetime key, so nothing is paid twice and no sparks are taken back.
 - Work days to afford each pet, bought cheapest first (`EconomyTest`; every day a work day):
 
-  | User | Breaks a day | Sparks a day | Pip (75) | Toast (+175) | Nimbus (+300) |
+  | User | Breaks a day | Sparks a day | Pip (75) | Toast (+150) | Nimbus (+300) |
   |---|---|---|---|---|---|
-  | Light | 3 types, below the streak goal | 15 | day 5 | day 17 | day 37 |
-  | Normal | 4 types incl. Walk, streak kept | 25 + milestones | day 3 | day 8 | day 16 |
+  | Light | 3 types, below the streak goal | 15 | day 5 | day 15 | day 35 |
+  | Normal | 4 types incl. Walk, streak kept | 25 + milestones | day 3 | day 7 | day 15 |
   | Heavy | all 7 types, streak kept | 40 + milestones | day 2 | day 6 | day 12 |
 
 ### 5.5 Premium (hard paywall with free trial)
@@ -147,7 +147,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 - Paywall appears in the **first session, right after one value moment** (pet wakes up, user names it, does the first 1-minute stretch, pet celebrates). Most trial starts happen on install day, so this first paywall is the most important screen in the app.
 - Products: yearly subscription with a **7-day free trial** (default, highlighted), monthly subscription, lifetime one-time. Prices decided in Play Console. The trial length lives in code in one place, `billing/Trial.kt` (`FREE_TRIAL_DAYS`); the Play Console offer's free phase must match it.
 - In Play Console, make sure the yearly base plan has an offer with a **free phase**; in code, check the offer actually has a free trial phase before showing "Start free trial" text.
-- **Trial-end reminder:** Android does not send one. Schedule our own local notification 2 days before trial ends (`Trial.END_REMINDER_DAYS_BEFORE`), i.e. on day 5 of the 7 ("Your free trial ends on …"). Honest and reduces refunds/1-star reviews.
+- **Trial-end reminder:** Android does not send one. Schedule our own local notification 2 days before trial ends (`Trial.END_REMINDER_DAYS_BEFORE`): 5 days after the trial starts, i.e. on day 6 counting install day as day 1 (the trial ends at the same time of day on day 8) ("Your free trial ends on …"). Honest and reduces refunds/1-star reviews.
 - Paywall must show: price after trial, billing period, how to cancel (Play Store → Subscriptions), restore purchases, terms + privacy links.
 - If the user closes the paywall: show a calm "locked" home with the sleeping pet and a single "Start free trial" button. No dark patterns, no fake timers.
 - Entitlement checks go through RevenueCat (`CustomerInfo`), cached for offline use.
@@ -326,4 +326,4 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 - Prices (~~trial length~~ decided: 7 days)
 - Which 3 pets ship in v1
 - Streak milestone amounts (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks, once per lifetime, then +250 per further 30 days of one streak; amounts are placeholders in `domain/rewards/RewardRules.kt`)
-- ~~Pet prices~~ Decided: Pip 75 / Toast 175 / Nimbus 300 sparks (`domain/rewards/PetPrices.kt`)
+- ~~Pet prices~~ Decided: Pip 75 / Toast 150 / Nimbus 300 sparks (`domain/rewards/PetPrices.kt`)
