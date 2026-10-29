@@ -185,6 +185,11 @@ class WalkAcrossProcessesTest {
             assertNull(store.current().movingSince)
             assertEquals(enter.plus(SittingEngine.MAX_OPEN_WALK), store.current().sitStartedAt)
             assertEquals(ResetReason.WALKING, store.current().lastResetReason)
+
+            // A capped walk may be a false one (detection died while sitting): it only resets the
+            // timer. No break is logged, so no sparks, no break type done today and no streak credit.
+            assertTrue(BreakRepository(db.breakLogDao()).doneBreaks().isEmpty())
+            assertTrue(db.sparkLedgerDao().all().isEmpty())
         }
     }
 }
