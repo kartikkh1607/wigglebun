@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.ui.pet
 
 import androidx.compose.ui.geometry.Offset
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.domain.model.AccessorySlot
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyes
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeck
@@ -63,4 +64,6 @@ internal val NimbusSpec = PetSpec(
     sleepZStep = Offset(16f, -18f),
     // Bun's rule: the mirror of the right anchor, 11 further out and 6 lower.
     sleepZAnchorLeft = Offset(39f, 38f),
+    // HEAD on the top puff.
+    accessoryAnchors = AccessorySpecs.DefaultAnchors + (AccessorySlot.HEAD to AccessoryAnchor(Offset(100f, 38f))),
 )

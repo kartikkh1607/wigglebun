@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakSky
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
@@ -57,6 +58,7 @@ private const val POSE_DAMPING = 0.6f
  *   plant pot in the desk scene.
  * @param pose break-session pose (CLAUDE.md §7); its rotation, scale and lift spring from the
  *   previous pose, its arm / eye / feet layers swap at once. Null = the mood alone.
+ * @param accessories what the pet wears (at most one per slot); not on locked pets or the widget.
  */
 @Composable
 fun PetView(
@@ -68,6 +70,7 @@ fun PetView(
     animated: Boolean = !LocalInspectionMode.current,
     sleepZSide: SleepZSide = SleepZSide.RIGHT,
     pose: PoseSpec? = null,
+    accessories: List<AccessoryId> = emptyList(),
 ) {
     val moodSpec = mood.spec()
     val energyState = animateFloatAsState(
@@ -122,6 +125,7 @@ fun PetView(
             poseScaleX = poseScaleX.value,
             poseScaleY = poseScaleY.value,
             poseLift = poseLift.value,
+            accessories = accessories,
         )
     }
 }
