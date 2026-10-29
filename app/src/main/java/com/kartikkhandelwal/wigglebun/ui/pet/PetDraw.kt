@@ -152,6 +152,8 @@ private fun DrawScope.drawBody(
     }
 
     drawPath(geometry.cheeks, spec.cheekColor)
+    // Glasses go under the mouth: Pip's beak sits right below the bridge and must show whole.
+    drawAccessories(spec, accessories, AccessorySlot.FACE)
 
     val mouth = geometry.mouths[mood.mouth.ordinal]
     val beak = spec.beak
@@ -161,7 +163,6 @@ private fun DrawScope.drawBody(
         if (mood.mouth.filled) drawPath(mouth, spec.featureColor)
         drawPath(mouth, spec.featureColor, style = geometry.mouthStroke)
     }
-    drawAccessories(spec, accessories, AccessorySlot.FACE)
     drawAccessories(spec, accessories, AccessorySlot.HEAD)
 
     if (mood.sweat) {
