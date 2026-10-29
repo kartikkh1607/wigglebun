@@ -53,6 +53,9 @@ android {
                     "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
                     "--enable-native-access=ALL-UNNAMED",
                 )
+                // Robolectric downloads its android-all jars from Maven Central at test time;
+                // use the same mirror as settings.gradle.kts so CI doesn't hit Central's 429s.
+                it.systemProperty("robolectric.dependency.repo.url", "https://maven-central.storage-download.googleapis.com/maven2/")
             }
         }
     }
