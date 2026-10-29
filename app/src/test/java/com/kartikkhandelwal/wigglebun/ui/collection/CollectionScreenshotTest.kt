@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.pet.TestPetNames
@@ -117,4 +118,27 @@ class CollectionScreenshotTest {
             ),
         ),
     )
+
+    // ---- Accessories (M8b): Pets | Accessories switch, buy and wear ----
+
+    @Test fun accessoriesTab() = capture("accessories", grid(states.Accessories))
+
+    @Test fun accessorySheetBuy() = capture("accessory_sheet_buy", sheet(states.accessorySheet(states.Accessories.copy(sparks = 100), AccessoryId.KNIT_SCARF)))
+
+    @Test fun accessorySheetShort() = capture("accessory_sheet_short", sheet(states.accessorySheet(states.Accessories, AccessoryId.BEANIE)))
+
+    @Test fun accessorySheetWear() = capture("accessory_sheet_wear", sheet(states.accessorySheet(states.Accessories, AccessoryId.FLOWER_CLIP)))
+
+    @Test fun accessorySheetTakeOff() = capture("accessory_sheet_take_off", sheet(states.accessorySheet(states.Accessories, AccessoryId.ROUND_GLASSES)))
+
+    @Test
+    fun accessorySheetConfirm() =
+        capture("accessory_sheet_confirm", sheet(states.accessorySheet(states.Accessories.copy(sparks = 100), AccessoryId.KNIT_SCARF, AccessoryStep.CONFIRM)))
+
+    /** The Pets tab shows each owned pet in its own outfit. */
+    @Test fun petsWearingOutfits() = capture("pets_wearing", grid(states.Accessories.copy(tab = CollectionTab.PETS)))
+
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 1.3f)
+    fun accessoriesSmallPhoneFontScale130() = capture("accessories_small_font", grid(states.Accessories))
 }

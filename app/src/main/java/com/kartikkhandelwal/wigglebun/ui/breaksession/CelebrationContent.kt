@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.data.repo.BreakDoneResult
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.rewards.Milestone
 import com.kartikkhandelwal.wigglebun.domain.rewards.Streak
@@ -56,6 +57,7 @@ internal fun CelebrationContent(
     petName: String,
     onContinue: () -> Unit,
     modifier: Modifier = Modifier,
+    accessories: List<AccessoryId> = emptyList(),
 ) {
     Column(modifier.fillMaxSize()) {
         Column(
@@ -69,7 +71,14 @@ internal fun CelebrationContent(
             // The pet gives way first on short screens, so the rewards always stay visible.
             BoxWithConstraints(Modifier.weight(1f, fill = false), contentAlignment = Alignment.Center) {
                 val petSize = minOf(S.CelebratePetSize, maxHeight)
-                PetView(energy = 1f, mood = Mood.CELEBRATE, spec = pet, name = petName, modifier = Modifier.size(petSize))
+                PetView(
+                    energy = 1f,
+                    mood = Mood.CELEBRATE,
+                    spec = pet,
+                    name = petName,
+                    accessories = accessories,
+                    modifier = Modifier.size(petSize),
+                )
             }
             Column(
                 // Announced once when the celebration appears.

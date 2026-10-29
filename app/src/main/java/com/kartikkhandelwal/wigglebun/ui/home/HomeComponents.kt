@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
@@ -62,7 +63,6 @@ import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
 import com.kartikkhandelwal.wigglebun.ui.components.SparksPill
 import com.kartikkhandelwal.wigglebun.ui.iconRes
 import com.kartikkhandelwal.wigglebun.ui.labelRes
-import com.kartikkhandelwal.wigglebun.ui.tint
 import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpec
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
@@ -88,6 +88,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.TopButtonEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Track
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
+import com.kartikkhandelwal.wigglebun.ui.tint
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -115,6 +116,7 @@ fun DeskScene(
     sparks: Int,
     onOpenMenu: () -> Unit,
     modifier: Modifier = Modifier,
+    accessories: List<AccessoryId> = emptyList(),
 ) {
     // Edge-to-edge: the picture runs under the status bar; the mockup layout starts below it.
     val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -137,6 +139,7 @@ fun DeskScene(
                 mood = mood,
                 spec = pet,
                 name = petName,
+                accessories = accessories,
                 // The scene's plant pot sits just right of Bun's head; float the z's left over plain wall.
                 sleepZSide = SleepZSide.LEFT,
                 modifier = Modifier

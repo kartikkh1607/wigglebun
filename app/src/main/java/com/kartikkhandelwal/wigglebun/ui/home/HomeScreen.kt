@@ -234,6 +234,7 @@ fun HomeScreen(
                     mood = state.mood,
                     pet = state.pet.spec,
                     petName = petName,
+                    accessories = state.pet.wearing,
                     sparks = state.sparks,
                     onOpenMenu = onOpenMenu,
                 )

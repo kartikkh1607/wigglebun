@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
@@ -66,4 +67,18 @@ class BreakSessionScreenshotTest {
     @Test
     @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 1.3f)
     fun smallPhoneFontScale130Celebrate() = capture("small_phone_font_1_3_celebrate", BreakSessionPreviewStates.CelebrateWithBadge)
+
+    // ---- Accessories (M8b): worn during the session and in the celebration ----
+
+    private val outfit = listOf(AccessoryId.FLOWER_CLIP, AccessoryId.KNIT_SCARF)
+
+    @Test
+    fun neckWearingAccessories() =
+        capture("neck_accessories", BreakSessionPreviewStates.Neck.copy(pet = BreakSessionPreviewStates.Neck.pet?.copy(wearing = outfit)))
+
+    @Test
+    fun celebrateWearingAccessories() = capture(
+        "celebrate_accessories",
+        BreakSessionPreviewStates.CelebrateWithBadge.copy(pet = BreakSessionPreviewStates.CelebrateWithBadge.pet?.copy(wearing = outfit)),
+    )
 }
