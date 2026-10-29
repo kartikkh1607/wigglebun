@@ -169,11 +169,13 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
    - Tapping a card opens a **focused card overlay** with three big actions: Skip · Done · Snooze.
 4. **Break session** – full-screen guided stretch with pet doing the move, step text, countdown ring, "Done" → celebrate + reward.
 5. **Collection** (tab 2) – grid of pet silhouettes; locked ones shown as grey silhouettes with a price; tap to preview.
+   - **Accessories (v1: 4 items)**, the ongoing spark sink once every pet is owned: bought with sparks (50, 75, 100, 125) and worn by the pets. Shown on Home and in Collection, **not on the widget** (its mood images stay one static PNG per pet and mood). Design plan (anchor points, assets, data model) pending Kartik's OK before any code.
+   - **Post-launch update:** 4 more accessories (150, 200, 250, 300), so a Normal user keeps something to buy for about 8 weeks after owning every pet.
 6. **Pet profile** (tab 3, tab label = pet's name) – name, streak card, total breaks, weekly bar chart.
 7. **Menu / Settings** – cards: "Add the widget", "Enable notifications", "Enable movement detection" (each opens the permission flow), work hours, interval, break types toggles, Premium card ("Try 7 days free", from `Trial.FREE_TRIAL_DAYS`), privacy policy, about ("Made with love in India").
 8. **Paywall** – pet illustration, 3 benefits, plan selector (yearly highlighted), "Start free trial" CTA, price after trial in plain text, how to cancel, restore purchases, terms/privacy links.
 
-**Not in v1:** friends, seasons/events, outfits, furniture, adventure map, AI coach, iOS.
+**Not in v1:** friends, seasons/events, outfits beyond the 4 v1 accessories, furniture, adventure map, AI coach, iOS.
 
 ---
 
@@ -313,6 +315,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 | M6 | Break session screen + rewards + streak | Completing a break updates pet, coins, streak |
 | M7 | Glance widget (small + medium) | Widget reflects mood within 15 min and instantly after a break |
 | M8 | Collection + unlock with sparks; Pet profile tab (name, streak card, total breaks, weekly chart) | Can unlock and switch pets; profile shows the streak, total breaks and this week's chart |
+| M8b | Accessories: 4 v1 items, buy with sparks, wear on any pet (Home + Collection, not the widget) | Can buy and wear each item on all 4 pets; screenshots for every pet × item |
 | M9 | Onboarding (wake-up, naming, settings) + just-in-time permission cards | Fresh install flows end to end |
 | M10 | RevenueCat + paywall + restore + trial-end reminder | Test purchases work with license testers; entitlement survives offline restart |
 | M11 | Polish, accessibility (TalkBack labels, contrast), privacy policy, store assets | Ready for closed testing |
