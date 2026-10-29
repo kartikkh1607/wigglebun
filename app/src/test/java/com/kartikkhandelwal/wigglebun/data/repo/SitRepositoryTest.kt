@@ -36,9 +36,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -246,7 +248,8 @@ class SitRepositoryTest {
     /** Review item, through the simulate path (no watermark): the stale STILL is ignored by the engine. */
     @Test
     fun staleStillOnSimulatePathKeepsRunningActive() = runBlocking {
-        settings.setSchedule(WorkSchedule.AlwaysOn)
+        // The walk stays open between the two simulate calls below, so no background check may run in between.
+        setScheduleAndAwaitBackgroundCheck(WorkSchedule.AlwaysOn)
         val t0 = Instant.now().truncatedTo(ChronoUnit.MILLIS).minusSeconds(10 * 60)
         store.update { it.copy(sitStartedAt = t0) }
         fun at(minutes: Long) = t0.plusSeconds(minutes * 60)
@@ -342,6 +345,27 @@ class SitRepositoryTest {
         val redraws = widgetUpdates.count
         repo.skip(BreakType.NECK)
         assertTrue(widgetUpdates.count > redraws)
+    }
+
+    /**
+     * Each settings change makes SitRepository run checkReminder() in the background. Without
+     * movement tracking (no permission in these tests) that check rightly clears an open walk, so
+     * if it lands in the middle of a test, the walk's exit no longer resets the timer. Switch to
+     * a schedule that isn't work time now, wait for the background check to report it, then to
+     * [schedule] (work time now) and wait again: after that no settings check is still pending.
+     */
+    private suspend fun setScheduleAndAwaitBackgroundCheck(schedule: WorkSchedule) {
+        suspend fun awaitWorkTimeReported(expected: Boolean) = withTimeout(BACKGROUND_CHECK_TIMEOUT_MILLIS) {
+            while (widgetUpdates.periodicRefresh != expected) delay(10)
+        }
+        settings.setSchedule(sessionFromNow(startIn = 120, endIn = 180))
+        awaitWorkTimeReported(false)
+        settings.setSchedule(schedule)
+        awaitWorkTimeReported(true)
+    }
+
+    private companion object {
+        const val BACKGROUND_CHECK_TIMEOUT_MILLIS = 10_000L
     }
 
     /** Every day, from [startIn] to [endIn] minutes from now in local time (wrapping past midnight). */
