@@ -278,7 +278,11 @@ private fun MovementCardView(movement: MovementCard, zone: ZoneId, actions: PetL
                     if (t.entered) R.string.pet_lab_movement_log_enter else R.string.pet_lab_movement_log_exit,
                     t.at.format(zone),
                     t.activity.name,
-                    t.arrivedAt?.let { ArrivalFormat.format(it.atZone(zone)) } ?: stringResource(R.string.pet_lab_unknown),
+                    when {
+                        t.simulated -> stringResource(R.string.pet_lab_movement_log_simulated)
+                        t.arrivedAt != null -> stringResource(R.string.pet_lab_movement_log_got, ArrivalFormat.format(t.arrivedAt.atZone(zone)))
+                        else -> stringResource(R.string.pet_lab_movement_log_got, stringResource(R.string.pet_lab_unknown))
+                    },
                 ),
             )
         }
@@ -422,6 +426,7 @@ internal fun PetLabPreview() {
                     hasStepSensor = true,
                     currentActivity = MovementActivity.WALKING,
                     log = listOf(
+                        LoggedTransition(MovementActivity.STILL, entered = true, at = now, arrivedAt = now, simulated = true),
                         LoggedTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(100), arrivedAt = now.minusSeconds(98)),
                         LoggedTransition(MovementActivity.STILL, entered = false, at = now.minusSeconds(100), arrivedAt = now.minusSeconds(98)),
                         LoggedTransition(MovementActivity.STILL, entered = true, at = now.minusSeconds(900), arrivedAt = null),
