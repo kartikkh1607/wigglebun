@@ -13,9 +13,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.cleanPetName
 import com.kartikkhandelwal.wigglebun.domain.model.limitPetNameInput
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
+import com.kartikkhandelwal.wigglebun.ui.breaksession.BreakSessionScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.navigation.BreakSessionRoute
+import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallPlaceholderScreen
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +43,15 @@ data object WorkHoursRoute
 
 @Serializable
 data object IntervalRoute
+
+@Serializable
+data object FirstStretchRoute
+
+@Serializable
+data object PaywallPlaceholderRoute
+
+/** One of the 1-minute breaks, and it ends with a big reach up. */
+private val FirstBreak = BreakType.STAND_UP
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(private val settings: SettingsRepository) : ViewModel() {
@@ -148,6 +161,10 @@ fun OnboardingFlow(
     intervalMinutes: Int,
     actions: OnboardingActions,
     navController: NavHostController = rememberNavController(),
+    /** Overridable so tests can stand in for the Hilt-backed break session. */
+    sessionContent: @Composable (onExit: () -> Unit, onCompleted: () -> Unit) -> Unit = { onExit, onCompleted ->
+        BreakSessionScreenRoute(onExit = onExit, onCompleted = onCompleted)
+    },
 ) {
     val defaultName = stringResource(PetSpecs.Bun.defaultName)
     val petName = cleanPetName(nameDraft) ?: defaultName
@@ -182,16 +199,33 @@ fun OnboardingFlow(
             )
         }
         composable<IntervalRoute> {
+            val next = dropUnlessResumed { navController.navigate(FirstStretchRoute) { launchSingleTop = true } }
             IntervalScreenRoute(
                 minutes = intervalMinutes,
                 petName = petName,
                 onPicked = actions.onIntervalPicked,
                 onContinue = {
                     actions.onSaveInterval()
-                    actions.onFinish()
+                    next()
                 },
-                onSkip = actions.onFinish,
+                onSkip = next,
             )
         }
+        composable<FirstStretchRoute> {
+            val start = dropUnlessResumed { navController.navigate(BreakSessionRoute(FirstBreak.name)) { launchSingleTop = true } }
+            FirstStretchScreen(petName = petName, onStart = start, onSkip = { navController.openPaywall() })
+        }
+        composable<BreakSessionRoute> {
+            sessionContent({ navController.popBackStack() }, { navController.openPaywall() })
+        }
+        composable<PaywallPlaceholderRoute> {
+            PaywallPlaceholderScreen(petName = petName, onContinue = actions.onFinish)
+        }
     }
+}
+
+/** There's nothing to go back to from the paywall: the steps are behind us. */
+private fun NavHostController.openPaywall() = navigate(PaywallPlaceholderRoute) {
+    popUpTo(FirstStretchRoute) { inclusive = true }
+    launchSingleTop = true
 }

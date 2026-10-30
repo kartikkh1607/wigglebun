@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallPlaceholderPreview
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -72,6 +73,19 @@ class OnboardingScreenshotTest {
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test
     fun intervalSmallPhoneLargeFont() = capture("onboarding_interval_small_font") { IntervalSmallLargeFontPreview() }
+
+    @Test
+    fun firstStretch() = capture("onboarding_stretch") { FirstStretchPreview() }
+
+    @Test
+    fun firstStretchLongName() = capture("onboarding_stretch_long_name") { FirstStretchLongNamePreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Test
+    fun firstStretchSmallPhoneLargeFont() = capture("onboarding_stretch_small_font") { FirstStretchSmallLargeFontPreview() }
+
+    @Test
+    fun paywallPlaceholder() = capture("paywall_placeholder") { PaywallPlaceholderPreview() }
 
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test

@@ -66,11 +66,14 @@ private const val PAUSE_FADE_MILLIS = 200
 fun BreakSessionScreenRoute(
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
+    /** After the celebration. Close and Back use [onExit]; onboarding tells the two apart. */
+    onCompleted: () -> Unit = onExit,
     viewModel: BreakSessionViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     // Ignores a second exit (Continue tapped as the auto-return fires).
     val exit = dropUnlessResumed(block = onExit)
+    val complete = dropUnlessResumed(block = onCompleted)
     val close = {
         viewModel.close()
         exit()
@@ -93,7 +96,7 @@ fun BreakSessionScreenRoute(
         ) ?: CELEBRATE_MILLIS
         if (timeout == Long.MAX_VALUE) return@LaunchedEffect
         delay(timeout)
-        exit()
+        complete()
     }
 
     BreakSessionScreen(
@@ -104,7 +107,7 @@ fun BreakSessionScreenRoute(
         onTogglePause = viewModel::togglePause,
         onNext = viewModel::nextStep,
         onDone = viewModel::done,
-        onContinue = exit,
+        onContinue = complete,
     )
 }
 
