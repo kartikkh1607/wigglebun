@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
@@ -139,8 +140,8 @@ class SitRepository @Inject constructor(
     }
 
     /** Activity Recognition transitions from Play services, in chronological order. */
-    suspend fun onReceivedTransitions(events: List<ReceivedTransition>, bootCount: Int) = mutex.withLock {
-        val accepted = movementStore.acceptAndLog(events, bootCount)
+    suspend fun onReceivedTransitions(events: List<ReceivedTransition>, bootCount: Int, arrivedAt: Instant) = mutex.withLock {
+        val accepted = movementStore.acceptAndLog(events, bootCount, arrivedAt)
         if (accepted.isEmpty()) return@withLock // replays/redeliveries at or below the watermark
         // Event times are real wall-clock time; the engine works in app time (debug fast clock).
         applyTransitions(accepted.map { it.copy(at = clock.fromRealEpochMillis(it.at.toEpochMilli())) })
@@ -148,7 +149,7 @@ class SitRepository @Inject constructor(
 
     /** Debug only: feed made-up transitions (already in app time), bypassing the watermark. */
     suspend fun simulateTransitions(events: List<MovementTransition>) = mutex.withLock {
-        movementStore.appendLog(events)
+        movementStore.appendLog(events, clock.instant())
         applyTransitions(events)
     }
 

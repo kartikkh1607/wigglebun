@@ -229,19 +229,19 @@ class SitRepositoryTest {
             ReceivedTransition(MovementTransition(MovementActivity.WALKING, true, now.minusSeconds(180)), elapsedRealtimeNanos = 1_000),
             ReceivedTransition(MovementTransition(MovementActivity.STILL, true, now), elapsedRealtimeNanos = 181_000),
         )
-        repo.onReceivedTransitions(walk, bootCount = 3)
+        repo.onReceivedTransitions(walk, bootCount = 3, arrivedAt = now)
         assertEquals(now, store.current().sitStartedAt)
         assertEquals(2, movementStore.current().log.size)
 
         repo.resetTimer()
         val afterReset = store.current().sitStartedAt
-        repo.onReceivedTransitions(listOf(walk.last()), bootCount = 3) // replay of the STILL enter
+        repo.onReceivedTransitions(listOf(walk.last()), bootCount = 3, arrivedAt = now) // replay of the STILL enter
         assertEquals(afterReset, store.current().sitStartedAt)
         assertEquals(2, movementStore.current().log.size)
 
         // After a reboot elapsedRealtime restarts, so a small value is new again.
         val afterReboot = ReceivedTransition(MovementTransition(MovementActivity.WALKING, true, now.plusSeconds(5)), 500)
-        repo.onReceivedTransitions(listOf(afterReboot), bootCount = 4)
+        repo.onReceivedTransitions(listOf(afterReboot), bootCount = 4, arrivedAt = now)
         assertEquals(3, movementStore.current().log.size)
     }
 

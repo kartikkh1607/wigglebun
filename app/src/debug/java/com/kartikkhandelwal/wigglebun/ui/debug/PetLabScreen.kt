@@ -36,9 +36,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.activity.StepReading
+import com.kartikkhandelwal.wigglebun.data.prefs.LoggedTransition
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
-import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
@@ -62,6 +62,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 private val TimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE HH:mm:ss")
+private val ArrivalFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
 /** Everything the lab can do, as plain callbacks so the content is previewable. */
 class PetLabActions(
@@ -277,6 +278,7 @@ private fun MovementCardView(movement: MovementCard, zone: ZoneId, actions: PetL
                     if (t.entered) R.string.pet_lab_movement_log_enter else R.string.pet_lab_movement_log_exit,
                     t.at.format(zone),
                     t.activity.name,
+                    t.arrivedAt?.let { ArrivalFormat.format(it.atZone(zone)) } ?: stringResource(R.string.pet_lab_unknown),
                 ),
             )
         }
@@ -420,9 +422,9 @@ internal fun PetLabPreview() {
                     hasStepSensor = true,
                     currentActivity = MovementActivity.WALKING,
                     log = listOf(
-                        MovementTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(100)),
-                        MovementTransition(MovementActivity.STILL, entered = false, at = now.minusSeconds(100)),
-                        MovementTransition(MovementActivity.STILL, entered = true, at = now.minusSeconds(900)),
+                        LoggedTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(100), arrivedAt = now.minusSeconds(98)),
+                        LoggedTransition(MovementActivity.STILL, entered = false, at = now.minusSeconds(100), arrivedAt = now.minusSeconds(98)),
+                        LoggedTransition(MovementActivity.STILL, entered = true, at = now.minusSeconds(900), arrivedAt = null),
                     ),
                     stepsSinceTimerStart = 42,
                     lastStepReading = StepReading(total = 1_276, at = now.minusSeconds(40)),

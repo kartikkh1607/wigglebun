@@ -4,14 +4,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
+import android.util.Log
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
+import com.kartikkhandelwal.wigglebun.BuildConfig
 import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.MovementTransition
 import com.kartikkhandelwal.wigglebun.notify.runAsync
 import java.time.Instant
+
+private const val TAG = "Movement"
 
 /** Receives Activity Recognition transitions (registered by [TransitionRegistrar]). */
 class MovementReceiver : BroadcastReceiver() {
@@ -38,7 +42,10 @@ class MovementReceiver : BroadcastReceiver() {
             )
         }
         if (events.isEmpty()) return
+        // Debug builds only, like MovementTracker.sync(): shows each delivery next to re-registrations.
+        if (BuildConfig.DEBUG) Log.i(TAG, "received $events")
         val bootCount = context.bootCount()
-        runAsync(context) { it.onReceivedTransitions(events, bootCount) }
+        val arrivedAt = Instant.ofEpochMilli(nowWallMillis)
+        runAsync(context) { it.onReceivedTransitions(events, bootCount, arrivedAt) }
     }
 }

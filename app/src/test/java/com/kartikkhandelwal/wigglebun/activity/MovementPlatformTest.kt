@@ -3,9 +3,11 @@ package com.kartikkhandelwal.wigglebun.activity
 import android.Manifest
 import android.app.Application
 import android.app.PendingIntent
+import androidx.datastore.preferences.core.edit
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
+import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
 import com.kartikkhandelwal.wigglebun.data.prefs.StepBaseline
 import com.kartikkhandelwal.wigglebun.data.prefs.inMemoryPreferencesDataStore
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
@@ -77,12 +79,70 @@ class MovementPlatformTest {
         val store = MovementStore(inMemoryPreferencesDataStore(scope), inMemoryPreferencesDataStore(scope))
         val base = Instant.parse("2026-10-26T05:00:00Z")
         repeat(25) { i ->
-            store.appendLog(listOf(MovementTransition(MovementActivity.WALKING, entered = i % 2 == 0, at = base.plusSeconds(i * 60L))))
+            store.appendLog(listOf(MovementTransition(MovementActivity.WALKING, entered = i % 2 == 0, at = base.plusSeconds(i * 60L))), arrivedAt = base)
         }
         val log = store.current().log
         assertEquals(MovementStore.LOG_SIZE, log.size)
         assertEquals(base.plusSeconds(24 * 60L), log.first().at)
         assertEquals(MovementActivity.WALKING, store.current().currentActivity) // newest (i=24) is an enter
+    }
+
+    /** The Pet lab's order: by when things happened, whatever order they were logged in. */
+    @Test
+    fun logByEventTimeSortsNewestEventFirst() = runBlocking {
+        val store = MovementStore(inMemoryPreferencesDataStore(scope), inMemoryPreferencesDataStore(scope))
+        val base = Instant.parse("2026-10-26T05:00:00Z")
+        fun enter(activity: MovementActivity, seconds: Long) = MovementTransition(activity, entered = true, at = base.plusSeconds(seconds))
+
+        store.appendLog(listOf(enter(MovementActivity.WALKING, 100)), arrivedAt = base.plusSeconds(102))
+        // Logged last but happened first, like the debug walk simulation's backdated start.
+        store.appendLog(listOf(enter(MovementActivity.STILL, 50)), arrivedAt = base.plusSeconds(200))
+
+        val info = store.current()
+        assertEquals(listOf(MovementActivity.STILL, MovementActivity.WALKING), info.log.map { it.activity })
+        assertEquals(listOf(MovementActivity.WALKING, MovementActivity.STILL), info.logByEventTime.map { it.activity })
+        assertEquals(listOf(base.plusSeconds(102), base.plusSeconds(200)), info.logByEventTime.map { it.arrivedAt })
+        assertEquals(MovementActivity.WALKING, info.currentActivity)
+    }
+
+    /** Events with the same time stay in delivery order, so "exit STILL, enter WALKING" reads as WALKING now. */
+    @Test
+    fun eventsWithTheSameTimeKeepTheirOrder() = runBlocking {
+        val store = MovementStore(inMemoryPreferencesDataStore(scope), inMemoryPreferencesDataStore(scope))
+        val at = Instant.parse("2026-10-26T05:00:00Z")
+        store.appendLog(
+            listOf(
+                MovementTransition(MovementActivity.STILL, entered = false, at = at),
+                MovementTransition(MovementActivity.WALKING, entered = true, at = at),
+            ),
+            arrivedAt = at,
+        )
+        assertEquals(MovementActivity.WALKING, store.current().currentActivity)
+    }
+
+    @Test
+    fun acceptedTransitionsAreLoggedWithTheirArrivalTime() = runBlocking {
+        val store = MovementStore(inMemoryPreferencesDataStore(scope), inMemoryPreferencesDataStore(scope))
+        val at = Instant.parse("2026-10-26T05:00:00Z")
+        val event = ReceivedTransition(MovementTransition(MovementActivity.STILL, entered = true, at = at), elapsedRealtimeNanos = 1_000)
+
+        store.acceptAndLog(listOf(event), bootCount = 1, arrivedAt = at.plusSeconds(2))
+
+        assertEquals(at.plusSeconds(2), store.current().log.single().arrivedAt)
+    }
+
+    /** An install over an older build keeps its log, whose lines have no arrival time. */
+    @Test
+    fun logLinesFromAnOlderBuildStillParse() = runBlocking {
+        val device = inMemoryPreferencesDataStore(scope)
+        val store = MovementStore(inMemoryPreferencesDataStore(scope), device)
+        val at = Instant.parse("2026-10-26T05:00:00Z")
+        device.edit { it[MovementStore.Keys.Log] = "${at.toEpochMilli()},STILL,1" }
+
+        val line = store.current().log.single()
+        assertEquals(at, line.at)
+        assertEquals(MovementActivity.STILL, line.activity)
+        assertNull(line.arrivedAt)
     }
 
     /** The switch is a backed-up setting; the log is phone-only (excluded from backup). */
@@ -92,7 +152,7 @@ class MovementPlatformTest {
         val device = inMemoryPreferencesDataStore(scope)
         val store = MovementStore(settings, device)
         store.setEnabled(false)
-        store.appendLog(listOf(MovementTransition(MovementActivity.WALKING, entered = true, at = Instant.parse("2026-10-26T05:00:00Z"))))
+        store.appendLog(listOf(MovementTransition(MovementActivity.WALKING, entered = true, at = Instant.parse("2026-10-26T05:00:00Z"))), arrivedAt = Instant.parse("2026-10-26T05:00:02Z"))
 
         assertEquals(false, store.current().enabled)
         assertEquals(1, store.current().log.size)

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kartikkhandelwal.wigglebun.activity.MovementPermissions
 import com.kartikkhandelwal.wigglebun.activity.StepCounter
 import com.kartikkhandelwal.wigglebun.activity.StepReading
+import com.kartikkhandelwal.wigglebun.data.prefs.LoggedTransition
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
@@ -75,8 +76,8 @@ data class MovementCard(
     val playServicesAvailable: Boolean,
     val hasStepSensor: Boolean,
     val currentActivity: MovementActivity?,
-    /** Newest first; real wall-clock times. */
-    val log: List<MovementTransition>,
+    /** Newest event first; real wall-clock times. */
+    val log: List<LoggedTransition>,
     val stepsSinceTimerStart: Long?,
     /** Last value the app itself got from the step counter (no extra listener in the lab). */
     val lastStepReading: StepReading?,
@@ -133,7 +134,7 @@ class PetLabViewModel @Inject constructor(
             playServicesAvailable = permissions.playServicesAvailable(),
             hasStepSensor = stepCounter.hasSensor,
             currentActivity = info.currentActivity,
-            log = info.log,
+            log = info.logByEventTime,
             stepsSinceTimerStart = if (reading != null && info.baseline != null) {
                 StepCounter.stepsSince(info.baseline, reading.total, stepCounter.bootCount())
             } else {
