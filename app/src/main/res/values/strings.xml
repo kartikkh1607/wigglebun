@@ -114,7 +114,7 @@
     <string name="wake_title">Shh… someone’s\nstill asleep</string>
     <string name="wake_body">They’ve been sitting way too long.\nHelp them wake up and stretch.</string>
     <string name="wake_cta">Tap to wake them up</string>
-    <string name="intro_title">Hi! I’m %1$s.\nThat was some nap!</string>
+    <string name="intro_title">Hi!\nThat was some nap!</string>
     <string name="intro_body">Thanks for waking me up.\nLet’s keep each other moving.</string>
     <string name="intro_cta">Nice to meet you</string>
     <string name="name_title">What will you call me?</string>
