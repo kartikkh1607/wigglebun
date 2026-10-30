@@ -27,6 +27,8 @@ internal object PrefsKeys {
     val PetName = stringPreferencesKey("pet_name")
     /** [PetId.key] of the pet that is "with you" (M8). Missing = the starter pet. */
     val ActivePet = stringPreferencesKey("active_pet")
+    /** [AccessoryId.key]s a pet wears (one per slot), one set per pet: "worn_bun", "worn_pip"… */
+    fun Worn(pet: PetId) = stringSetPreferencesKey("worn_${pet.key}")
     /** "2026-10-27=MONDAY,TUESDAY;…" (see [writeWorkDayHistory]). */
     val WorkDayHistory = stringPreferencesKey("work_day_history")
 

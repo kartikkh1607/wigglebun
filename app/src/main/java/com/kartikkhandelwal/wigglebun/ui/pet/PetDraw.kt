@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
+import com.kartikkhandelwal.wigglebun.domain.model.AccessorySlot
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -53,6 +55,7 @@ internal fun DrawScope.drawPet(
     poseScaleX: Float = 1f,
     poseScaleY: Float = 1f,
     poseLift: Float = 0f,
+    accessories: List<AccessoryId> = emptyList(),
 ) {
     val scale = min(size.width / spec.viewBoxWidth, size.height / spec.viewBoxHeight)
     val left = (size.width - spec.viewBoxWidth * scale) / 2f
@@ -83,7 +86,7 @@ internal fun DrawScope.drawPet(
                 translate(0f, poseLift - motion.bobAmplitude * breath)
                 scale(poseScaleX, poseScaleY * (1f + motion.breathAmplitude * breath), spec.pivot)
             }) {
-                drawBody(geometry, spec, mood, pose, energy, fillTop, motion, still)
+                drawBody(geometry, spec, mood, pose, energy, fillTop, motion, still, accessories)
             }
         }
 
@@ -100,6 +103,7 @@ private fun DrawScope.drawBody(
     fillTop: Float,
     motion: PetMotion,
     still: Boolean,
+    accessories: List<AccessoryId>,
 ) {
     val armPose = pose?.arms ?: mood.arms
     val arms = geometry.arms[armPose.ordinal]
@@ -131,6 +135,9 @@ private fun DrawScope.drawBody(
     val crustStroke = geometry.crustStroke
     if (crust != null && crustStroke != null) drawCrust(geometry, crust, crustStroke, fillTop)
     drawIntoCanvas { canvas -> canvas.restore() }
+    // Accessories keep their colour (they don't drain); a scarf sits on the body, under the face.
+    drawAccessories(spec, accessories, AccessorySlot.NECK)
+    if (energy < 1f && accessories.any { it.slot == AccessorySlot.NECK }) drawFillEdgeOverNeck(geometry, spec, fillTop)
     // Hands on the lap (sit pose) are drawn over the body.
     if (armsInFront) drawPath(arms, armColor)
 
@@ -146,6 +153,8 @@ private fun DrawScope.drawBody(
     }
 
     drawPath(geometry.cheeks, spec.cheekColor)
+    // Glasses go under the mouth: Pip's beak sits right below the bridge and must show whole.
+    drawAccessories(spec, accessories, AccessorySlot.FACE)
 
     val mouth = geometry.mouths[mood.mouth.ordinal]
     val beak = spec.beak
@@ -155,6 +164,7 @@ private fun DrawScope.drawBody(
         if (mood.mouth.filled) drawPath(mouth, spec.featureColor)
         drawPath(mouth, spec.featureColor, style = geometry.mouthStroke)
     }
+    drawAccessories(spec, accessories, AccessorySlot.HEAD)
 
     if (mood.sweat) {
         var dy = 0f
@@ -308,4 +318,43 @@ private fun easeOutBack(t: Float): Float {
     val c3 = c1 + 1f
     val x = t - 1f
     return 1f + c3 * x * x * x + c1 * x * x
+}
+
+/**
+ * The fill edge line again, on top of a neck item, so the energy meter never looks stuck while
+ * fillTop passes behind the scarf. Its own layer: the line, then the silhouette composited DstIn
+ * over the whole layer, so the line stays inside the body (and anti-aliased when leaning).
+ */
+private fun DrawScope.drawFillEdgeOverNeck(geometry: PetGeometry, spec: PetSpec, fillTop: Float) {
+    drawIntoCanvas { canvas -> canvas.saveLayer(geometry.viewBox, geometry.layerPaint) }
+    drawRect(
+        color = spec.bodyEdgeColor,
+        topLeft = Offset(0f, fillTop),
+        size = Size(spec.viewBoxWidth, spec.fillEdgeThickness),
+    )
+    drawIntoCanvas { canvas -> canvas.saveLayer(geometry.viewBox, geometry.silhouetteMaskPaint) }
+    drawPath(geometry.silhouette, Color.Black)
+    drawIntoCanvas { canvas -> canvas.restore() }
+    drawIntoCanvas { canvas -> canvas.restore() }
+}
+
+/**
+ * The worn accessories of [slot], moved from their reference point on Bun to this pet's anchor.
+ * Drawn inside the body's transforms, so they lean, breathe, jump and pose with the pet.
+ */
+private fun DrawScope.drawAccessories(spec: PetSpec, accessories: List<AccessoryId>, slot: AccessorySlot) {
+    accessories.forEach { id ->
+        if (id.slot != slot) return@forEach
+        val reference = AccessorySpecs.referencePoint(slot)
+        val anchor = spec.accessoryAnchors.getValue(slot)
+        withTransform({
+            translate(anchor.position.x - reference.x, anchor.position.y - reference.y)
+            if (anchor.scale != 1f) scale(anchor.scale, anchor.scale, reference)
+            if (anchor.rotationDeg != 0f) rotate(anchor.rotationDeg, reference)
+        }) {
+            AccessoryGeometry.of(id).parts.forEach { part ->
+                if (part.stroke == null) drawPath(part.path, part.color) else drawPath(part.path, part.color, style = part.stroke)
+            }
+        }
+    }
 }

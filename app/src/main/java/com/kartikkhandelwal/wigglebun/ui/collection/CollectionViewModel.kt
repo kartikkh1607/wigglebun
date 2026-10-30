@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kartikkhandelwal.wigglebun.data.repo.AdoptResult
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,17 +24,64 @@ class CollectionViewModel @Inject constructor(
 
     private val selection = MutableStateFlow<SheetSelection?>(null)
     private val busy = MutableStateFlow(false)
+    private val tab = MutableStateFlow(CollectionTab.PETS)
+    private val accessorySelection = MutableStateFlow<AccessorySelection?>(null)
+
+    private data class Ui(val tab: CollectionTab, val sheet: SheetSelection?, val accessory: AccessorySelection?, val busy: Boolean)
+
+    private val ui = combine(tab, selection, accessorySelection, busy, ::Ui)
 
     /** Null until the ledger and settings have loaded. */
     val state: StateFlow<CollectionUiState?> = combine(
-        petRepository.owned,
+        combine(petRepository.owned, petRepository.ownedAccessories, petRepository.outfits, ::Triple),
         petRepository.activePet,
         walletRepository.balance,
-        selection,
-        busy,
-    ) { owned, active, sparks, sel, isBusy ->
-        toCollectionUiState(owned, active, sparks, sel, isBusy)
+        ui,
+    ) { (owned, ownedAccessories, outfits), active, sparks, ui ->
+        toCollectionUiState(owned, active, sparks, ui.sheet, ui.busy, ownedAccessories, outfits, ui.tab, ui.accessory)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun selectTab(selected: CollectionTab) {
+        tab.value = selected
+    }
+
+    fun openAccessory(item: AccessoryId) {
+        accessorySelection.value = AccessorySelection(item, AccessoryStep.DETAILS)
+    }
+
+    fun closeAccessory() {
+        accessorySelection.value = null
+    }
+
+    /** "Buy for 125": ask first, nothing is charged yet. */
+    fun askToBuy(item: AccessoryId) {
+        accessorySelection.value = AccessorySelection(item, AccessoryStep.CONFIRM)
+    }
+
+    fun cancelBuy(item: AccessoryId) {
+        accessorySelection.value = AccessorySelection(item, AccessoryStep.DETAILS)
+    }
+
+    /** Pays once (the ledger key makes a double tap harmless) and puts it on the pet with you. */
+    fun confirmBuy(item: AccessoryId) {
+        if (busy.value) return
+        busy.value = true
+        viewModelScope.launch {
+            petRepository.buy(item)
+            // Bought: the details now say "Take off". Not enough sparks (the balance changed
+            // meanwhile): the details say how many are missing.
+            accessorySelection.value = AccessorySelection(item, AccessoryStep.DETAILS)
+            busy.value = false
+        }
+    }
+
+    fun wear(item: AccessoryId) {
+        viewModelScope.launch { petRepository.wear(item) }
+    }
+
+    fun takeOff(item: AccessoryId) {
+        viewModelScope.launch { petRepository.takeOff(item) }
+    }
 
     fun openPet(pet: PetId) {
         selection.value = SheetSelection(pet, SheetStep.DETAILS)

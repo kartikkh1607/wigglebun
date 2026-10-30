@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.pet.TestPetNames
@@ -180,4 +181,12 @@ class HomeScreenshotTest {
     fun smallPhoneFontScale200Focus() = captureScreen("small_phone_font_2_0_focus") {
         HomeWithFocusPreview(HomePreviewStates.FocusDue, inDialog = true)
     }
+
+    // ---- Accessories (M8b): the pet with you wears its outfit on Home ----
+
+    @Test
+    fun wearingAccessories() = capture(
+        "accessories",
+        home(HomePreviewStates.Tired.copy(pet = ActivePet(PetId.BUN, null, wearing = listOf(AccessoryId.ROUND_GLASSES, AccessoryId.KNIT_SCARF, AccessoryId.BEANIE)))),
+    )
 }

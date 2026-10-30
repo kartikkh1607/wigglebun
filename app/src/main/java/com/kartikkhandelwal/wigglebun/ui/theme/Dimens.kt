@@ -206,6 +206,11 @@ object Dimens {
         val SheetButtonTop = 12.dp
         val SheetButtonIcon = 20.dp
         val SheetButtonIconGap = 6.dp
+
+        // Pets | Accessories switch (segmented pill, CLAUDE.md §11 pills fully rounded)
+        val TabsPaddingBottom = 14.dp
+        val TabsInnerPadding = 4.dp
+        val TabPaddingVertical = 8.dp
     }
 
     /** Pet profile tab (no mockup: Home's card style, CLAUDE.md §6.6). */

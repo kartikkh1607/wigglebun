@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.ui.pet
 
 import androidx.compose.ui.geometry.Offset
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.domain.model.AccessorySlot
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyes
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeck
@@ -67,4 +68,6 @@ internal val ToastSpec = PetSpec(
     sleepZStep = Offset(16f, -18f),
     // Bun's rule: the mirror of the right anchor, 11 further out and 6 lower.
     sleepZAnchorLeft = Offset(13f, 36f),
+    // HEAD on the top of the crust, which is wider than Bun's head.
+    accessoryAnchors = AccessorySpecs.DefaultAnchors + (AccessorySlot.HEAD to AccessoryAnchor(Offset(100f, 40f), scale = 1.2f)),
 )

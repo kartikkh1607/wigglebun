@@ -88,7 +88,7 @@ class SitRepository @Inject constructor(
         // initial value too is harmless (mutex + each due is notified once).
         scope.launch { settingsRepository.settings.collect { checkReminder() } }
         // Each new step-counter batch is a chance to apply the 100-step rule.
-        scope.launch { stepCounter.lastReading.filterNotNull().collect { onStepReading(it.total) } }
+        scope.launch { stepCounter.lastReading.filterNotNull().collect { onStepReading() } }
     }
 
     /** First run starts the timer now (not at 09:00); every start re-arms alarm and tracking. */
@@ -210,7 +210,11 @@ class SitRepository @Inject constructor(
         resetTimer()
     }
 
-    private suspend fun onStepReading(total: Long) = mutex.withLock {
+    private suspend fun onStepReading() = mutex.withLock {
+        // Read the value inside the lock. A reading picked up before it can be older than the
+        // baseline by now (a flush delivers its batch while a reset holds the lock), which would
+        // look like the counter went back and count every step on it as new.
+        val total = stepCounter.lastReading.value?.total ?: return@withLock
         val settings = settingsRepository.current()
         val state = store.current()
         val after = applySteps(state, settings, total)
