@@ -3,6 +3,7 @@ package com.kartikkhandelwal.wigglebun.activity
 import android.util.Log
 import com.kartikkhandelwal.wigglebun.BuildConfig
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
+import com.kartikkhandelwal.wigglebun.data.prefs.Registration
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,13 +52,23 @@ class MovementTracker @Inject constructor(
             if (registeredInThisProcess && info.registered) return true
             val ok = registrar.register()
             registeredInThisProcess = ok
-            if (ok != info.registered) store.setRegistered(ok)
-            return ok
+            if (ok) {
+                store.setRegistration(Registration(stepCounter.bootCount(), BuildConfig.VERSION_CODE))
+                return true
+            }
+            // A failed registration doesn't cancel an earlier one from this boot and app version:
+            // its events still arrive, so keep tracking (and the open walk). The next check
+            // retries, as registeredInThisProcess is still false. SittingEngine.MAX_OPEN_WALK
+            // closes the walk if this guess is wrong (force-stop also drops the registration).
+            val earlierStillLive = info.registered &&
+                info.registration?.mayStillBeLive(stepCounter.bootCount(), BuildConfig.VERSION_CODE) == true
+            if (!earlierStillLive && info.registered) store.setRegistration(null)
+            return earlierStillLive
         }
         if (info.registered || registeredInThisProcess) {
             registrar.unregister()
             registeredInThisProcess = false
-            store.setRegistered(false)
+            store.setRegistration(null)
         }
         return false
     }
