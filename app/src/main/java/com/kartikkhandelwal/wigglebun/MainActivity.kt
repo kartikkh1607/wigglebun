@@ -16,6 +16,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.ui.navigation.AppShellViewModel
 import com.kartikkhandelwal.wigglebun.ui.navigation.WigglebunNavHost
+import com.kartikkhandelwal.wigglebun.ui.onboarding.AppGate
+import com.kartikkhandelwal.wigglebun.ui.onboarding.OnboardingFlowRoute
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,8 +38,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge(statusBarStyle = lightBars, navigationBarStyle = lightBars)
         setContent {
             val activePet by shell.activePet.collectAsStateWithLifecycle()
+            val onboardingDone by shell.onboardingDone.collectAsStateWithLifecycle()
             WigglebunTheme {
-                WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
+                AppGate(
+                    onboardingDone = onboardingDone,
+                    onboarding = { OnboardingFlowRoute() },
+                    app = {
+                        WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
+                    },
+                )
             }
         }
     }

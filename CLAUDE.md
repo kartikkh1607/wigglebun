@@ -160,6 +160,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 1. **Splash** – logo only.
 2. **Onboarding**
+   - First-launch gate (`ui/onboarding/AppGate.kt`): `onboarding_done` in the backed-up settings. It is decided once, on the first app start after it exists: a sit timer already saved means an install from before onboarding, which never sees it. A new install keeps seeing it until it is finished, even if the app is killed halfway.
    - Wake-up moment: pet asleep as a round blob → user taps → pet stretches awake and introduces itself, asks the user's name, user names the pet. The name field allows at most `MAX_PET_NAME_LENGTH` (12, `domain/model/Pet.kt`) characters.
    - One question per screen: work hours, break interval. Bottom sheets for pickers. "Skip" always visible.
    - Permissions are **not** asked here (ask just-in-time, see Settings/Home cards).
