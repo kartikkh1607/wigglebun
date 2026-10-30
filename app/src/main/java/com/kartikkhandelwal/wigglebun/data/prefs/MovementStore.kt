@@ -21,12 +21,24 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * When Activity Recognition was last registered. A registration lasts until reboot, app update or
+ * force-stop, so it can only still be live in the same boot and the same app version.
+ */
+data class Registration(val bootCount: Int, val versionCode: Int) {
+    /** False when either is unknown (boot count -1): then we can't tell, so assume it's gone. */
+    fun mayStillBeLive(currentBoot: Int, currentVersion: Int): Boolean =
+        bootCount >= 0 && bootCount == currentBoot && versionCode == currentVersion
+}
+
 /** Step-counter baseline: the sensor value when the timer started, and which boot it came from. */
 data class StepBaseline(val steps: Long, val bootCount: Int)
 
 data class MovementInfo(
     val enabled: Boolean = true,
     val registered: Boolean = false,
+    /** Set with [registered] since this field exists; null for a registration made by an older version. */
+    val registration: Registration? = null,
     val baseline: StepBaseline? = null,
     /** Newest first, at most [MovementStore.LOG_SIZE]. Times are real wall-clock time. */
     val log: List<MovementTransition> = emptyList(),
@@ -55,7 +67,17 @@ class MovementStore @Inject constructor(
 
     suspend fun setEnabled(enabled: Boolean) = settingsStore.edit { it[Keys.Enabled] = enabled }
 
-    suspend fun setRegistered(registered: Boolean) = dataStore.edit { it[Keys.Registered] = registered }
+    /** Records a successful registration ([registration]) or that there is none (null). */
+    suspend fun setRegistration(registration: Registration?) = dataStore.edit {
+        it[Keys.Registered] = registration != null
+        if (registration == null) {
+            it.remove(Keys.RegisteredBoot)
+            it.remove(Keys.RegisteredVersion)
+        } else {
+            it[Keys.RegisteredBoot] = registration.bootCount
+            it[Keys.RegisteredVersion] = registration.versionCode
+        }
+    }
 
     suspend fun setBaseline(baseline: StepBaseline?) = dataStore.edit {
         if (baseline == null) {
@@ -103,6 +125,7 @@ class MovementStore @Inject constructor(
     /** [MovementInfo.enabled] comes from the settings store, see [info]. */
     private fun Preferences.toMovementInfo() = MovementInfo(
         registered = this[Keys.Registered] ?: false,
+        registration = this[Keys.RegisteredBoot]?.let { boot -> this[Keys.RegisteredVersion]?.let { Registration(boot, it) } },
         baseline = this[Keys.BaselineSteps]?.let { StepBaseline(it, this[Keys.BaselineBoot] ?: -1) },
         log = this[Keys.Log].orEmpty().lineSequence().mapNotNull(::parseLogLine).toList(),
     )
@@ -118,6 +141,8 @@ class MovementStore @Inject constructor(
     internal object Keys {
         val Enabled = booleanPreferencesKey("movement_enabled")
         val Registered = booleanPreferencesKey("movement_registered")
+        val RegisteredBoot = intPreferencesKey("movement_registered_boot")
+        val RegisteredVersion = intPreferencesKey("movement_registered_version")
         val BaselineSteps = longPreferencesKey("step_baseline")
         val BaselineBoot = intPreferencesKey("step_baseline_boot")
         val Log = stringPreferencesKey("movement_log")

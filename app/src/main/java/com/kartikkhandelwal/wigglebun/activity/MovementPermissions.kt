@@ -11,8 +11,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// Open so tests can stand in for the permission and Play services checks.
 @Singleton
-class MovementPermissions @Inject constructor(
+open class MovementPermissions @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     /** Whether the runtime permission is needed on this device (Android 10 / API 29+). */
@@ -23,12 +24,12 @@ class MovementPermissions @Inject constructor(
      * the Transition API and TYPE_STEP_COUNTER. API 28 and below: the Play services
      * permission in the manifest is granted at install, and the step counter needs nothing.
      */
-    fun granted(): Boolean =
+    open fun granted(): Boolean =
         !needsRuntimePermission ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) ==
             PackageManager.PERMISSION_GRANTED
 
     /** Activity Recognition lives in Google Play services; without it we fall back to steps + manual Done. */
-    fun playServicesAvailable(): Boolean =
+    open fun playServicesAvailable(): Boolean =
         GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
 }

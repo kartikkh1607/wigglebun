@@ -42,12 +42,20 @@ class BreakSessionViewModelTest {
         app.close()
     }
 
+    /**
+     * The view model publishes a fresh state when the active pet first loads (DataStore, on IO;
+     * up to a couple of seconds in a cold test JVM). Wait for it, so that publish happens before
+     * a test moves [now] and can't show a later step at an unexpected moment.
+     */
     private fun session(type: BreakType) = BreakSessionViewModel(
         savedStateHandle = SavedStateHandle(mapOf("type" to type.name)),
         recordBreakDone = app.recordBreakDone,
         elapsed = elapsed,
         petRepository = app.pets,
-    ).also { viewModels += it }
+    ).also { vm ->
+        viewModels += vm
+        waitUntil { vm.state.value.pet != null }
+    }
 
     /** Runs main-thread work (viewModelScope) until [condition] holds; IO work resumes there. */
     private fun waitUntil(condition: () -> Boolean) {

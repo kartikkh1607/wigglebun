@@ -51,8 +51,8 @@ class EconomyTest {
 
     @Test
     fun workDaysToEachPet() {
-        assertEquals(listOf(5, 17, 37), daysToEachPet(light))
-        assertEquals(listOf(3, 8, 16), daysToEachPet(normal))
+        assertEquals(listOf(5, 15, 35), daysToEachPet(light))
+        assertEquals(listOf(3, 7, 15), daysToEachPet(normal))
         assertEquals(listOf(2, 6, 12), daysToEachPet(heavy))
     }
 
@@ -62,9 +62,9 @@ class EconomyTest {
      */
     @Test
     fun workDaysToEachAccessoryAfterThePets() {
-        assertEquals(listOf(40, 45, 52, 60), daysToEachAccessory(light))
-        assertEquals(listOf(18, 21, 25, 30), daysToEachAccessory(normal))
-        assertEquals(listOf(14, 14, 16, 19), daysToEachAccessory(heavy))
+        assertEquals(listOf(39, 44, 50, 59), daysToEachAccessory(light))
+        assertEquals(listOf(17, 20, 24, 29), daysToEachAccessory(normal))
+        assertEquals(listOf(13, 14, 15, 18), daysToEachAccessory(heavy))
     }
 
     /** The exploit the lifetime milestones close: breaking a streak on purpose never pays more. */

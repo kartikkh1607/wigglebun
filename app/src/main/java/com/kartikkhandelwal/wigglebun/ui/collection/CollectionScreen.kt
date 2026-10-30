@@ -289,8 +289,8 @@ internal object CollectionPreviewStates {
     /** Fresh install: only Bun, 40 sparks (nothing affordable yet). */
     val OnlyBun = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 40, selection = null)
 
-    /** 160 sparks: Pip (75) is affordable, Toast and Nimbus are not. */
-    val OneAffordable = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 160, selection = null)
+    /** 100 sparks: Pip (75) is affordable, Toast and Nimbus are not. */
+    val OneAffordable = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 100, selection = null)
 
     /** Every pet adopted, Toast with you. */
     val AllOwned = toCollectionUiState(PetId.entries.toSet(), ActivePet(PetId.TOAST, null), sparks = 40, selection = null)

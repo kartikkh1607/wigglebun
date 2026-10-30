@@ -118,6 +118,10 @@ class SitRepository @Inject constructor(
         if (!tracking && (state.movingSince != null || state.activeMoving.isNotEmpty())) {
             // Not tracking any more, so an open walk will never get its exit event.
             state = store.update { engine.clearMovement(it) }
+        } else if (engine.closeOverlongWalk(state) != state) {
+            // Tracking, but the walk has been open longer than the cap: its exit was lost.
+            state = store.update { engine.closeOverlongWalk(it) }
+            onMovementReset()
         }
 
         val status = engine.status(state, settings)
