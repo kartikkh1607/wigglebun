@@ -115,13 +115,47 @@ class MovementRulesTest {
         assertEquals(1f, status.energy)
     }
 
+    /** Safety cap: a walk whose exit was lost is closed 45 min after it started, as a walk. */
     @Test
-    fun staleWalkWithLostExitIsIgnored() {
+    fun walkWithLostExitIsClosedAfter45Minutes() {
         val walking = sitting.feed(enter(WALKING, "10:20"))
+        clock.now = at("11:04:59") // just under the cap: still on the walk
+        assertTrue(engine.status(walking, settings).isOnWalk)
+
         clock.now = at("13:30")
         val status = engine.status(walking, settings)
         assertFalse(status.isOnWalk)
-        assertTrue(status.sitMinutes > 180)
+        // The timer carries on from where the walk was capped (11:05), not from before the walk.
+        assertEquals(145, status.sitMinutes)
+
+        val closed = engine.closeOverlongWalk(walking)
+        assertNull(closed.movingSince)
+        assertTrue(closed.activeMoving.isEmpty())
+        assertEquals(at("11:05"), closed.sitStartedAt)
+        assertEquals(ResetReason.WALKING, closed.lastResetReason)
+    }
+
+    @Test
+    fun aWalkUnderTheCapIsLeftOpen() {
+        val walking = sitting.feed(enter(WALKING, "10:20"))
+        clock.now = at("11:04")
+        assertEquals(walking, engine.closeOverlongWalk(walking))
+    }
+
+    /** The lost exit arrives after the cap closed the walk: nothing more happens. */
+    @Test
+    fun aLateExitAfterTheCapChangesNothing() {
+        val s = sitting.feed(enter(WALKING, "10:20"), exit(WALKING, "11:30"))
+        assertEquals(at("11:05"), s.sitStartedAt)
+        assertNull(s.movingSince)
+    }
+
+    /** An event after the cap first closes the old walk, then starts a new one. */
+    @Test
+    fun aNewWalkAfterTheCapStartsItsOwnPeriod() {
+        val s = sitting.feed(enter(WALKING, "10:20"), enter(WALKING, "11:40"))
+        assertEquals(at("11:05"), s.sitStartedAt)
+        assertEquals(at("11:40"), s.movingSince)
     }
 
     /** Play services replays the current state with its original (older) time on registration. */

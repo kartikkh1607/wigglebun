@@ -109,6 +109,8 @@ v1 rule set, simple and robust:
 
 Known limitation to handle gracefully: `STILL` means the *phone* is still, not the person. That is why the engine relies on "movement resets the timer" rather than "STILL means sitting".
 
+Lost exit events: a walk still open **45 minutes** after it started is closed at that point and resets the timer like a walk (`SittingEngine.MAX_OPEN_WALK`). Like every movement reset it logs no break, so it never earns sparks, a break type for the day or streak credit. A failed re-registration with Play services does not end tracking while the earlier registration can still be live (same boot and app version, see `MovementTracker`); it is retried on the next check.
+
 ### 5.2 Pet mood from sit timer
 
 | Sit time vs interval | Mood | Visual |

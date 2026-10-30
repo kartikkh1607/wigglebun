@@ -28,8 +28,9 @@ import java.time.Instant
  */
 class SittingEngine(private val clock: Clock) {
 
-    fun status(state: SitState, settings: SittingSettings): SitStatus {
+    fun status(savedState: SitState, settings: SittingSettings): SitStatus {
         val now = clock.instant()
+        val state = closeOverlongWalk(savedState, now)
         val zone = clock.zone
         val schedule = settings.schedule
         val interval = settings.interval
@@ -98,11 +99,12 @@ class SittingEngine(private val clock: Clock) {
     }
 
     /** Feed one Activity Recognition transition (in chronological order). */
-    fun onMovement(state: SitState, transition: MovementTransition): SitState {
+    fun onMovement(savedState: SitState, transition: MovementTransition): SitState {
         val activity = transition.activity
         // Play services replays the current state (with its original time) on registration.
         // An event from before the open moving period started is stale: it changes nothing,
         // so it can neither end the walk nor drop the activities that are still active.
+        val state = closeOverlongWalk(savedState, transition.at)
         val since = state.movingSince
         if (since != null && transition.at.isBefore(since)) return state
         return when {
@@ -123,6 +125,18 @@ class SittingEngine(private val clock: Clock) {
     /** Step-counter fallback: [MIN_STEPS] or more steps since the timer started resets it. */
     fun onSteps(state: SitState, stepsSinceTimerStart: Long): SitState =
         if (stepsSinceTimerStart >= MIN_STEPS) resetAt(state, clock.instant(), ResetReason.STEPS) else state
+
+    /**
+     * Safety cap: a moving period still open [MAX_OPEN_WALK] after it started is closed at that
+     * point, as a walk (so the timer, held at zero during the walk, carries on from there instead
+     * of jumping back). Its exit event was lost: a failed re-registration we believed was still
+     * live, or a force-stop. A real walk that is longer only stops holding the timer at 45 min.
+     */
+    fun closeOverlongWalk(state: SitState, now: Instant = clock.instant()): SitState {
+        val since = state.movingSince ?: return state
+        val cap = since.plus(MAX_OPEN_WALK)
+        return if (now.isBefore(cap)) state else closeMovingPeriod(state, cap)
+    }
 
     /** Forget an open moving period (movement detection was switched off or lost). */
     fun clearMovement(state: SitState): SitState = state.copy(movingSince = null, activeMoving = emptySet())
@@ -147,9 +161,8 @@ class SittingEngine(private val clock: Clock) {
 
     private fun isOnWalk(state: SitState, now: Instant): Boolean {
         val since = state.movingSince ?: return false
-        val walked = Duration.between(since, now)
-        // A period open for hours means we missed its exit event; ignore it.
-        return walked >= MIN_WALK && walked < STALE_WALK
+        // Periods past MAX_OPEN_WALK were already closed by closeOverlongWalk().
+        return Duration.between(since, now) >= MIN_WALK
     }
 
     /** User finished a break: reset the timer, clear snoozes, celebrate for 3 s. */
@@ -210,7 +223,9 @@ class SittingEngine(private val clock: Clock) {
 
         /** CLAUDE.md §5.1: a walk must last at least this long to count. */
         val MIN_WALK: Duration = Duration.ofMinutes(2)
-        val STALE_WALK: Duration = Duration.ofHours(3)
+
+        /** An open walk is closed this long after it started, even without an exit event. */
+        val MAX_OPEN_WALK: Duration = Duration.ofMinutes(45)
         const val MIN_STEPS = 100L
 
         /** CLAUDE.md §5.2: energy = clamp(1 − sitMinutes / (interval × 1.2), 0.15, 1). */
