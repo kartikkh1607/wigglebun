@@ -70,7 +70,7 @@ class OnboardingFlowTest {
         composeRule.onNodeWithText("Tap to wake them up").assertIsDisplayed()
 
         tap("Tap to wake them up")
-        composeRule.onNodeWithText("Hi! I’m Bun.\nThat was some nap!").assertIsDisplayed()
+        composeRule.onNodeWithText("Hi!\nThat was some nap!").assertIsDisplayed()
 
         tap("Nice to meet you")
         composeRule.onNodeWithText("What will you call me?").assertIsDisplayed()
