@@ -95,6 +95,7 @@ class SitRepository @Inject constructor(
     /** First run starts the timer now (not at 09:00); every start re-arms alarm and tracking. */
     suspend fun onAppStart() {
         mutex.withLock {
+            settingsRepository.decideOnboarding() // must see whether the timer was already saved
             if (store.current().sitStartedAt == null) {
                 store.update { engine.resetTimer(it) }
                 captureStepBaseline()
