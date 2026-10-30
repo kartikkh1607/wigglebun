@@ -123,6 +123,21 @@ object Dimens {
         val StretchButtonBottom = 24.dp
     }
 
+    /** Setup cards in Settings and on Home (no mockup: sized from the card and icon-tile tokens). */
+    object Setup {
+        val IconTile = 44.dp
+        val Icon = 24.dp
+        val RowGap = 12.dp
+        val ChipHorizontal = 12.dp
+        val ChipVertical = 4.dp
+        val NotNowMinSize = 48.dp
+        val SheetHorizontal = 24.dp
+        val SheetBottom = 24.dp
+        val SheetGap = 12.dp
+        val SheetPet = 120.dp
+        val HomePromptTop = 12.dp
+    }
+
     /** Home screen, measured from design/mockups_source/Main.dc.html and FocusCard.dc.html. */
     object Home {
         val SceneHeight = 340.dp
