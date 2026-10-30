@@ -292,6 +292,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 2. After every change: `./gradlew assembleDebug` must pass; run unit tests for `domain/`; `./gradlew lintDebug` must pass (it catches APIs missing on older Android versions, which the Robolectric tests on API 36 cannot).
 3. For every UI change: add/update a `@Preview` and a Roborazzi screenshot test, render it, **look at the PNG yourself**, fix obvious issues, then show Kartik.
    After every UI change run `./gradlew verifyRoborazziDebug` so unintended changes to existing screens fail the build. When a change is intended, re-record (`recordRoborazziDebug`) and tell Kartik exactly which reference images changed (`git status app/src/test/screenshots`).
+   **CI is the source of truth** (`.github/workflows/android.yml`): every PR and every push to `main` runs `assembleDebug lintDebug verifyRoborazziDebug` on a Linux runner; on failure the screenshot diffs are uploaded as the `roborazzi-diffs` artifact. Reference images are recorded and verified on Linux only. Local Windows runs can show tiny font-rendering differences: don't re-record from Windows; record on Linux (CI image or a Linux machine) instead.
 4. When Kartik attaches reference screenshots or mockups, match spacing, radius, hierarchy and motion feel; never copy another app's artwork or brand.
 5. Keep composables small and stateless; state lives in ViewModels.
 6. No hard-coded strings, colours or dimensions inside screens; use theme tokens.
