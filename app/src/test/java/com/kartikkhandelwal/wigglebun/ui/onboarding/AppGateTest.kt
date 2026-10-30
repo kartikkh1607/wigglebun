@@ -48,10 +48,4 @@ class AppGateTest {
         composeRule.setContent { AppGateLoadingPreview() }
         composeRule.onRoot().captureRoboImage("app_gate_loading.png")
     }
-
-    @Test
-    fun placeholder() {
-        composeRule.setContent { OnboardingPlaceholderPreview() }
-        composeRule.onRoot().captureRoboImage("onboarding_placeholder.png")
-    }
 }
