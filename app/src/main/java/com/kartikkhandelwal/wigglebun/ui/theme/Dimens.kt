@@ -117,6 +117,10 @@ object Dimens {
         val SheetHorizontal = 24.dp
         val SheetBottom = 24.dp
         val SheetGap = 16.dp
+
+        // First stretch and the paywall placeholder (no mockup)
+        val StretchPetSize = 220.dp
+        val StretchButtonBottom = 24.dp
     }
 
     /** Home screen, measured from design/mockups_source/Main.dc.html and FocusCard.dc.html. */

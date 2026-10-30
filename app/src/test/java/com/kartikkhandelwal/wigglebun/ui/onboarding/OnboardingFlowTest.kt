@@ -1,6 +1,11 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
 import android.app.Application
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +42,7 @@ class OnboardingFlowTest {
 
     private val saved = mutableListOf<String>()
     private var finished = 0
+    private var backDispatcher: OnBackPressedDispatcher? = null
 
     private fun start() {
         var draft by mutableStateOf("")
@@ -56,7 +62,15 @@ class OnboardingFlowTest {
                             onSaveInterval = { saved += "interval" },
                             onFinish = { finished++ },
                         ),
+                        sessionContent = { onExit, onCompleted ->
+                            Column {
+                                Text("session")
+                                Button(onClick = onExit) { Text("close session") }
+                                Button(onClick = onCompleted) { Text("session done") }
+                            }
+                        },
                     )
+                    backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
                 }
             }
         }
@@ -85,8 +99,46 @@ class OnboardingFlowTest {
         composeRule.onNodeWithText("How often should I nudge you?").assertIsDisplayed()
         tap("Continue")
 
+        composeRule.onNodeWithText("Stretch with Biscuit").assertIsDisplayed()
+        tap("Start stretching")
+        composeRule.onNodeWithText("session").assertIsDisplayed()
+        tap("session done")
+
+        composeRule.onNodeWithText("You’re all set!").assertIsDisplayed()
+        assertEquals(0, finished) // not until the paywall is left behind
+        tap("Continue")
+
         assertEquals(listOf("name", "hours", "interval"), saved)
         assertEquals(1, finished)
+    }
+
+    /** Closing the session earns nothing and goes back to the offer, not on to the paywall. */
+    @Test
+    fun closingTheStretchGoesBackToTheOffer() {
+        toTheStretchOffer()
+        tap("Start stretching")
+        tap("close session")
+        composeRule.onNodeWithText("Start stretching").assertIsDisplayed()
+        composeRule.onNodeWithText("You’re all set!").assertDoesNotExist()
+    }
+
+    /** Leaving the paywall with Back finishes onboarding, as closing the real one will (§5.5). */
+    @Test
+    fun backOnThePaywallFinishes() {
+        toTheStretchOffer()
+        tap("Skip")
+        composeRule.waitForIdle() // the paywall has to be on screen for its Back to be registered
+        composeRule.runOnUiThread { backDispatcher!!.onBackPressed() }
+        composeRule.waitForIdle()
+        assertEquals(1, finished)
+    }
+
+    private fun toTheStretchOffer() {
+        start()
+        repeat(4) {
+            tap("Skip")
+            composeRule.waitForIdle()
+        }
     }
 
     /** No work days means the pet would never wake, so the answer has to be fixed or skipped. */
@@ -115,6 +167,10 @@ class OnboardingFlowTest {
         tap("Skip")
         composeRule.onNodeWithText("How often should I nudge you?").assertIsDisplayed()
         tap("Skip")
+        composeRule.onNodeWithText("Stretch with Bun").assertIsDisplayed()
+        tap("Skip")
+        composeRule.onNodeWithText("You’re all set!").assertIsDisplayed()
+        tap("Continue")
         assertTrue(saved.isEmpty())
         assertEquals(1, finished)
     }
