@@ -98,13 +98,13 @@ fun PetSheetContent(
     ) {
         when (sheet.step) {
             SheetStep.DETAILS -> {
-                PetView(energy = 1f, mood = Mood.HAPPY, spec = pet.spec, name = name, modifier = Modifier.size(C.SheetPetSize))
+                PetView(energy = 1f, mood = Mood.HAPPY, spec = pet.spec, name = name, accessories = pet.wearing, modifier = Modifier.size(C.SheetPetSize))
                 SheetTitle(name)
                 SheetBody(stringResource(pet.spec.blurb))
                 MainAction(sheet.action, name, enabled = !sheet.busy, onChoose = { actions.onChoose(id) }, onAdopt = { actions.onAskToAdopt(id) })
             }
             SheetStep.CONFIRM -> {
-                PetView(energy = 1f, mood = Mood.HAPPY, spec = pet.spec, name = name, modifier = Modifier.size(C.SheetSmallPetSize))
+                PetView(energy = 1f, mood = Mood.HAPPY, spec = pet.spec, name = name, accessories = pet.wearing, modifier = Modifier.size(C.SheetSmallPetSize))
                 SheetTitleSentence(R.string.adopt_confirm_title, name)
                 SheetBody(pluralStringResource(R.plurals.adopt_confirm_body, sheet.pet.price, sheet.pet.price, sparks))
                 Row(
@@ -129,7 +129,7 @@ fun PetSheetContent(
             }
             SheetStep.ADOPTED -> {
                 // Jumps once with confetti as it appears (PetView's CELEBRATE).
-                PetView(energy = 1f, mood = Mood.CELEBRATE, spec = pet.spec, name = name, modifier = Modifier.size(C.SheetPetSize))
+                PetView(energy = 1f, mood = Mood.CELEBRATE, spec = pet.spec, name = name, accessories = pet.wearing, modifier = Modifier.size(C.SheetPetSize))
                 Column(
                     // Announced once when the welcome appears.
                     modifier = Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
@@ -228,7 +228,9 @@ internal fun CollectionWithSheetPreview(state: CollectionUiState) {
         Box(Modifier.fillMaxSize()) {
             CollectionScreen(state)
             Box(Modifier.fillMaxSize().background(BottomSheetDefaults.ScrimColor))
-            val sheet = state.sheet ?: return@Box
+            val accessorySheet = state.accessorySheet
+            val sheet = state.sheet
+            if (sheet == null && accessorySheet == null) return@Box
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -238,7 +240,11 @@ internal fun CollectionWithSheetPreview(state: CollectionUiState) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 BottomSheetDefaults.DragHandle(color = CheckIdle)
-                PetSheetContent(sheet, state.sparks, state.chosenName, PetSheetActions())
+                if (sheet != null) {
+                    PetSheetContent(sheet, state.sparks, state.chosenName, PetSheetActions())
+                } else if (accessorySheet != null) {
+                    AccessorySheetContent(accessorySheet, state.sparks, AccessorySheetActions())
+                }
             }
         }
     }

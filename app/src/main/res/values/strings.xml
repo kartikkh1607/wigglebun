@@ -226,6 +226,37 @@
         <item quantity="other">This uses %1$d of your %2$d sparks.</item>
     </plurals>
     <string name="adopt_confirm_yes">Adopt</string>
+    <!-- Collection: accessories (CLAUDE.md §6.5) -->
+    <string name="collection_tab_pets">Pets</string>
+    <string name="collection_tab_accessories">Accessories</string>
+    <string name="collection_accessories_subtitle">Bought once, worn by any of your pets.</string>
+    <string name="collection_wearing">Wearing</string>
+    <string name="accessory_flower_clip">Flower clip</string>
+    <string name="accessory_round_glasses">Round glasses</string>
+    <string name="accessory_knit_scarf">Knit scarf</string>
+    <string name="accessory_beanie">Beanie</string>
+    <string name="accessory_blurb_flower_clip">A little flower to tuck by the ear.</string>
+    <string name="accessory_blurb_round_glasses">For pets who read the small print.</string>
+    <string name="accessory_blurb_knit_scarf">Cosy for chilly office days.</string>
+    <string name="accessory_blurb_beanie">Warm ears, big walks.</string>
+    <!-- %1$s accessory name, %2$s pet name: "Beanie, worn by Bun" -->
+    <string name="accessory_cd_worn">%1$s, worn by %2$s</string>
+    <string name="accessory_cd_owned">%1$s, bought</string>
+    <plurals name="accessory_cd_locked">
+        <item quantity="one">%1$s, buy for %2$d spark</item>
+        <item quantity="other">%1$s, buy for %2$d sparks</item>
+    </plurals>
+    <!-- Followed by the sparks icon -->
+    <string name="sheet_buy">Buy for %1$d</string>
+    <plurals name="sheet_buy_cd">
+        <item quantity="one">Buy for %d spark</item>
+        <item quantity="other">Buy for %d sparks</item>
+    </plurals>
+    <!-- %1$s is the pet's name: "Put on Bun" -->
+    <string name="sheet_wear">Put on %1$s</string>
+    <string name="sheet_take_off">Take off</string>
+    <string name="buy_confirm_title">Buy %1$s?</string>
+    <string name="buy_confirm_yes">Buy</string>
     <string name="adopt_confirm_no">Not now</string>
     <string name="adopted_title">Welcome home, %1$s!</string>
     <string name="adopted_body">%1$s is with you now.</string>

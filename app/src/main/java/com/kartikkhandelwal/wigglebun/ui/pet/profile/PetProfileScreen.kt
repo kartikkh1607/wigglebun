@@ -112,7 +112,14 @@ fun PetProfileScreen(state: PetProfileUiState, modifier: Modifier = Modifier) {
                     .padding(top = P.PetShadowOffset)
                     .size(P.PetShadowWidth, P.PetShadowHeight),
             ) { drawOval(PetShadow) }
-            PetView(energy = state.energy, mood = state.mood, spec = state.pet.spec, name = name, modifier = Modifier.size(P.PetSize))
+            PetView(
+                energy = state.energy,
+                mood = state.mood,
+                spec = state.pet.spec,
+                name = name,
+                accessories = state.pet.wearing,
+                modifier = Modifier.size(P.PetSize),
+            )
         }
         // The name alone: one line, cut with "…" if it must be (TalkBack reads it whole).
         Text(

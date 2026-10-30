@@ -131,7 +131,7 @@ fun BreakSessionScreen(
         if (result == null) {
             SessionContent(state, petName, onClose, onTogglePause, onNext, onDone)
         } else {
-            CelebrationContent(result, pet?.spec ?: PetSpecs.Bun, petName, onContinue)
+            CelebrationContent(result, pet?.spec ?: PetSpecs.Bun, petName, onContinue, accessories = pet?.wearing.orEmpty())
         }
     }
 }
@@ -177,6 +177,7 @@ private fun SessionContent(
                             spec = pet.spec,
                             name = petName,
                             pose = state.pose,
+                            accessories = pet.wearing,
                             modifier = Modifier.size(ring * PET_IN_RING),
                         )
                     }

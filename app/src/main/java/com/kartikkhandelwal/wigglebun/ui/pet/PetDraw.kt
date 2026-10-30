@@ -137,6 +137,7 @@ private fun DrawScope.drawBody(
     drawIntoCanvas { canvas -> canvas.restore() }
     // Accessories keep their colour (they don't drain); a scarf sits on the body, under the face.
     drawAccessories(spec, accessories, AccessorySlot.NECK)
+    if (energy < 1f && accessories.any { it.slot == AccessorySlot.NECK }) drawFillEdgeOverNeck(geometry, spec, fillTop)
     // Hands on the lap (sit pose) are drawn over the body.
     if (armsInFront) drawPath(arms, armColor)
 
@@ -317,6 +318,24 @@ private fun easeOutBack(t: Float): Float {
     val c3 = c1 + 1f
     val x = t - 1f
     return 1f + c3 * x * x * x + c1 * x * x
+}
+
+/**
+ * The fill edge line again, on top of a neck item, so the energy meter never looks stuck while
+ * fillTop passes behind the scarf. Its own layer: the line, then the silhouette composited DstIn
+ * over the whole layer, so the line stays inside the body (and anti-aliased when leaning).
+ */
+private fun DrawScope.drawFillEdgeOverNeck(geometry: PetGeometry, spec: PetSpec, fillTop: Float) {
+    drawIntoCanvas { canvas -> canvas.saveLayer(geometry.viewBox, geometry.layerPaint) }
+    drawRect(
+        color = spec.bodyEdgeColor,
+        topLeft = Offset(0f, fillTop),
+        size = Size(spec.viewBoxWidth, spec.fillEdgeThickness),
+    )
+    drawIntoCanvas { canvas -> canvas.saveLayer(geometry.viewBox, geometry.silhouetteMaskPaint) }
+    drawPath(geometry.silhouette, Color.Black)
+    drawIntoCanvas { canvas -> canvas.restore() }
+    drawIntoCanvas { canvas -> canvas.restore() }
 }
 
 /**

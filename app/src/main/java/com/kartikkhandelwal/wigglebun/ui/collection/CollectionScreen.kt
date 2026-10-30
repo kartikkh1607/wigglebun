@@ -37,8 +37,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.model.Outfit
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
@@ -71,7 +73,28 @@ fun CollectionScreenRoute(modifier: Modifier = Modifier, viewModel: CollectionVi
         Box(modifier.fillMaxSize().background(Cream))
         return
     }
-    CollectionScreen(loaded, onOpenPet = viewModel::openPet, modifier = modifier)
+    CollectionScreen(
+        loaded,
+        onOpenPet = viewModel::openPet,
+        onSelectTab = viewModel::selectTab,
+        onOpenAccessory = viewModel::openAccessory,
+        modifier = modifier,
+    )
+    loaded.accessorySheet?.let { sheet ->
+        PetSheet(onDismiss = viewModel::closeAccessory) {
+            AccessorySheetContent(
+                sheet = sheet,
+                sparks = loaded.sparks,
+                actions = AccessorySheetActions(
+                    onAskToBuy = viewModel::askToBuy,
+                    onConfirmBuy = viewModel::confirmBuy,
+                    onCancelBuy = viewModel::cancelBuy,
+                    onWear = viewModel::wear,
+                    onTakeOff = viewModel::takeOff,
+                ),
+            )
+        }
+    }
     loaded.sheet?.let { sheet ->
         PetSheet(onDismiss = viewModel::closeSheet) {
             PetSheetContent(
@@ -92,10 +115,17 @@ fun CollectionScreenRoute(modifier: Modifier = Modifier, viewModel: CollectionVi
 
 /**
  * Collection tab (CLAUDE.md §6.5, design/mockups_source/Collection.dc.html): header with the
- * sparks pill, then every pet in a two-column grid. Tapping a pet opens its sheet.
+ * sparks pill, a Pets | Accessories switch, then a two-column grid of pets or accessories.
+ * Tapping one opens its sheet.
  */
 @Composable
-fun CollectionScreen(state: CollectionUiState, modifier: Modifier = Modifier, onOpenPet: (PetId) -> Unit = {}) {
+fun CollectionScreen(
+    state: CollectionUiState,
+    modifier: Modifier = Modifier,
+    onOpenPet: (PetId) -> Unit = {},
+    onSelectTab: (CollectionTab) -> Unit = {},
+    onOpenAccessory: (AccessoryId) -> Unit = {},
+) {
     Column(
         modifier
             .fillMaxSize()
@@ -118,11 +148,21 @@ fun CollectionScreen(state: CollectionUiState, modifier: Modifier = Modifier, on
             SparksPill(state.sparks)
         }
         Text(
-            stringResource(R.string.collection_subtitle),
+            stringResource(if (state.tab == CollectionTab.PETS) R.string.collection_subtitle else R.string.collection_accessories_subtitle),
             style = WigglebunTextStyles.FocusSub,
             color = InkMuted,
             modifier = Modifier.padding(start = C.HeaderPaddingHorizontal, end = C.HeaderPaddingHorizontal, bottom = C.SubtitlePaddingBottom),
         )
+        CollectionTabs(
+            selected = state.tab,
+            onSelect = onSelectTab,
+            modifier = Modifier.padding(start = Dimens.ScreenPadding, end = Dimens.ScreenPadding, bottom = C.TabsPaddingBottom),
+        )
+        if (state.tab == CollectionTab.ACCESSORIES) {
+            AccessoryGrid(state.accessories, state.activePet, onOpenAccessory)
+            Spacer(Modifier.height(C.ListBottomPadding))
+            return@Column
+        }
         Column(
             modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
             verticalArrangement = Arrangement.spacedBy(C.GridGap),
@@ -173,7 +213,15 @@ private fun PetCard(pet: CollectionPetUi, chosenName: String?, onClick: () -> Un
             if (pet.status == PetStatus.LOCKED) {
                 LockedPetView(active.spec, description = name, modifier = Modifier.size(C.PetSize))
             } else {
-                PetView(energy = 1f, mood = Mood.HAPPY, spec = active.spec, name = name, animated = false, modifier = Modifier.size(C.PetSize))
+                PetView(
+                    energy = 1f,
+                    mood = Mood.HAPPY,
+                    spec = active.spec,
+                    name = name,
+                    animated = false,
+                    accessories = active.wearing,
+                    modifier = Modifier.size(C.PetSize),
+                )
             }
             // One line, so a long name never makes this row of cards taller.
             Text(
@@ -246,6 +294,20 @@ internal object CollectionPreviewStates {
 
     /** Every pet adopted, Toast with you. */
     val AllOwned = toCollectionUiState(PetId.entries.toSet(), ActivePet(PetId.TOAST, null), sparks = 40, selection = null)
+
+    /** Accessories tab: Bun wears the glasses, the flower clip is bought, 90 sparks for the rest. */
+    val Accessories = toCollectionUiState(
+        owned = setOf(PetId.BUN, PetId.PIP),
+        active = ActivePet(PetId.BUN, null, wearing = listOf(AccessoryId.ROUND_GLASSES)),
+        sparks = 90,
+        selection = null,
+        ownedAccessories = setOf(AccessoryId.FLOWER_CLIP, AccessoryId.ROUND_GLASSES),
+        outfits = mapOf(PetId.BUN to Outfit(setOf(AccessoryId.ROUND_GLASSES))),
+        tab = CollectionTab.ACCESSORIES,
+    )
+
+    fun accessorySheet(state: CollectionUiState, item: AccessoryId, step: AccessoryStep = AccessoryStep.DETAILS): CollectionUiState =
+        state.copy(accessorySheet = accessorySheet(state.accessories, state.activePet, state.sparks, AccessorySelection(item, step), busy = false))
 
     fun sheet(state: CollectionUiState, pet: PetId, step: SheetStep = SheetStep.DETAILS): CollectionUiState =
         toCollectionUiState(
