@@ -144,6 +144,9 @@
 
     <!-- Setup cards in Settings and on Home (CLAUDE.md §6.7, §10) -->
     <string name="setup_notifications_title">Enable notifications</string>
+    <string name="setup_notifications_title_on">Notifications</string>
+    <string name="setup_movement_title_on">Movement detection</string>
+    <string name="setup_widget_title_on">Widget</string>
     <string name="setup_notifications_why">So your pet can remind you</string>
     <string name="setup_notifications_explain">So your pet can remind you when it’s time for a break. Without them, Home still shows how long you’ve been sitting.</string>
     <string name="setup_notifications_blocked">Notifications are turned off for this app. You can turn them on in your phone’s settings.</string>

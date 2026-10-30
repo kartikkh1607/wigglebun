@@ -50,6 +50,16 @@ private val SetupCard.title: Int
         SetupCard.WIDGET -> R.string.setup_widget_title
     }
 
+/** Once it's on there's nothing left to enable: just its name, and the chip says the state. */
+@get:StringRes
+private val SetupCardUi.rowTitle: Int
+    get() = when {
+        status != SetupStatus.ON -> card.title
+        card == SetupCard.NOTIFICATIONS -> R.string.setup_notifications_title_on
+        card == SetupCard.MOVEMENT -> R.string.setup_movement_title_on
+        else -> R.string.setup_widget_title_on
+    }
+
 /** The "why" from CLAUDE.md §10, one line on the card. */
 @get:StringRes
 private val SetupCard.why: Int
@@ -84,7 +94,7 @@ fun SetupCardRow(ui: SetupCardUi, onOpen: () -> Unit, modifier: Modifier = Modif
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(S.RowGap)) {
             IconTile(ui.card)
             Column(Modifier.weight(1f)) {
-                Text(stringResource(ui.card.title), style = MaterialTheme.typography.titleMedium, color = Ink)
+                Text(stringResource(ui.rowTitle), style = MaterialTheme.typography.titleMedium, color = Ink)
                 Text(
                     stringResource(if (ui.status == SetupStatus.BLOCKED) R.string.setup_blocked else ui.card.why),
                     style = MaterialTheme.typography.bodyMedium,

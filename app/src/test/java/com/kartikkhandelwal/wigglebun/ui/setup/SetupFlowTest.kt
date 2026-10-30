@@ -54,6 +54,21 @@ class SetupFlowTest {
         assertEquals(listOf(SettingsPreviewStates.Notifications), performed)
     }
 
+    /** Once it's on there's nothing left to enable; a refused one still needs enabling. */
+    @Test
+    fun cardsThatAreOnDropTheWordEnable() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalInspectionMode provides true) {
+                WigglebunTheme { SettingsScreen(SettingsPreviewStates.Mixed, {}) }
+            }
+        }
+        composeRule.onNodeWithText("Notifications").assertIsDisplayed()
+        composeRule.onNodeWithText("Enable notifications").assertDoesNotExist()
+        composeRule.onNodeWithText("Widget").assertIsDisplayed()
+        composeRule.onNodeWithText("Add the widget").assertDoesNotExist()
+        composeRule.onNodeWithText("Enable movement detection").assertIsDisplayed() // refused, so still off
+    }
+
     @Test
     fun notNowInTheExplanationAsksNothing() {
         start()
