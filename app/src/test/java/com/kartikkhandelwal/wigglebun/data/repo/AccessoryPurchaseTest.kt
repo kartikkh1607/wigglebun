@@ -11,8 +11,10 @@ import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -42,6 +44,8 @@ class AccessoryPurchaseTest {
     @Test
     fun buyingChargesOnceAndPutsItOnThePetWithYou() = runBlocking {
         earn(AccessoryId.BEANIE.price + 10)
+        // The startup check runs in the background and redraws the widget too: count from after it.
+        withTimeout(10_000) { while (app.widgetUpdates.count == 0) delay(10) }
         val redrawsBefore = app.widgetUpdates.count
         assertEquals(BuyResult.Bought, pets.buy(AccessoryId.BEANIE))
         assertEquals(10, app.balance())
