@@ -1,6 +1,8 @@
 package com.kartikkhandelwal.wigglebun.ui.collection
 
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
+import com.kartikkhandelwal.wigglebun.domain.model.Outfit
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
 
@@ -12,9 +14,11 @@ data class CollectionPetUi(
     val status: PetStatus,
     /** Sparks to adopt; 0 for the starter pet. */
     val price: Int,
+    /** What this pet wears (owned pets only). */
+    val wearing: List<AccessoryId> = emptyList(),
 ) {
-    /** For display: the user's name for Bun (M9), every other pet's own name. */
-    fun asActivePet(chosenName: String?) = ActivePet(id, chosenName)
+    /** For display: the user's name for Bun (M9), every other pet's own name, and its outfit. */
+    fun asActivePet(chosenName: String?) = ActivePet(id, chosenName, wearing)
 }
 
 /** The sheet's steps: the pet's details, "Adopt Pip?" and the welcome celebration. */
@@ -48,6 +52,11 @@ data class CollectionUiState(
     /** The name the user gave Bun (M9); other pets keep their own. */
     val chosenName: String?,
     val sheet: PetSheetUi?,
+    val tab: CollectionTab = CollectionTab.PETS,
+    /** The pet that is with you, wearing its outfit: accessories are tried on and worn by it. */
+    val activePet: ActivePet = ActivePet.Default,
+    val accessories: List<AccessoryUi> = emptyList(),
+    val accessorySheet: AccessorySheetUi? = null,
 )
 
 /** Which pet's sheet is open, and at which step. */
@@ -60,6 +69,10 @@ fun toCollectionUiState(
     sparks: Int,
     selection: SheetSelection?,
     busy: Boolean = false,
+    ownedAccessories: Set<AccessoryId> = emptySet(),
+    outfits: Map<PetId, Outfit> = emptyMap(),
+    tab: CollectionTab = CollectionTab.PETS,
+    accessorySelection: AccessorySelection? = null,
 ): CollectionUiState {
     val pets = PetId.entries.sortedBy(PetPrices::of).map { id ->
         val status = when {
@@ -67,7 +80,8 @@ fun toCollectionUiState(
             id in owned -> PetStatus.OWNED
             else -> PetStatus.LOCKED
         }
-        CollectionPetUi(id, status, PetPrices.of(id))
+        val wearing = if (status == PetStatus.LOCKED) emptyList() else outfits[id]?.owned(ownedAccessories)?.list.orEmpty()
+        CollectionPetUi(id, status, PetPrices.of(id), wearing)
     }
     val sheet = selection?.let { sel ->
         val pet = pets.first { it.id == sel.pet }
@@ -78,5 +92,7 @@ fun toCollectionUiState(
         }
         PetSheetUi(pet, sel.step, action, busy)
     }
-    return CollectionUiState(sparks, pets, active.chosenName, sheet)
+    val accessories = accessoryList(ownedAccessories, active)
+    val accessorySheet = accessorySelection?.let { accessorySheet(accessories, active, sparks, it, busy) }
+    return CollectionUiState(sparks, pets, active.chosenName, sheet, tab, active, accessories, accessorySheet)
 }

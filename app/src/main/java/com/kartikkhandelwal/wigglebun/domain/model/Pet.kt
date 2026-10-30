@@ -29,7 +29,12 @@ const val MAX_PET_NAME_LENGTH = 12
  * [chosenName] is the name the user gave in onboarding (M9); it belongs to Bun, the pet they named.
  * Every other pet keeps its own name.
  */
-data class ActivePet(val id: PetId, val chosenName: String?) {
+data class ActivePet(
+    val id: PetId,
+    val chosenName: String?,
+    /** What this pet wears (owned accessories only); drawn on Home, in sessions and the collection, not on the widget. */
+    val wearing: List<AccessoryId> = emptyList(),
+) {
     /** The user's name for this pet, or null to use the pet's own name. */
     val customName: String? get() = chosenName.takeIf { id == PetId.Starter }
 
