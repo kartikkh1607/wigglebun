@@ -47,6 +47,32 @@ class OnboardingScreenshotTest {
     @Test
     fun nameTyped() = capture("onboarding_name_typed") { NamePetTypedPreview() }
 
+    @Test
+    fun workHours() = capture("onboarding_hours") { WorkHoursPreview() }
+
+    @Test
+    fun workHoursNoDays() = capture("onboarding_hours_no_days") { WorkHoursNoDaysPreview() }
+
+    @Test
+    fun workHoursOvernight() = capture("onboarding_hours_overnight") { WorkHoursOvernightPreview() }
+
+    @Test
+    fun workHoursTimeSheet() = capture("onboarding_hours_time_sheet") { WorkHoursTimeSheetPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Test
+    fun workHoursSmallPhoneLargeFont() = capture("onboarding_hours_small_font") { WorkHoursSmallLargeFontPreview() }
+
+    @Test
+    fun interval() = capture("onboarding_interval") { IntervalPreview() }
+
+    @Test
+    fun intervalSheet() = capture("onboarding_interval_sheet") { IntervalSheetPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Test
+    fun intervalSmallPhoneLargeFont() = capture("onboarding_interval_small_font") { IntervalSmallLargeFontPreview() }
+
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test
     fun nameSmallPhoneLargeFontWidestName() = capture("onboarding_name_small_font") { NamePetSmallLargeFontPreview() }

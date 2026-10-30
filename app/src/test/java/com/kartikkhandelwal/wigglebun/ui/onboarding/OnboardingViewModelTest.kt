@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.data.repo.TestDataLayer
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -19,6 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.time.DayOfWeek
 
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class)
@@ -71,6 +73,35 @@ class OnboardingViewModelTest {
         val next = OnboardingViewModel(app.settings)
         waitUntil { next.nameDraft.value == "Biscuit" }
         next.viewModelScope.cancel()
+    }
+
+    @Test
+    fun workHoursAndIntervalAreSavedOnContinue() = runBlocking {
+        waitUntil { viewModel.workHours.value == WorkHoursDraft.of(WorkSchedule.Default) }
+        viewModel.onToggleDay(DayOfWeek.SATURDAY)
+        viewModel.onTimePicked(WorkTime.START, 8 * 60 + 30)
+        viewModel.onTimePicked(WorkTime.END, 17 * 60)
+        viewModel.onIntervalPicked(60)
+        // Nothing is saved until Continue, so Skip can leave the stored values alone.
+        assertEquals(WorkSchedule.Default, app.settings.current().schedule)
+
+        viewModel.saveWorkHours()
+        viewModel.saveInterval()
+        waitUntil { app.settings.current().intervalMinutes == 60 && app.settings.current().schedule != WorkSchedule.Default }
+        val schedule = app.settings.current().schedule
+        assertEquals(WorkSchedule.Default.days + DayOfWeek.SATURDAY, schedule.days)
+        assertEquals(8 * 60 + 30, schedule.startMinute)
+        assertEquals(17 * 60, schedule.endMinute)
+    }
+
+    @Test
+    fun anImpossibleScheduleIsNeverSaved() = runBlocking {
+        waitUntil { viewModel.workHours.value == WorkHoursDraft.of(WorkSchedule.Default) }
+        DayOfWeek.entries.take(5).forEach(viewModel::onToggleDay)
+        viewModel.saveWorkHours()
+        viewModel.saveInterval() // something later to wait on
+        waitUntil { app.settings.current().intervalMinutes == viewModel.intervalMinutes.value }
+        assertEquals(WorkSchedule.Default, app.settings.current().schedule)
     }
 
     @Test

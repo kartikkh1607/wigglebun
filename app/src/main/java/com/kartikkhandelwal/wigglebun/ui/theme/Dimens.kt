@@ -106,6 +106,17 @@ object Dimens {
         val NameFieldPadding = 16.dp
         val NameCounterGap = 10.dp
         val NameButtonHorizontal = 24.dp
+
+        // Work hours and interval (no mockup)
+        val QuestionTop = 8.dp
+        val QuestionGap = 12.dp
+        val QuestionAnswerTop = 4.dp
+        val DayChip = 40.dp
+        val DayChipTouch = 48.dp
+        val IntervalPetSize = 170.dp
+        val SheetHorizontal = 24.dp
+        val SheetBottom = 24.dp
+        val SheetGap = 16.dp
     }
 
     /** Home screen, measured from design/mockups_source/Main.dc.html and FocusCard.dc.html. */
