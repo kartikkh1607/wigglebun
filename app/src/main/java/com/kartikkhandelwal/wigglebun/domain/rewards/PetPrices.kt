@@ -4,14 +4,14 @@ import com.kartikkhandelwal.wigglebun.domain.model.PetId
 
 /**
  * Adoption prices in sparks (CLAUDE.md §5.4) and their ledger keys. Approved prices: a normal
- * user (4 break types a day, streak kept) adopts Pip on work day 3, Toast on day 8 and Nimbus on
- * day 16 (EconomyTest).
+ * user (4 break types a day, streak kept) adopts Pip on work day 3, Toast on day 7 (with the 7-day
+ * streak bonus) and Nimbus on day 15 (EconomyTest).
  */
 object PetPrices {
     fun of(pet: PetId): Int = when (pet) {
         PetId.BUN -> 0
         PetId.PIP -> 75
-        PetId.TOAST -> 175
+        PetId.TOAST -> 150
         PetId.NIMBUS -> 300
     }
 
