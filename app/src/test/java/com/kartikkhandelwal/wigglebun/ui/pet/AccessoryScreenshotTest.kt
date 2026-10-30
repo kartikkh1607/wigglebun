@@ -33,4 +33,10 @@ class AccessoryScreenshotTest {
     @Test fun outfitThroughEveryMood() = capture("moods") { AccessoryMoodsPreview() }
 
     @Test fun outfitInBreakPoses() = capture("poses") { AccessoryPosesPreview() }
+
+    /** The fill edge is drawn over the scarf at energy 0.45 and 0.4, where it passes behind it. */
+    @Test fun fillEdgeOverTheScarf() = capture("fill_edge_scarf") { AccessoryFillEdgePreview() }
+
+    /** Recorded before the edge-over-scarf change and unchanged by it: no neck item, nothing drawn on top. */
+    @Test fun fillEdgeWithoutANeckItem() = capture("fill_edge_no_neck") { AccessoryFillEdgeNoNeckPreview() }
 }

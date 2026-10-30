@@ -92,3 +92,34 @@ internal fun AccessoryPosesPreview() {
         }
     }
 }
+
+/** Energies where the fill edge passes behind the scarf (fillTop ≈ y 124 and 132). */
+private val FillEdgeEnergies = listOf(0.45f, 0.4f)
+
+/** The fill edge stays visible over a neck item: rows Bun, Pip, Toast, Nimbus; columns [FillEdgeEnergies]. */
+@Preview(name = "Fill edge over the scarf", widthDp = 280)
+@Composable
+internal fun AccessoryFillEdgePreview() = FillEdgeGrid(listOf(AccessoryId.KNIT_SCARF))
+
+/** Without a neck item nothing is drawn over the body: same layout as [AccessoryFillEdgePreview]. */
+@Preview(name = "Fill edge, no neck item", widthDp = 280)
+@Composable
+internal fun AccessoryFillEdgeNoNeckPreview() = FillEdgeGrid(listOf(AccessoryId.BEANIE, AccessoryId.ROUND_GLASSES))
+
+@Composable
+private fun FillEdgeGrid(worn: List<AccessoryId>) {
+    WigglebunTheme {
+        Column(
+            modifier = Modifier.background(Cream).padding(Dimens.ScreenPadding),
+            verticalArrangement = Arrangement.spacedBy(Dimens.ListGap),
+        ) {
+            AllPets.forEach { spec ->
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ListGap)) {
+                    FillEdgeEnergies.forEach { energy ->
+                        PetView(energy = energy, mood = Mood.TIRED, spec = spec, accessories = worn, modifier = Modifier.size(100.dp, 105.dp))
+                    }
+                }
+            }
+        }
+    }
+}
