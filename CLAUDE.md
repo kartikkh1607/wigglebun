@@ -132,7 +132,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 - Currency: one soft currency (working name: "sparks"). Earned only by completing breaks and streak milestones.
 - A break type earns its spark reward only the first time it is completed each day; repeat Done resets the timer and celebrates but gives no sparks.
-- Spend on: new pets (collection) in v1; outfits in v2. Pet prices (`domain/rewards/PetPrices.kt`): Pip 75, Toast 150, Nimbus 300 sparks. Targets are in work days; `EconomyTest` pins them (see the table below).
+- Spend on: new pets (collection) and accessories (4 in v1, then 4 more post-launch; see §6 and §7). Pet prices (`domain/rewards/PetPrices.kt`): Pip 75, Toast 150, Nimbus 300 sparks. Targets are in work days; `EconomyTest` pins them (see the table below).
 - Streak: number of work days in a row with at least N breaks (default 4).
 - Streak bonuses (`domain/rewards/RewardRules.kt`): the 3 / 7 / 14 / 30-day milestones (20 / 50 / 100 / 250 sparks) pay **once per lifetime** (ledger key `milestone:<days>`), so breaking a streak on purpose and rebuilding it never pays them again. After 30 days, every further 30 days of the **same unbroken streak** (day 60, 90, …) pays +250 (key `streak:<days>:<start>`). DB v4 migrated older installs: each milestone's first per-streak payment was renamed to its lifetime key, so nothing is paid twice and no sparks are taken back.
 - Work days to afford each pet, bought cheapest first (`EconomyTest`; every day a work day):
@@ -171,11 +171,13 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
    - Tapping a card opens a **focused card overlay** with three big actions: Skip · Done · Snooze.
 4. **Break session** – full-screen guided stretch with pet doing the move, step text, countdown ring, "Done" → celebrate + reward.
 5. **Collection** (tab 2) – grid of pet silhouettes; locked ones shown as grey silhouettes with a price; tap to preview.
+   - **Accessories (v1: 4 items)**, the ongoing spark sink once every pet is owned: bought once with sparks (50, 75, 100, 125) and worn by any pet, one per slot (head, face, neck). Collection has a Pets | Accessories switch; worn items show on Home, in break sessions, on the profile and in Collection, **not on the widget** (its mood images stay one static PNG per pet and mood).
+   - **Post-launch update:** 4 more accessories (150, 200, 250, 300), so a Normal user keeps something to buy for about 8 weeks after owning every pet.
 6. **Pet profile** (tab 3, tab label = pet's name) – name, streak card, total breaks, weekly bar chart.
 7. **Menu / Settings** – cards: "Add the widget", "Enable notifications", "Enable movement detection" (each opens the permission flow), work hours, interval, break types toggles, Premium card ("Try 7 days free", from `Trial.FREE_TRIAL_DAYS`), privacy policy, about ("Made with love in India").
 8. **Paywall** – pet illustration, 3 benefits, plan selector (yearly highlighted), "Start free trial" CTA, price after trial in plain text, how to cancel, restore purchases, terms/privacy links.
 
-**Not in v1:** friends, seasons/events, outfits, furniture, adventure map, AI coach, iOS.
+**Not in v1:** friends, seasons/events, outfits beyond the 4 v1 accessories, furniture, adventure map, AI coach, iOS.
 
 ---
 
@@ -316,6 +318,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 | M6 | Break session screen + rewards + streak | Completing a break updates pet, coins, streak |
 | M7 | Glance widget (small + medium) | Widget reflects mood within 15 min and instantly after a break |
 | M8 | Collection + unlock with sparks; Pet profile tab (name, streak card, total breaks, weekly chart) | Can unlock and switch pets; profile shows the streak, total breaks and this week's chart |
+| M8b | Accessories: 4 v1 items, buy with sparks, wear on any pet (Home, break session, profile, Collection; not the widget) | Can buy and wear each item on all 4 pets; screenshots for every pet × item |
 | M9 | Onboarding (wake-up, naming, settings) + just-in-time permission cards | Fresh install flows end to end |
 | M10 | RevenueCat + paywall + restore + trial-end reminder | Test purchases work with license testers; entitlement survives offline restart |
 | M11 | Polish, accessibility (TalkBack labels, contrast), privacy policy, store assets | Ready for closed testing |
