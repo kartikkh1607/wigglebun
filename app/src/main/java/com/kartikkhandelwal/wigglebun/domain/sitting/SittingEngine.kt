@@ -24,7 +24,8 @@ import java.time.Instant
  *   ends, so the sit restarts when you sit back down. Shorter periods change nothing, even if
  *   several short walks are separated by STILL.
  * - While a period has already lasted ≥ 2 min the timer is held at zero (no reminder mid-walk).
- * - ≥ 100 steps since the timer started also resets it.
+ * - ≥ 100 steps since the timer started also resets it, but not while a moving period is open:
+ *   the period's end decides, and if it was too short the steps still count once it has ended.
  */
 class SittingEngine(private val clock: Clock) {
 
@@ -122,9 +123,17 @@ class SittingEngine(private val clock: Clock) {
         }
     }
 
-    /** Step-counter fallback: [MIN_STEPS] or more steps since the timer started resets it. */
+    /**
+     * Step-counter fallback: [MIN_STEPS] or more steps since the timer started resets it. Waits
+     * while a moving period is open: a reset here is stamped when the batch arrived, possibly after
+     * the walk really ended, and that later time would stop the walk's own end from counting.
+     */
     fun onSteps(state: SitState, stepsSinceTimerStart: Long): SitState =
-        if (stepsSinceTimerStart >= MIN_STEPS) resetAt(state, clock.instant(), ResetReason.STEPS) else state
+        if (state.movingSince == null && stepsSinceTimerStart >= MIN_STEPS) {
+            resetAt(state, clock.instant(), ResetReason.STEPS)
+        } else {
+            state
+        }
 
     /**
      * Safety cap: a moving period still open [MAX_OPEN_WALK] after it started is closed at that
