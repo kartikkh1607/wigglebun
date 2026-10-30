@@ -88,13 +88,16 @@ internal class PetGeometry(
     /** Crust layer (Toast): only as big as the silhouette, and composited onto it (SrcAtop). */
     val silhouetteBounds: Rect = silhouette.getBounds()
     val crustLayerPaint = Paint().apply { blendMode = BlendMode.SrcAtop }
+
+    /** Fill edge over a neck item: the silhouette composited DstIn keeps the line inside the body. */
+    val silhouetteMaskPaint = Paint().apply { blendMode = BlendMode.DstIn }
     val crustStroke: Stroke? = spec.crust?.let { Stroke(width = it.width, join = StrokeJoin.Round) }
 
     // Stroke widths from the mood SVGs, in viewBox units (the canvas is scaled before drawing).
     val eyeStroke = Stroke(width = 3.6f, cap = StrokeCap.Round)
     val mouthStroke = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
 
-    private companion object {
+    internal companion object {
         fun parse(pathData: String): Path = PathParser().parsePathString(pathData).toPath()
 
         /**

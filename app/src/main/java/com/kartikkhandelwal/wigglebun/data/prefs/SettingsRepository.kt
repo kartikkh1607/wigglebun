@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
+import com.kartikkhandelwal.wigglebun.domain.model.Outfit
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDayHistory
@@ -18,7 +20,7 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Work hours, break interval, pet name and the active pet (CLAUDE.md §5.1). Backed up. */
+/** Work hours, break interval, pet name, the active pet and what each pet wears (CLAUDE.md §5.1). Backed up. */
 @Singleton
 class SettingsRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
@@ -38,6 +40,13 @@ class SettingsRepository @Inject constructor(
     val activePetId: Flow<PetId> =
         prefs.map { PetId.fromKey(it[PrefsKeys.ActivePet]) ?: PetId.Starter }.distinctUntilChanged()
 
+    /** What each pet wears, as stored (PetRepository keeps only owned accessories). */
+    val outfits: Flow<Map<PetId, Outfit>> = prefs.map { p ->
+        PetId.entries.associateWith { pet ->
+            Outfit(p[PrefsKeys.Worn(pet)].orEmpty().mapNotNullTo(mutableSetOf(), AccessoryId::fromKey))
+        }
+    }.distinctUntilChanged()
+
     /** Work days over time, so the streak judges past days by the days in force back then. */
     val workDayHistory: Flow<WorkDayHistory> = prefs.map { it.toWorkDayHistory() }.distinctUntilChanged()
 
@@ -51,6 +60,10 @@ class SettingsRepository @Inject constructor(
             it.writeSchedule(schedule)
             it.writeWorkDayHistory(history)
         }
+    }
+
+    suspend fun setOutfit(pet: PetId, outfit: Outfit) {
+        dataStore.edit { it[PrefsKeys.Worn(pet)] = outfit.items.mapTo(mutableSetOf()) { item -> item.key } }
     }
 
     suspend fun setActivePet(pet: PetId) {

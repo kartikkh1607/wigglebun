@@ -206,6 +206,74 @@ class MovementRulesTest {
         assertEquals(ResetReason.STEPS, reset.lastResetReason)
     }
 
+    /**
+     * A step reset is stamped when its batch arrives, which can be after the walk really ended.
+     * Without waiting for the walk, the later stamp wins and the walk's own end is thrown away.
+     */
+    @Test
+    fun stepsArrivingBeforeTheWalkEndEventDoNotBeatTheWalk() {
+        val walking = sitting.feed(enter(WALKING, "10:20"))
+        clock.now = at("10:23:30") // batch arrives after the 10:23 end, before its STILL event
+        assertEquals(walking, engine.onSteps(walking, 150))
+
+        val ended = engine.onSteps(walking, 150).feed(enter(STILL, "10:23"))
+        assertEquals(at("10:23"), ended.sitStartedAt)
+        assertEquals(ResetReason.WALKING, ended.lastResetReason)
+    }
+
+    /** Steps are the fallback for walks that didn't count: too short, but ≥ 100 steps still reset. */
+    @Test
+    fun aShortWalkWithEnoughStepsResetsByStepsOnceItEnds() {
+        val walking = sitting.feed(enter(WALKING, "10:20"))
+        clock.now = at("10:21")
+        assertEquals(walking, engine.onSteps(walking, 150))
+
+        val ended = walking.feed(exit(WALKING, "10:21:30"))
+        assertEquals(at("10:00"), ended.sitStartedAt) // under 2 min: the walk itself changes nothing
+        clock.now = at("10:21:40")
+        val reset = engine.onSteps(ended, 150)
+        assertEquals(at("10:21:40"), reset.sitStartedAt)
+        assertEquals(ResetReason.STEPS, reset.lastResetReason)
+    }
+
+    /** Detection lost (walk cleared) or the cap closed the walk: the step fallback works again. */
+    @Test
+    fun stepsResetAgainOnceAnOpenWalkIsGone() {
+        val walking = sitting.feed(enter(WALKING, "10:20"))
+        clock.now = at("10:21")
+        assertEquals(ResetReason.STEPS, engine.onSteps(engine.clearMovement(walking), 150).lastResetReason)
+
+        clock.now = at("11:10")
+        assertEquals(ResetReason.STEPS, engine.onSteps(engine.closeOverlongWalk(walking), 150).lastResetReason)
+    }
+
+    /**
+     * The real-phone log of 2026-10-30: each state arrives twice, 2 s apart, with its own stamp
+     * (so the watermark can't drop it), and steps come in during the walk. One reset, at the
+     * first STILL, and the repeats change nothing.
+     */
+    @Test
+    fun duplicateEnterEventsCountOnce() {
+        val walking = sitting.feed(enter(WALKING, "10:49:49"), enter(WALKING, "10:49:51"))
+        assertEquals(at("10:49:49"), walking.movingSince)
+
+        clock.now = at("10:51")
+        val ended = engine.onSteps(walking, 180).feed(enter(STILL, "10:52:49"))
+        assertEquals(at("10:52:49"), ended.sitStartedAt)
+        assertEquals(ResetReason.WALKING, ended.lastResetReason)
+
+        assertEquals(ended, ended.feed(enter(STILL, "10:52:51")))
+    }
+
+    /** An hour-old STILL that does get through (no watermark on this path) can't end a walk or move the timer. */
+    @Test
+    fun anHourOldStillChangesNothingWithOrWithoutAWalk() {
+        assertEquals(sitting, sitting.feed(enter(STILL, "09:49:56")))
+
+        val walking = sitting.feed(enter(WALKING, "10:49:49"))
+        assertEquals(walking, walking.feed(enter(STILL, "09:49:56")))
+    }
+
     @Test
     fun resetsClearSnoozes() {
         clock.now = at("10:45")
