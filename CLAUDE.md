@@ -298,6 +298,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 6. No hard-coded strings, colours or dimensions inside screens; use theme tokens.
 7. Explain non-obvious Android behaviour (background limits, permissions) in short code comments.
 8. Never add paid services (RevenueCat is the one approved exception: free until the app earns). Ask before any new dependency.
+9. **Branches and PRs only.** Always work on a branch and open a PR for Kartik to review. Never push to, merge into or fast-forward `main` without Kartik's explicit approval for that PR. This applies with extra care to anything touching Room migrations (`data/db/`, `app/schemas/`), which can't be undone on installed devices. One PR per requested item unless Kartik says otherwise.
 
 ---
 
