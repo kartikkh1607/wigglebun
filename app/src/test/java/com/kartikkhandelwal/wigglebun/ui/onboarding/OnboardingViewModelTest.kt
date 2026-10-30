@@ -10,7 +10,9 @@ import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.After
@@ -25,6 +27,12 @@ import org.robolectric.annotation.Config
 class OnboardingViewModelTest {
 
     private val app = TestDataLayer(ApplicationProvider.getApplicationContext())
+
+    // Watched from the data layer's scope. Reading DataStore from the test while a save is running
+    // would deadlock: the save's transform runs on the main thread, which the test is holding.
+    private val petName = app.settings.petName.stateIn(app.scope, SharingStarted.Eagerly, UNSET)
+    private val onboardingDone = app.settings.onboardingDone.stateIn(app.scope, SharingStarted.Eagerly, null)
+
     private val viewModel = OnboardingViewModel(app.settings)
 
     @After
@@ -34,7 +42,7 @@ class OnboardingViewModelTest {
     }
 
     /** viewModelScope runs on the main looper, which Robolectric only runs when asked. */
-    private suspend fun waitUntil(condition: suspend () -> Boolean) = withTimeout(10_000) {
+    private suspend fun waitUntil(condition: () -> Boolean) = withTimeout(10_000) {
         while (!condition()) {
             shadowOf(Looper.getMainLooper()).idle()
             delay(10)
@@ -45,7 +53,7 @@ class OnboardingViewModelTest {
     fun theNameIsSavedCleanAndNamesBun() = runBlocking {
         viewModel.onNameChange("  Biscuit ")
         viewModel.saveName()
-        waitUntil { app.settings.petName.first() == "Biscuit" }
+        waitUntil { petName.value == "Biscuit" }
         assertEquals("Biscuit", app.pets.activePet.first().customName)
     }
 
@@ -54,12 +62,12 @@ class OnboardingViewModelTest {
         app.settings.setPetName("Old")
         viewModel.onNameChange("   ")
         viewModel.saveName()
-        waitUntil { app.settings.petName.first() == null }
+        waitUntil { petName.value == null }
         assertEquals(ActivePet(PetId.BUN, chosenName = null), app.pets.activePet.first())
     }
 
     @Test
-    fun theFieldStopsAtTheLimit() {
+    fun theFieldStopsAtTheLimit() = runBlocking {
         viewModel.onNameChange("Wigglebottomley")
         assertEquals("Wigglebottom", viewModel.nameDraft.value)
     }
@@ -68,14 +76,16 @@ class OnboardingViewModelTest {
     @Test
     fun aSavedNameStartsInTheField() = runBlocking {
         app.settings.setPetName("Biscuit")
-        val next = OnboardingViewModel(app.settings)
-        waitUntil { next.nameDraft.value == "Biscuit" }
-        next.viewModelScope.cancel()
+        waitUntil { viewModel.nameDraft.value == "Biscuit" }
     }
 
     @Test
     fun finishingOpensTheApp() = runBlocking {
         viewModel.finish()
-        waitUntil { app.settings.onboardingDone.first() == true }
+        waitUntil { onboardingDone.value == true }
+    }
+
+    private companion object {
+        const val UNSET = "unset"
     }
 }
