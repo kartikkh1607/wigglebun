@@ -40,6 +40,8 @@ data class LoggedTransition(
     val entered: Boolean,
     val at: Instant,
     val arrivedAt: Instant?,
+    /** Made by the Pet lab's Simulate walk, which backdates its start: not something Play services sent. */
+    val simulated: Boolean = false,
 )
 
 data class MovementInfo(
@@ -125,14 +127,15 @@ class MovementStore @Inject constructor(
 
     /** Logs [events] (chronological) without any filtering; used for the debug walk simulation. */
     suspend fun appendLog(events: List<MovementTransition>, arrivedAt: Instant) = dataStore.edit { prefs ->
-        prefs.prependToLog(events, arrivedAt)
+        prefs.prependToLog(events, arrivedAt, simulated = true)
     }
 
-    private fun MutablePreferences.prependToLog(events: List<MovementTransition>, arrivedAt: Instant) {
-        val newest = events.reversed().map { LoggedTransition(it.activity, it.entered, it.at, arrivedAt) }
+    private fun MutablePreferences.prependToLog(events: List<MovementTransition>, arrivedAt: Instant, simulated: Boolean = false) {
+        val newest = events.reversed().map { LoggedTransition(it.activity, it.entered, it.at, arrivedAt, simulated) }
         val log = (newest + toMovementInfo().log).take(LOG_SIZE)
         this[Keys.Log] = log.joinToString("\n") {
-            "${it.at.toEpochMilli()},${it.activity.name},${if (it.entered) 1 else 0},${it.arrivedAt?.toEpochMilli() ?: ""}"
+            "${it.at.toEpochMilli()},${it.activity.name},${if (it.entered) 1 else 0},${it.arrivedAt?.toEpochMilli() ?: ""}" +
+                if (it.simulated) ",$SIMULATED_MARK" else ""
         }
     }
 
@@ -146,10 +149,10 @@ class MovementStore @Inject constructor(
         log = this[Keys.Log].orEmpty().lineSequence().mapNotNull(::parseLogLine).toList(),
     )
 
-    /** Lines written before arrival times existed have three fields. */
+    /** Lines written before arrival times existed have three fields; simulated ones have a fifth. */
     private fun parseLogLine(line: String): LoggedTransition? {
         val parts = line.split(',')
-        if (parts.size !in 3..4) return null
+        if (parts.size !in 3..5) return null
         val activity = MovementActivity.entries.firstOrNull { it.name == parts[1] } ?: return null
         val millis = parts[0].toLongOrNull() ?: return null
         return LoggedTransition(
@@ -157,6 +160,7 @@ class MovementStore @Inject constructor(
             entered = parts[2] == "1",
             at = Instant.ofEpochMilli(millis),
             arrivedAt = parts.getOrNull(3)?.toLongOrNull()?.let(Instant::ofEpochMilli),
+            simulated = parts.getOrNull(4) == SIMULATED_MARK,
         )
     }
 
@@ -174,6 +178,7 @@ class MovementStore @Inject constructor(
 
     companion object {
         const val LOG_SIZE = 20
+        private const val SIMULATED_MARK = "sim"
 
         /** Keys that lived in the settings file before the device-local file existed. */
         internal val MovedToDeviceStore: List<Preferences.Key<*>> = listOf(
