@@ -56,8 +56,9 @@ internal suspend fun freshestReading(
  *
  * Needs ACTIVITY_RECOGNITION on API 29+. Not every device has the sensor.
  */
+// Open so tests can stand in for the sensor (Robolectric has none).
 @Singleton
-class StepCounter @Inject constructor(
+open class StepCounter @Inject constructor(
     @ApplicationContext private val context: Context,
     private val permissions: MovementPermissions,
 ) {
@@ -119,7 +120,7 @@ class StepCounter @Inject constructor(
      * the reminder posts) and for the baseline after Done/Skip (steps walked during the break
      * would count toward the next timer). So flush the hardware FIFO first and wait briefly.
      */
-    suspend fun readTotal(): Long? {
+    open suspend fun readTotal(): Long? {
         countingListener?.let { listener ->
             val done = CompletableDeferred<Unit>()
             synchronized(flushWaiters) { flushWaiters += done }
@@ -156,8 +157,10 @@ class StepCounter @Inject constructor(
         }
     }
 
-    private fun record(event: SensorEvent) {
-        _lastReading.value = StepReading(event.values[0].toLong(), Instant.now())
+    private fun record(event: SensorEvent) = record(event.values[0].toLong())
+
+    protected fun record(total: Long) {
+        _lastReading.value = StepReading(total, Instant.now())
     }
 
     /** Settings.Global.BOOT_COUNT changes on every reboot, which is when the counter resets. */
