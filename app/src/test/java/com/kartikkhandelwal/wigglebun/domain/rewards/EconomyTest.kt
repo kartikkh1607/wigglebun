@@ -39,8 +39,8 @@ class EconomyTest {
 
     @Test
     fun workDaysToEachPet() {
-        assertEquals(listOf(5, 17, 37), daysToEachPet(light))
-        assertEquals(listOf(3, 8, 16), daysToEachPet(normal))
+        assertEquals(listOf(5, 15, 35), daysToEachPet(light))
+        assertEquals(listOf(3, 7, 15), daysToEachPet(normal))
         assertEquals(listOf(2, 6, 12), daysToEachPet(heavy))
     }
 
