@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.data.repo.BreakActions
 import com.kartikkhandelwal.wigglebun.data.repo.TestDataLayer
+import com.kartikkhandelwal.wigglebun.data.time.FixedAppClock
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
@@ -27,14 +28,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import java.time.Instant
 
 /** M8: switching the active pet reaches Home and the widget (the real repositories, no Hilt). */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class)
 class ActivePetSwitchTest {
 
-    private val app = TestDataLayer(ApplicationProvider.getApplicationContext())
+    private val app = TestDataLayer(ApplicationProvider.getApplicationContext(), FixedAppClock())
     private val home = HomeViewModel(
         sitRepository = app.sitRepository,
         settingsRepository = app.settings,
@@ -71,7 +71,7 @@ class ActivePetSwitchTest {
 
         val redrawsBefore = app.widgetUpdates.count
         runBlocking {
-            app.wallet.award("break:test", PetPrices.of(PetId.PIP) + 50, SparkReason.BREAK, Instant.now())
+            app.wallet.award("break:test", PetPrices.of(PetId.PIP) + 50, SparkReason.BREAK, app.clock.instant())
             app.pets.adopt(PetId.PIP)
         }
         // The pet comes from DataStore and the balance from a Room query that re-emits after its

@@ -15,8 +15,9 @@ import javax.inject.Singleton
  *
  * The zone is read on every call, so a timezone change is picked up immediately.
  */
+// Open so tests can pin the time.
 @Singleton
-class AppClock @Inject constructor() : Clock() {
+open class AppClock @Inject constructor() : Clock() {
 
     private data class Config(val speed: Int, val realAnchorMillis: Long, val fakeAnchorMillis: Long)
 
@@ -30,7 +31,7 @@ class AppClock @Inject constructor() : Clock() {
     @Synchronized
     fun setSpeed(newSpeed: Int) {
         require(newSpeed >= 1)
-        val real = System.currentTimeMillis()
+        val real = realMillis()
         config = if (newSpeed == 1) {
             // Back to real time. App time jumps back; stored future instants are clamped by the engine.
             Config(1, 0L, 0L)
@@ -40,9 +41,12 @@ class AppClock @Inject constructor() : Clock() {
         _speed.value = newSpeed
     }
 
+    /** The real wall-clock time, before any speed-up. */
+    protected open fun realMillis(): Long = System.currentTimeMillis()
+
     override fun millis(): Long {
         val c = config
-        val real = System.currentTimeMillis()
+        val real = realMillis()
         return if (c.speed == 1) real else c.fakeAnchorMillis + (real - c.realAnchorMillis) * c.speed
     }
 
