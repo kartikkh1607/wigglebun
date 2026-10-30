@@ -102,7 +102,7 @@ v1 rule set, simple and robust:
 - The sit timer **resets** when any of these happen:
   - user completes a break in the app (Done),
   - Activity Recognition (primary signal) reports a walking/running period that lasts ≥ 2 minutes. We subscribe to `WALKING` and `RUNNING` enter+exit plus `STILL` enter+exit; `ON_FOOT` is not supported by the Transition API. The period ends on the last moving exit or a `STILL` enter, and the timer restarts at that moment,
-  - phone step counter (if available, best effort) shows ≥ 100 new steps since the timer started. The sensor only counts while a listener is registered, and we have no foreground service, so it counts only while the app process is alive during work hours.
+  - phone step counter (if available, best effort) shows ≥ 100 new steps since the timer started. The sensor only counts while a listener is registered, and we have no foreground service, so it counts only while the app process is alive during work hours. Steps don't reset the timer while a walk is open (a reset is stamped when its batch arrives, which could beat the walk's real end); if the walk was too short, they still count once it has ended.
 - When the timer reaches the interval → send a break reminder notification.
 - **Snooze** pushes the reminder by 10 min (max 3 snoozes in a row), and only once the reminder is due. **Skip** resets the timer without reward.
 - Outside work hours: nothing runs, pet sleeps peacefully (no guilt).

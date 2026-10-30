@@ -121,6 +121,11 @@ class StaleStepReadingTest {
     /** Time for a reading waiting on the lock to be handled once the lock is free. */
     private suspend fun awaitWaitingReading() = delay(SETTLE_MILLIS)
 
+    /** A step reset saves the reason first and the new baseline after it, so wait for both. */
+    private suspend fun awaitStepsReset(baseline: StepBaseline) = withTimeout(5_000) {
+        while (store.current().lastResetReason != ResetReason.STEPS || movementStore.current().baseline != baseline) delay(10)
+    }
+
     @Test
     fun aWalkEndKeepsItsResetWhenTheFlushDeliversABatch() = runBlocking {
         val end = Instant.now().truncatedTo(ChronoUnit.MILLIS)
@@ -157,8 +162,7 @@ class StaleStepReadingTest {
     fun aHundredNewStepsStillReset() = runBlocking {
         stepCounter.total = START_STEPS + 100
         stepCounter.publish(START_STEPS + 100)
-        withTimeout(5_000) { while (store.current().lastResetReason != ResetReason.STEPS) delay(10) }
-        assertEquals(StepBaseline(START_STEPS + 100, BOOT), movementStore.current().baseline)
+        awaitStepsReset(StepBaseline(START_STEPS + 100, BOOT))
     }
 
     /** The counter really restarting (deactivated, then back at 0) still counts as new steps. */
@@ -166,8 +170,7 @@ class StaleStepReadingTest {
     fun aCounterThatReallyWentBackStillCounts() = runBlocking {
         stepCounter.total = 150
         stepCounter.publish(150)
-        withTimeout(5_000) { while (store.current().lastResetReason != ResetReason.STEPS) delay(10) }
-        assertEquals(StepBaseline(150, BOOT), movementStore.current().baseline)
+        awaitStepsReset(StepBaseline(150, BOOT))
     }
 
     private companion object {
