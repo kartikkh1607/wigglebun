@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import com.kartikkhandelwal.wigglebun.domain.model.AccessorySlot
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 
 /** An ellipse in viewBox units, optionally rotated about its own centre (SVG `rotate(deg cx cy)`). */
@@ -104,6 +105,8 @@ data class PetSpec(
      * Lower and further out than a straight mirror so the z's sit on plain wall in the desk scene.
      */
     val sleepZAnchorLeft: Offset,
+    /** Where each accessory slot sits on this pet (AccessorySpecs); only HEAD differs between pets. */
+    val accessoryAnchors: Map<AccessorySlot, AccessoryAnchor> = AccessorySpecs.DefaultAnchors,
 ) {
     fun fillTop(energy: Float): Float = fillTopFull + (1f - energy.coerceIn(0f, 1f)) * fillRange
 }

@@ -37,6 +37,14 @@ val ToastCrust = Color(0xFFC98F4E)
 val ToastCrustDrained = Color(0xFFD6CFC4)
 val NimbusLilac = Color(0xFFC9B8F2)
 val NimbusLilacEdge = Color(0xFFB39FE6)
+
+// Accessories (design/accessories/acc_*.svg).
+val AccessoryPetal = Color(0xFFF4A3C0)
+val AccessoryLeaf = Color(0xFF6CC49F)
+val AccessoryScarf = Color(0xFFE5603A)
+val AccessoryScarfStripe = Color(0xFFFFF4E8)
+val AccessoryBeanie = Color(0xFF7FB8F5)
+val AccessoryBeanieBrim = Color(0xFF5E9EE3)
 /** A pet not adopted yet, on a white Collection card (Collection.dc.html). */
 val LockedSilhouette = Color(0xFFDCD5CB)
 

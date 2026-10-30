@@ -94,7 +94,7 @@ internal class PetGeometry(
     val eyeStroke = Stroke(width = 3.6f, cap = StrokeCap.Round)
     val mouthStroke = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
 
-    private companion object {
+    internal companion object {
         fun parse(pathData: String): Path = PathParser().parsePathString(pathData).toPath()
 
         /**
