@@ -74,7 +74,9 @@ class ActivePetSwitchTest {
             app.wallet.award("break:test", PetPrices.of(PetId.PIP) + 50, SparkReason.BREAK, Instant.now())
             app.pets.adopt(PetId.PIP)
         }
-        waitUntil { home.state.value?.pet?.id == PetId.PIP }
+        // The pet comes from DataStore and the balance from a Room query that re-emits after its
+        // invalidation, so Home can show Pip a moment before the new balance: wait for both.
+        waitUntil { home.state.value?.let { it.pet?.id == PetId.PIP && it.sparks == 50 } == true }
         assertEquals(50, home.state.value?.sparks)
         assertTrue("adopting redraws the widget", app.widgetUpdates.count > redrawsBefore)
 
