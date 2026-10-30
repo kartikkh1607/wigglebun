@@ -54,7 +54,6 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
-import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.Poses
@@ -164,7 +163,7 @@ fun WakeUpScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Spacer(Modifier.height(if (tall) S.TitleTop else S.TitleTopShort))
-                WakeText(phase, petName)
+                WakeText(phase)
                 Spacer(Modifier.height(if (tall) S.RingTop else S.RingTopShort))
                 PetRing(phase, petName, ringBox, nightAlpha, onWake)
             }
@@ -181,7 +180,7 @@ private fun animatedColor(asleep: Boolean, night: Color, day: Color) =
     animateColorAsState(if (asleep) night else day, tween(DAYBREAK_MILLIS, easing = FastOutSlowInEasing), label = "dayColor")
 
 @Composable
-private fun WakeText(phase: WakePhase, petName: String) {
+private fun WakeText(phase: WakePhase) {
     val titleStyle = MaterialTheme.typography.displayMedium.copy(fontSize = S.TitleSize)
     val bodyStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = S.BodySize, lineHeight = S.BodyLineHeight)
     Crossfade(phase == WakePhase.ASLEEP, label = "wakeText") { asleep ->
@@ -200,9 +199,10 @@ private fun WakeText(phase: WakePhase, petName: String) {
                 )
                 Text(stringResource(R.string.wake_body), style = bodyStyle, color = NightBody, textAlign = TextAlign.Center)
             } else {
-                PetNameSentence(
-                    template = R.string.intro_title,
-                    name = petName,
+                // Two lines, like the sleeping title, so the pet doesn't jump when it wakes. No name
+                // here: the next screen is where the user chooses it.
+                Text(
+                    stringResource(R.string.intro_title),
                     style = titleStyle,
                     color = Ink,
                     textAlign = TextAlign.Center,

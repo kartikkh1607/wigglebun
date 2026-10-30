@@ -114,7 +114,7 @@
     <string name="wake_title">Shh… someone’s\nstill asleep</string>
     <string name="wake_body">They’ve been sitting way too long.\nHelp them wake up and stretch.</string>
     <string name="wake_cta">Tap to wake them up</string>
-    <string name="intro_title">Hi! I’m %1$s.\nThat was some nap!</string>
+    <string name="intro_title">Hi!\nThat was some nap!</string>
     <string name="intro_body">Thanks for waking me up.\nLet’s keep each other moving.</string>
     <string name="intro_cta">Nice to meet you</string>
     <string name="name_title">What will you call me?</string>
@@ -132,7 +132,7 @@
     <string name="hours_sheet_start">Work starts at</string>
     <string name="hours_sheet_end">Work ends at</string>
     <string name="interval_title">How often should I nudge you?</string>
-    <string name="interval_body">After this long sitting, I’ll ask you to get up and move.</string>
+    <string name="interval_body">After you’ve sat this long, I’ll nudge you to move.</string>
     <string name="interval_every">Every</string>
     <string name="interval_minutes">%1$d min</string>
     <string name="interval_sheet">Remind me every</string>
