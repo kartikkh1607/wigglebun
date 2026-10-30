@@ -15,7 +15,6 @@ import com.kartikkhandelwal.wigglebun.activity.StepCounter
 import com.kartikkhandelwal.wigglebun.activity.TransitionRegistrar
 import com.kartikkhandelwal.wigglebun.data.db.AppDatabase
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
-import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.prefs.StepBaseline
@@ -127,12 +126,11 @@ class StaleStepReadingTest {
         val end = Instant.now().truncatedTo(ChronoUnit.MILLIS)
         stepCounter.nextFlush = listOf(START_STEPS + 120, START_STEPS + 180)
 
-        repo.onReceivedTransitions(
+        repo.simulateTransitions(
             listOf(
-                ReceivedTransition(MovementTransition(MovementActivity.WALKING, true, end.minusSeconds(180)), elapsedRealtimeNanos = 1_000),
-                ReceivedTransition(MovementTransition(MovementActivity.STILL, true, end), elapsedRealtimeNanos = 181_000),
+                MovementTransition(MovementActivity.WALKING, entered = true, at = end.minusSeconds(180)),
+                MovementTransition(MovementActivity.STILL, entered = true, at = end),
             ),
-            bootCount = BOOT,
         )
         awaitWaitingReading()
 
