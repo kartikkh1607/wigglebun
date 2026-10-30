@@ -1,14 +1,26 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
 import android.app.Application
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.kartikkhandelwal.wigglebun.ui.home.HomePreviewStates
+import com.kartikkhandelwal.wigglebun.ui.home.HomeScreen
 import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallPlaceholderPreview
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsAllOffPreview
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsExplainPreview
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsMixedPreview
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsPreviewStates
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsSmallLargeFontPreview
+import com.kartikkhandelwal.wigglebun.ui.setup.SetupHomePrompt
+import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
+import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,6 +95,48 @@ class OnboardingScreenshotTest {
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test
     fun firstStretchSmallPhoneLargeFont() = capture("onboarding_stretch_small_font") { FirstStretchSmallLargeFontPreview() }
+
+    @Test
+    fun settingsAllOff() = capture("settings_all_off") { SettingsAllOffPreview() }
+
+    @Test
+    fun settingsMixed() = capture("settings_mixed") { SettingsMixedPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Test
+    fun settingsSmallPhoneLargeFont() = capture("settings_small_font") { SettingsSmallLargeFontPreview() }
+
+    @Test
+    fun explainNotifications() = capture("setup_explain_notifications") { SettingsExplainPreview(SettingsPreviewStates.Notifications) }
+
+    @Test
+    fun explainMovement() = capture("setup_explain_movement") { SettingsExplainPreview(SettingsPreviewStates.Movement) }
+
+    @Test
+    fun explainMovementBlocked() = capture("setup_explain_movement_blocked") { SettingsExplainPreview(SettingsPreviewStates.BlockedMovement) }
+
+    @Test
+    fun explainWidget() = capture("setup_explain_widget") { SettingsExplainPreview(SettingsPreviewStates.Widget) }
+
+    @Test
+    fun explainWidgetManual() = capture("setup_explain_widget_manual") { SettingsExplainPreview(SettingsPreviewStates.ManualWidget) }
+
+    @Test
+    fun homeWithSetupPrompt() = capture("home_setup_prompt") {
+        WigglebunTheme {
+            HomeScreen(
+                HomePreviewStates.Tired,
+                setupPrompt = {
+                    SetupHomePrompt(
+                        SettingsPreviewStates.Notifications,
+                        onOpen = {},
+                        onNotNow = {},
+                        modifier = Modifier.padding(start = Dimens.ScreenPadding, end = Dimens.ScreenPadding, top = Dimens.Setup.HomePromptTop),
+                    )
+                },
+            )
+        }
+    }
 
     @Test
     fun paywallPlaceholder() = capture("paywall_placeholder") { PaywallPlaceholderPreview() }

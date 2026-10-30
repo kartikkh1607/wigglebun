@@ -142,6 +142,30 @@
     <string name="paywall_placeholder_title">You’re all set!</string>
     <string name="paywall_placeholder_body">Plans and the free trial will show here.</string>
 
+    <!-- Setup cards in Settings and on Home (CLAUDE.md §6.7, §10) -->
+    <string name="setup_notifications_title">Enable notifications</string>
+    <string name="setup_notifications_why">So your pet can remind you</string>
+    <string name="setup_notifications_explain">So your pet can remind you when it’s time for a break. Without them, Home still shows how long you’ve been sitting.</string>
+    <string name="setup_notifications_blocked">Notifications are turned off for this app. You can turn them on in your phone’s settings.</string>
+    <string name="setup_movement_title">Enable movement detection</string>
+    <string name="setup_movement_why">So walking resets the timer automatically</string>
+    <string name="setup_movement_explain">So walking resets the timer automatically. It’s worked out on this phone and stays here. Without it, you can still mark breaks as done yourself.</string>
+    <string name="setup_movement_blocked">Movement detection needs the physical activity permission. You can allow it in your phone’s settings.</string>
+    <string name="setup_widget_title">Add the widget</string>
+    <string name="setup_widget_why">See your pet from your home screen</string>
+    <string name="setup_widget_explain">Your pet on your home screen, with the time since your last break.</string>
+    <string name="setup_widget_manual">Touch and hold your home screen, choose Widgets, then find Wigglebun.</string>
+    <string name="setup_blocked">Turned off in your phone’s settings</string>
+    <string name="setup_status_on">On</string>
+    <string name="setup_status_off">Off</string>
+    <string name="setup_status_added">Added</string>
+    <string name="setup_allow">Continue</string>
+    <string name="setup_turn_on">Turn on</string>
+    <string name="setup_add_widget">Add widget</string>
+    <string name="setup_open_settings">Open settings</string>
+    <string name="setup_not_now">Not now</string>
+    <string name="setup_got_it">Got it</string>
+
     <!-- Break session (BreakSession.dc.html). Plain, gentle wording: no medical claims. -->
     <string name="session_step">Step %1$d of %2$d</string>
     <string name="session_safety">Move gently. Stop if anything hurts.</string>

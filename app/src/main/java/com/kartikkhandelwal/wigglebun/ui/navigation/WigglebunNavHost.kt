@@ -34,7 +34,10 @@ import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfilePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreen
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsPreviewStates
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsScreen
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.setup.HomeSetupPromptRoute
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 
@@ -46,6 +49,7 @@ fun WigglebunNavHost(
     homeContent: @Composable (HomeNavigation) -> Unit = { HomeScreenRoute(it) },
     collectionContent: @Composable () -> Unit = { CollectionScreenRoute() },
     petContent: @Composable () -> Unit = { PetProfileScreenRoute() },
+    settingsContent: @Composable () -> Unit = { SettingsScreenRoute() },
     /** Names the pet tab; null (still loading) leaves the label blank rather than show the wrong pet. */
     activePet: ActivePet? = ActivePet.Default,
     /** A break to open straight away (from the widget); [onStartBreakHandled] clears it. */
@@ -108,12 +112,13 @@ fun WigglebunNavHost(
                         onOpenMenu = { openTab(TopLevelTab.Settings) },
                         onStartBreak = ::openBreak,
                         debugEntry = { DebugHomeEntry(navController) },
+                        setupPrompt = { HomeSetupPromptRoute() },
                     ),
                 )
             }
             composable<CollectionRoute> { collectionContent() }
             composable<PetRoute> { petContent() }
-            composable<SettingsRoute> { SettingsScreen() }
+            composable<SettingsRoute> { settingsContent() }
             composable<BreakSessionRoute> { BreakSessionScreenRoute(onExit = { navController.popBackStack() }) }
             debugDestinations(navController)
         }
@@ -128,6 +133,7 @@ internal fun WigglebunNavHostPreview() {
             homeContent = { HomeScreen(HomePreviewStates.Tired, debugEntry = it.debugEntry) },
             collectionContent = { CollectionScreen(CollectionPreviewStates.OnlyBun) },
             petContent = { PetProfileScreen(PetProfilePreviewStates.EmptyWeek) },
+            settingsContent = { SettingsScreen(SettingsPreviewStates.AllOff, {}) },
         )
     }
 }
