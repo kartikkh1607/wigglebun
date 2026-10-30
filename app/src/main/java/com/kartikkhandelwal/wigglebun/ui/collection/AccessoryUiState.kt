@@ -53,7 +53,7 @@ fun accessoryList(owned: Set<AccessoryId>, active: ActivePet): List<AccessoryUi>
         AccessoryUi(id, status)
     }
 
-/** The active pet wearing its outfit with [item] in that slot (the try-on in cards and the sheet). */
+/** The active pet wearing its outfit with [item] in that slot (the try-on in the sheet). */
 fun ActivePet.tryingOn(item: AccessoryId): ActivePet = copy(wearing = Outfit(wearing.toSet()).wearing(item).list)
 
 fun accessorySheet(

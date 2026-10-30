@@ -135,7 +135,6 @@ private fun AccessoryCard(item: AccessoryUi, pet: ActivePet, onClick: () -> Unit
         AccessoryStatus.OWNED -> stringResource(R.string.accessory_cd_owned, name)
         AccessoryStatus.LOCKED -> pluralStringResource(R.plurals.accessory_cd_locked, item.price, name, item.price)
     }
-    val wearer = pet.tryingOn(item.id)
     ChunkySurface(
         shape = WigglebunShapes.Card,
         faceColor = Card,
@@ -156,10 +155,11 @@ private fun AccessoryCard(item: AccessoryUi, pet: ActivePet, onClick: () -> Unit
             PetView(
                 energy = 1f,
                 mood = Mood.HAPPY,
-                spec = wearer.spec,
+                spec = pet.spec,
                 name = petName,
                 animated = false,
-                accessories = wearer.wearing,
+                // Only this card's item, so each card shows its own; the sheet tries it on with the outfit.
+                accessories = listOf(item.id),
                 modifier = Modifier.size(C.PetSize),
             )
             // Up to two lines at large font sizes; the row's cards keep one height (IntrinsicSize.Max).
