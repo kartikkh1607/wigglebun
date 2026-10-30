@@ -55,8 +55,8 @@
     <string name="pet_lab_movement_enabled">Movement detection</string>
     <string name="pet_lab_request_activity_permission">Request activity permission</string>
     <string name="pet_lab_simulate_walk">Simulate 3-min walk</string>
-    <string name="pet_lab_movement_log">Last 20 transitions</string>
+    <string name="pet_lab_movement_log">Last 20 transitions, by event time</string>
     <string name="pet_lab_movement_log_empty">No transitions yet</string>
-    <string name="pet_lab_movement_log_enter">%1$s  enter %2$s</string>
-    <string name="pet_lab_movement_log_exit">%1$s  exit %2$s</string>
+    <string name="pet_lab_movement_log_enter">%1$s  enter %2$s  (got %3$s)</string>
+    <string name="pet_lab_movement_log_exit">%1$s  exit %2$s  (got %3$s)</string>
 </resources>

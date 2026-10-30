@@ -34,18 +34,30 @@ data class Registration(val bootCount: Int, val versionCode: Int) {
 /** Step-counter baseline: the sensor value when the timer started, and which boot it came from. */
 data class StepBaseline(val steps: Long, val bootCount: Int)
 
+/** One line of the movement log: when it happened, and when we received it (null if logged before arrival times existed). */
+data class LoggedTransition(
+    val activity: MovementActivity,
+    val entered: Boolean,
+    val at: Instant,
+    val arrivedAt: Instant?,
+)
+
 data class MovementInfo(
     val enabled: Boolean = true,
     val registered: Boolean = false,
     /** Set with [registered] since this field exists; null for a registration made by an older version. */
     val registration: Registration? = null,
     val baseline: StepBaseline? = null,
-    /** Newest first, at most [MovementStore.LOG_SIZE]. Times are real wall-clock time. */
-    val log: List<MovementTransition> = emptyList(),
+    /** Latest arrival first, at most [MovementStore.LOG_SIZE]. Times are real wall-clock time. */
+    val log: List<LoggedTransition> = emptyList(),
 ) {
+    /** Newest event first. The sort is stable, so events with the same time keep their arrival order. */
+    val logByEventTime: List<LoggedTransition>
+        get() = log.sortedByDescending { it.at }
+
     /** The activity of the newest ENTER that hasn't been exited since. */
     val currentActivity: MovementActivity?
-        get() = log.firstOrNull()?.let { latest -> if (latest.entered) latest.activity else null }
+        get() = logByEventTime.firstOrNull()?.let { latest -> if (latest.entered) latest.activity else null }
 }
 
 /**
@@ -93,7 +105,7 @@ class MovementStore @Inject constructor(
      * Keeps only events newer than the stored watermark (see [acceptNewerThanWatermark]), logs
      * them and moves the watermark, all in one atomic write. Returns the accepted transitions.
      */
-    suspend fun acceptAndLog(events: List<ReceivedTransition>, bootCount: Int): List<MovementTransition> {
+    suspend fun acceptAndLog(events: List<ReceivedTransition>, bootCount: Int, arrivedAt: Instant): List<MovementTransition> {
         var accepted = emptyList<MovementTransition>()
         dataStore.edit { prefs ->
             val stored = prefs[Keys.WatermarkNanos]?.let { TransitionWatermark(it, prefs[Keys.WatermarkBoot] ?: -1) }
@@ -106,18 +118,22 @@ class MovementStore @Inject constructor(
                 prefs[Keys.WatermarkBoot] = watermark.bootCount
             }
             accepted = newer.map { it.transition }
-            if (accepted.isNotEmpty()) prefs.writeLog((accepted.reversed() + prefs.toMovementInfo().log).take(LOG_SIZE))
+            if (accepted.isNotEmpty()) prefs.prependToLog(accepted, arrivedAt)
         }
         return accepted
     }
 
     /** Logs [events] (chronological) without any filtering; used for the debug walk simulation. */
-    suspend fun appendLog(events: List<MovementTransition>) = dataStore.edit { prefs ->
-        prefs.writeLog((events.reversed() + prefs.toMovementInfo().log).take(LOG_SIZE))
+    suspend fun appendLog(events: List<MovementTransition>, arrivedAt: Instant) = dataStore.edit { prefs ->
+        prefs.prependToLog(events, arrivedAt)
     }
 
-    private fun MutablePreferences.writeLog(log: List<MovementTransition>) {
-        this[Keys.Log] = log.joinToString("\n") { "${it.at.toEpochMilli()},${it.activity.name},${if (it.entered) 1 else 0}" }
+    private fun MutablePreferences.prependToLog(events: List<MovementTransition>, arrivedAt: Instant) {
+        val newest = events.reversed().map { LoggedTransition(it.activity, it.entered, it.at, arrivedAt) }
+        val log = (newest + toMovementInfo().log).take(LOG_SIZE)
+        this[Keys.Log] = log.joinToString("\n") {
+            "${it.at.toEpochMilli()},${it.activity.name},${if (it.entered) 1 else 0},${it.arrivedAt?.toEpochMilli() ?: ""}"
+        }
     }
 
     private fun Flow<Preferences>.orEmpty() = catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
@@ -130,12 +146,18 @@ class MovementStore @Inject constructor(
         log = this[Keys.Log].orEmpty().lineSequence().mapNotNull(::parseLogLine).toList(),
     )
 
-    private fun parseLogLine(line: String): MovementTransition? {
+    /** Lines written before arrival times existed have three fields. */
+    private fun parseLogLine(line: String): LoggedTransition? {
         val parts = line.split(',')
-        if (parts.size != 3) return null
+        if (parts.size !in 3..4) return null
         val activity = MovementActivity.entries.firstOrNull { it.name == parts[1] } ?: return null
         val millis = parts[0].toLongOrNull() ?: return null
-        return MovementTransition(activity, entered = parts[2] == "1", at = Instant.ofEpochMilli(millis))
+        return LoggedTransition(
+            activity = activity,
+            entered = parts[2] == "1",
+            at = Instant.ofEpochMilli(millis),
+            arrivedAt = parts.getOrNull(3)?.toLongOrNull()?.let(Instant::ofEpochMilli),
+        )
     }
 
     internal object Keys {
