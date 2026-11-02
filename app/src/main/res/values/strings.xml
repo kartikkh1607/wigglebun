@@ -107,6 +107,9 @@
     <string name="cd_snooze">Snooze 10 minutes</string>
     <string name="cd_close">Close</string>
 
+    <!-- Onboarding (WakeUp.dc.html) -->
+    <string name="onboarding_continue">Continue</string>
+
     <!-- Break session (BreakSession.dc.html). Plain, gentle wording: no medical claims. -->
     <string name="session_step">Step %1$d of %2$d</string>
     <string name="session_safety">Move gently. Stop if anything hurts.</string>
