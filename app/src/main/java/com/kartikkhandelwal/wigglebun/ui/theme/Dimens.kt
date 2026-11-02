@@ -55,6 +55,59 @@ object Dimens {
         val ButtonTextSize = 14.sp
     }
 
+    /** Onboarding, measured from design/mockups_source/WakeUp.dc.html (390 x 844). */
+    object Onboarding {
+        /** Below this height the mockup's big gaps give way, so the button and dots stay on screen. */
+        val TallScreen = 780.dp
+        val SkipRowTop = 22.dp
+        val SkipRowHorizontal = 24.dp
+        val SkipPaddingVertical = 10.dp
+        val SkipPaddingHorizontal = 4.dp
+        val SkipMinSize = 48.dp
+        val TitleTop = 70.dp
+        val TitleTopShort = 12.dp
+        val TitleSize = 34.sp
+        val TextHorizontal = 32.dp
+        val TextGap = 10.dp
+        val BodySize = 17.sp
+        val BodyLineHeight = 25.sp
+        val RingTop = 60.dp
+        val RingTopShort = 20.dp
+        val RingBox = 240.dp
+        /** Share of the screen height the ring may use on a short screen. */
+        const val RingBoxShortFraction = 0.3f
+        val RingStroke = 3.dp
+        val RingDash = 9.dp
+        /** Pet and dashed ring, as fractions of [RingBox]. */
+        const val PetInRing = 210f / 240f
+        const val DashedRingInBox = 236f / 240f
+        /** The floor ellipse under the pet, as fractions of [RingBox]. */
+        const val FloorCentreY = 283f / 240f
+        const val FloorRadiusX = 150f / 240f
+        const val FloorRadiusY = 26f / 240f
+        val CtaMinWidth = 280.dp
+        val CtaMinHeight = 61.dp
+        val CtaIcon = 22.dp
+        val CtaIconGap = 10.dp
+        val CtaBottom = 107.dp
+        val CtaBottomShort = 16.dp
+        val DotsBottom = 40.dp
+        val DotsBottomShort = 16.dp
+        val DotGap = 8.dp
+        val DotSize = 8.dp
+        val DotActiveWidth = 22.dp
+
+        // Naming (no mockup: sized from the wake-up screen and the card tokens)
+        val NamePetSize = 170.dp
+        val NamePetTop = 8.dp
+        val NameTextTop = 16.dp
+        val NameFieldTop = 24.dp
+        val NameFieldHorizontal = 24.dp
+        val NameFieldPadding = 16.dp
+        val NameCounterGap = 10.dp
+        val NameButtonHorizontal = 24.dp
+    }
+
     /** Home screen, measured from design/mockups_source/Main.dc.html and FocusCard.dc.html. */
     object Home {
         val SceneHeight = 340.dp

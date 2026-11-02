@@ -84,6 +84,11 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[PrefsKeys.Worn(pet)] = outfit.items.mapTo(mutableSetOf()) { item -> item.key } }
     }
 
+    /** Null goes back to the pet's own name. */
+    suspend fun setPetName(name: String?) {
+        dataStore.edit { if (name == null) it.remove(PrefsKeys.PetName) else it[PrefsKeys.PetName] = name }
+    }
+
     suspend fun setActivePet(pet: PetId) {
         dataStore.edit { it[PrefsKeys.ActivePet] = pet.key }
     }

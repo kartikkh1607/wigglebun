@@ -109,6 +109,18 @@
 
     <!-- Onboarding (WakeUp.dc.html) -->
     <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_step">Step %1$d of %2$d</string>
+    <string name="wake_title">Shh… someone’s\nstill asleep</string>
+    <string name="wake_body">They’ve been sitting way too long.\nHelp them wake up and stretch.</string>
+    <string name="wake_cta">Tap to wake them up</string>
+    <string name="intro_title">Hi!\nThat was some nap!</string>
+    <string name="intro_body">Thanks for waking me up.\nLet’s keep each other moving.</string>
+    <string name="intro_cta">Nice to meet you</string>
+    <string name="name_title">What will you call me?</string>
+    <string name="name_body">Pick any name you like, up to %1$d characters.</string>
+    <string name="name_field_label">Your pet’s name</string>
+    <string name="name_counter" translatable="false">%1$d/%2$d</string>
 
     <!-- Break session (BreakSession.dc.html). Plain, gentle wording: no medical claims. -->
     <string name="session_step">Step %1$d of %2$d</string>
