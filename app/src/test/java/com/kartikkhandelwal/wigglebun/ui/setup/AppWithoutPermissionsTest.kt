@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.data.repo.TestDataLayer
+import com.kartikkhandelwal.wigglebun.data.time.FixedAppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
@@ -21,7 +22,8 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36], application = Application::class)
 class AppWithoutPermissionsTest {
 
-    private val app = TestDataLayer(ApplicationProvider.getApplicationContext())
+    // Sits 50 minutes: on real time, just after midnight the work day is younger than that.
+    private val app = TestDataLayer(ApplicationProvider.getApplicationContext(), FixedAppClock())
 
     @After
     fun tearDown() = app.close()
