@@ -136,6 +136,11 @@
     <string name="interval_every">Every</string>
     <string name="interval_minutes">%1$d min</string>
     <string name="interval_sheet">Remind me every</string>
+    <string name="stretch_title">Stretch with %1$s</string>
+    <string name="stretch_body">One minute, right where you are. I’ll show you how.</string>
+    <string name="stretch_start">Start stretching</string>
+    <string name="paywall_placeholder_title">You’re all set!</string>
+    <string name="paywall_placeholder_body">Plans and the free trial will show here.</string>
 
     <!-- Break session (BreakSession.dc.html). Plain, gentle wording: no medical claims. -->
     <string name="session_step">Step %1$d of %2$d</string>
