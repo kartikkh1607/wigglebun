@@ -160,10 +160,12 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 1. **Splash** – logo only.
 2. **Onboarding**
+   - First-launch gate (`ui/onboarding/AppGate.kt`): `onboarding_done` in the backed-up settings. It is decided once, on the first app start after it exists: a sit timer already saved means an install from before onboarding, which never sees it. A new install keeps seeing it until it is finished, even if the app is killed halfway.
    - Wake-up moment: pet asleep as a round blob → user taps → pet stretches awake and introduces itself, asks the user's name, user names the pet. The name field allows at most `MAX_PET_NAME_LENGTH` (12, `domain/model/Pet.kt`) characters.
    - One question per screen: work hours, break interval. Bottom sheets for pickers. "Skip" always visible.
-   - Permissions are **not** asked here (ask just-in-time, see Settings/Home cards).
-   - First 1-minute stretch with the pet → celebrate → **paywall with free trial** (see 5.5).
+   - Permissions are **not** asked here (ask just-in-time, see Settings/Home cards in `ui/setup/`: tap → explanation sheet → the system's dialog). Home offers one card at a time and only once ("Not now" or a refusal hides it there); Settings always has all three, and sends a refused permission to the phone's settings.
+   - First 1-minute stretch with the pet (a real Stand up break: it logs and earns its sparks) → celebrate → **paywall with free trial** (see 5.5). Until M10 the paywall is `ui/paywall/PaywallPlaceholderScreen.kt`, which offers nothing to buy.
+   - Skip moves on one step and keeps that step's default, so it never bypasses the stretch and paywall. Interrupted onboarding restarts at the wake-up; answers already given stay.
 3. **Home** (tab 1)
    - Top half: desk scene background `design/desk_scene.jpg` (convert to WebP, put in `res/drawable-nodpi`, crop to fill ~340 dp height) with the pet standing on the floor in the centre (pet = sitting meter, see 5.2). Menu button top-left, sparks counter pill top-right.
    - Under it: pill showing "Time since last break: 32 min" + thin progress. The minutes take their own width and the mood chip ("Bun is getting tired") sits at the right edge in the rest of the row.

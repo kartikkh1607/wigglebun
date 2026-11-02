@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.data.prefs
 
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -31,6 +32,8 @@ internal object PrefsKeys {
     fun Worn(pet: PetId) = stringSetPreferencesKey("worn_${pet.key}")
     /** "2026-10-27=MONDAY,TUESDAY;…" (see [writeWorkDayHistory]). */
     val WorkDayHistory = stringPreferencesKey("work_day_history")
+    /** Missing = not decided yet; false = onboarding still to do; true = done or never needed. */
+    val OnboardingDone = booleanPreferencesKey("onboarding_done")
 
     val SitStartedAt = longPreferencesKey("sit_started_at")
     val SnoozeCount = intPreferencesKey("snooze_count")

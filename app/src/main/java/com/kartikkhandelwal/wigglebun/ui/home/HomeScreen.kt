@@ -147,6 +147,8 @@ class HomeNavigation(
     val onOpenMenu: () -> Unit = {},
     val onStartBreak: (BreakType) -> Unit = {},
     val debugEntry: @Composable () -> Unit = {},
+    /** The just-in-time setup card under the timer (CLAUDE.md §6.3); empty when there's none. */
+    val setupPrompt: @Composable () -> Unit = {},
 )
 
 @Composable
@@ -181,6 +183,7 @@ fun HomeScreenRoute(
         onTakeBreak = viewModel::takeBreak,
         modifier = modifier,
         debugEntry = navigation.debugEntry,
+        setupPrompt = navigation.setupPrompt,
     )
     loaded.focus?.let { focus ->
         FocusCardDialog(onDismissRequest = viewModel::closeBreak) {
@@ -211,6 +214,7 @@ fun HomeScreen(
     onCheck: (BreakType) -> Unit = {},
     onTakeBreak: () -> Unit = {},
     debugEntry: @Composable () -> Unit = {},
+    setupPrompt: @Composable () -> Unit = {},
     animateEntrance: Boolean = !LocalInspectionMode.current,
 ) {
     val petName = state.pet.displayName()
@@ -250,6 +254,7 @@ fun HomeScreen(
                 )
             }
         }
+        item(key = "setup") { setupPrompt() }
         item(key = "header") { BreaksHeader(state.doneCount, state.totalCount) }
         itemsIndexed(state.breaks, key = { _, card -> card.type }) { index, card ->
             BreakCard(

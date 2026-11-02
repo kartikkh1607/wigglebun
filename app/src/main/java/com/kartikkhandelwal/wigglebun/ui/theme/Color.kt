@@ -20,6 +20,14 @@ val Coral = Color(0xFFE5603A)
 val Night = Color(0xFF2F2E45)
 val BreakSky = Color(0xFFEAF3FD)
 
+// Onboarding sleep screen, on Night (WakeUp.dc.html)
+val NightStar = Color(0xFFB9B5D6)
+val NightMoon = Color(0xFFFFE3A3)
+val NightFloor = Color(0xFF3A3957)
+val NightLine = Color(0xFF59577A)
+val NightBody = Color(0xFFD6D3E8)
+val NightLink = Color(0xFFE4E1F0)
+
 // Pet
 val PetYellow = Color(0xFFF5DC8B)
 val PetYellowEdge = Color(0xFFEBCB6A)
