@@ -121,6 +121,21 @@
     <string name="name_body">Pick any name you like, up to %1$d characters.</string>
     <string name="name_field_label">Your pet’s name</string>
     <string name="name_counter" translatable="false">%1$d/%2$d</string>
+    <string name="sheet_done">Done</string>
+    <string name="hours_title">When do you work?</string>
+    <string name="hours_body">I only watch the clock during work hours. The rest of the time, I sleep.</string>
+    <string name="hours_start">Starts</string>
+    <string name="hours_end">Ends</string>
+    <string name="hours_next_day">The next day</string>
+    <string name="hours_no_days">Pick at least one work day.</string>
+    <string name="hours_same_time">Start and end can’t be the same time.</string>
+    <string name="hours_sheet_start">Work starts at</string>
+    <string name="hours_sheet_end">Work ends at</string>
+    <string name="interval_title">How often should I nudge you?</string>
+    <string name="interval_body">After you’ve sat this long, I’ll nudge you to move.</string>
+    <string name="interval_every">Every</string>
+    <string name="interval_minutes">%1$d min</string>
+    <string name="interval_sheet">Remind me every</string>
 
     <!-- Break session (BreakSession.dc.html). Plain, gentle wording: no medical claims. -->
     <string name="session_step">Step %1$d of %2$d</string>
