@@ -37,11 +37,10 @@ import java.time.temporal.ChronoUnit
  * The real data layer (SitRepository, BreakRepository, WalletRepository, RecordBreakDone…) on an
  * in-memory DataStore and Room database, for Robolectric tests. Close it in @After.
  */
-internal class TestDataLayer(context: Application) : AutoCloseable {
+internal class TestDataLayer(context: Application, val clock: AppClock = AppClock()) : AutoCloseable {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val dataStore = inMemoryPreferencesDataStore(scope)
     val db: AppDatabase = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
-    val clock = AppClock()
     val settings = SettingsRepository(dataStore, clock)
     val store = SitStateStore(dataStore)
     val breaks = BreakRepository(db.breakLogDao())
@@ -79,7 +78,7 @@ internal class TestDataLayer(context: Application) : AutoCloseable {
     /** In work hours with the sit timer started [minutes] ago. */
     fun sittingFor(minutes: Long): Instant = runBlocking {
         alwaysWorkHours()
-        val started = Instant.now().truncatedTo(ChronoUnit.MILLIS).minusSeconds(minutes * 60)
+        val started = clock.instant().truncatedTo(ChronoUnit.MILLIS).minusSeconds(minutes * 60)
         store.update { it.copy(sitStartedAt = started) }
         started
     }

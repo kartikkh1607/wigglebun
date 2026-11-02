@@ -19,7 +19,7 @@ import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.prefs.inMemoryPreferencesDataStore
-import com.kartikkhandelwal.wigglebun.data.time.AppClock
+import com.kartikkhandelwal.wigglebun.data.time.FixedAppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
@@ -52,11 +52,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.time.DayOfWeek
 import java.time.Instant
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
-import java.util.TimeZone
 
 /** Repository wiring: engine + DataStore + Room + notifier + alarm, as the receivers use it. */
 @RunWith(AndroidJUnit4::class)
@@ -67,7 +62,7 @@ class SitRepositoryTest {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val dataStore = inMemoryPreferencesDataStore(scope)
     private val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
-    private val clock = AppClock()
+    private val clock = FixedAppClock()
     private val settings = SettingsRepository(dataStore, clock)
     private val store = SitStateStore(dataStore)
     private val alarms = context.getSystemService<AlarmManager>()!!
@@ -98,23 +93,6 @@ class SitRepositoryTest {
     }
 
     private fun loggedBreaks() = runBlocking { db.breakLogDao().observeSince(0).first() }
-
-    /**
-     * Runs [block] in a zone where it is now about noon. Even AlwaysOn's work day ends at midnight,
-     * and the alarm goes off at the reminder or the day's end, whichever is first; so a test that
-     * expects the reminder failed when run within 45 minutes of local midnight.
-     */
-    private fun <T> aroundNoon(block: () -> T): T {
-        val saved = TimeZone.getDefault()
-        val utcHour = Instant.now().atZone(ZoneOffset.UTC).hour
-        val offsetHours = (12 - utcHour + 12).mod(24) - 12 // -12..+11, so local time is 12:xx
-        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.ofHours(offsetHours)))
-        return try {
-            block()
-        } finally {
-            TimeZone.setDefault(saved)
-        }
-    }
 
     @Test
     fun appStartStartsTimerAndArmsAlarm() = runBlocking {
@@ -149,7 +127,7 @@ class SitRepositoryTest {
         settings.setSchedule(WorkSchedule.AlwaysOn)
         settings.setInterval(20)
         // Sat for 2 h: the reminder is due, and each 10-min snooze lands in the past too.
-        store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(2 * 60 * 60)) }
+        store.update { it.copy(sitStartedAt = clock.instant().minusSeconds(2 * 60 * 60)) }
         assertTrue(repo.snooze() is SnoozeResult.Snoozed)
         repeat(2) {
             store.update { s -> s.copy(snoozedUntil = s.snoozedUntil!!.minusSeconds(11 * 60)) } // snooze expired
@@ -173,7 +151,7 @@ class SitRepositoryTest {
     @Test
     fun statusIsNullUntilTheSavedStateLoads() = runBlocking {
         settings.setSchedule(WorkSchedule.AlwaysOn)
-        store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(30 * 60)) }
+        store.update { it.copy(sitStartedAt = clock.instant().minusSeconds(30 * 60)) }
         assertNull(repo.status.value)
         val first = repo.status.filterNotNull().first()
         assertEquals(30, first.sitMinutes) // the real persisted timer, not a 0-minute default
@@ -181,11 +159,7 @@ class SitRepositoryTest {
 
     /** Review fix: changing settings re-arms the alarm without anyone calling checkReminder(). */
     @Test
-    fun settingsChangeReArmsTheAlarm() = aroundNoon {
-        runBlocking { settingsChangeReArmsTheAlarmAt() }
-    }
-
-    private suspend fun settingsChangeReArmsTheAlarmAt() {
+    fun settingsChangeReArmsTheAlarm() = runBlocking {
         settings.setSchedule(WorkSchedule.AlwaysOn)
         repo.onAppStart()
         val start = store.current().sitStartedAt!!
@@ -204,8 +178,8 @@ class SitRepositoryTest {
     @Test
     fun walkResetsTimerWithoutBreakLogOrReward() = runBlocking {
         settings.setSchedule(WorkSchedule.AlwaysOn)
-        store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(30 * 60)) }
-        val now = Instant.now().truncatedTo(ChronoUnit.MILLIS) // DataStore keeps millis
+        store.update { it.copy(sitStartedAt = clock.instant().minusSeconds(30 * 60)) }
+        val now = clock.instant() // DataStore keeps millis
         repo.simulateTransitions(
             listOf(
                 MovementTransition(MovementActivity.WALKING, entered = true, at = now.minusSeconds(180)),
@@ -224,7 +198,7 @@ class SitRepositoryTest {
     @Test
     fun replayedTransitionsAreIgnoredByTheWatermark() = runBlocking {
         settings.setSchedule(WorkSchedule.AlwaysOn)
-        val now = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+        val now = clock.instant()
         val walk = listOf(
             ReceivedTransition(MovementTransition(MovementActivity.WALKING, true, now.minusSeconds(180)), elapsedRealtimeNanos = 1_000),
             ReceivedTransition(MovementTransition(MovementActivity.STILL, true, now), elapsedRealtimeNanos = 181_000),
@@ -250,7 +224,7 @@ class SitRepositoryTest {
     fun staleStillOnSimulatePathKeepsRunningActive() = runBlocking {
         // The walk stays open between the two simulate calls below, so no background check may run in between.
         setScheduleAndAwaitBackgroundCheck(WorkSchedule.AlwaysOn)
-        val t0 = Instant.now().truncatedTo(ChronoUnit.MILLIS).minusSeconds(10 * 60)
+        val t0 = clock.instant().minusSeconds(10 * 60)
         store.update { it.copy(sitStartedAt = t0) }
         fun at(minutes: Long) = t0.plusSeconds(minutes * 60)
         repo.simulateTransitions(
@@ -284,7 +258,7 @@ class SitRepositoryTest {
         settings.setSchedule(WorkSchedule.AlwaysOn)
         settings.setInterval(20)
         // Started 25 minutes ago: past the 20-minute interval.
-        store.update { it.copy(sitStartedAt = Instant.now().minusSeconds(25 * 60)) }
+        store.update { it.copy(sitStartedAt = clock.instant().minusSeconds(25 * 60)) }
 
         repo.checkReminder()
         repo.checkReminder()
@@ -316,7 +290,7 @@ class SitRepositoryTest {
      */
     @Test
     fun periodicWidgetRefreshRunsOnlyDuringWorkHours() = runBlocking {
-        val zone = ZoneId.systemDefault()
+        val zone = clock.zone
         val shadow = shadowOf(alarms)
 
         // Before work (starts in an hour): no refresh, and the alarm is set for the start.
@@ -324,7 +298,7 @@ class SitRepositoryTest {
         settings.setSchedule(beforeWork)
         repo.onAppStart()
         assertEquals(false, widgetUpdates.periodicRefresh)
-        val start = beforeWork.nextSessionAfter(Instant.now(), zone)!!.start
+        val start = beforeWork.nextSessionAfter(clock.instant(), zone)!!.start
         assertEquals(start.toEpochMilli(), shadow.peekNextScheduledAlarm()!!.triggerAtMs)
 
         // The session has started (ends in 10 min, before the 45-min reminder): refresh on,
@@ -333,7 +307,7 @@ class SitRepositoryTest {
         settings.setSchedule(atWork)
         repo.checkReminder()
         assertEquals(true, widgetUpdates.periodicRefresh)
-        val end = atWork.sessionAt(Instant.now(), zone)!!.end
+        val end = atWork.sessionAt(clock.instant(), zone)!!.end
         assertEquals(end.toEpochMilli(), shadow.peekNextScheduledAlarm()!!.triggerAtMs)
 
         // The session has ended: refresh off.
@@ -370,7 +344,7 @@ class SitRepositoryTest {
 
     /** Every day, from [startIn] to [endIn] minutes from now in local time (wrapping past midnight). */
     private fun sessionFromNow(startIn: Int, endIn: Int): WorkSchedule {
-        val now = LocalTime.now()
+        val now = clock.instant().atZone(clock.zone)
         val minute = now.hour * 60 + now.minute
         return WorkSchedule(
             days = DayOfWeek.entries.toSet(),
