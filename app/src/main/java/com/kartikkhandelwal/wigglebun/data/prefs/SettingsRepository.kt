@@ -50,7 +50,25 @@ class SettingsRepository @Inject constructor(
     /** Work days over time, so the streak judges past days by the days in force back then. */
     val workDayHistory: Flow<WorkDayHistory> = prefs.map { it.toWorkDayHistory() }.distinctUntilChanged()
 
+    /** Null until [decideOnboarding] has run (CLAUDE.md §6.2); the app shows nothing until then. */
+    val onboardingDone: Flow<Boolean?> = prefs.map { it[PrefsKeys.OnboardingDone] }.distinctUntilChanged()
+
     suspend fun current(): SittingSettings = settings.first()
+
+    /**
+     * Run on every app start, before the first start saves the timer. A saved timer on the very
+     * first decision means this install predates onboarding, so it never sees it. The answer is
+     * stored, so a new install killed halfway still gets onboarding (its timer is saved by then).
+     */
+    suspend fun decideOnboarding() {
+        dataStore.edit {
+            if (PrefsKeys.OnboardingDone !in it) it[PrefsKeys.OnboardingDone] = PrefsKeys.SitStartedAt in it
+        }
+    }
+
+    suspend fun finishOnboarding() {
+        dataStore.edit { it[PrefsKeys.OnboardingDone] = true }
+    }
 
     /** Changing the work days takes effect today and is recorded in [workDayHistory]. */
     suspend fun setSchedule(schedule: WorkSchedule) {
@@ -64,6 +82,11 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setOutfit(pet: PetId, outfit: Outfit) {
         dataStore.edit { it[PrefsKeys.Worn(pet)] = outfit.items.mapTo(mutableSetOf()) { item -> item.key } }
+    }
+
+    /** Null goes back to the pet's own name. */
+    suspend fun setPetName(name: String?) {
+        dataStore.edit { if (name == null) it.remove(PrefsKeys.PetName) else it[PrefsKeys.PetName] = name }
     }
 
     suspend fun setActivePet(pet: PetId) {

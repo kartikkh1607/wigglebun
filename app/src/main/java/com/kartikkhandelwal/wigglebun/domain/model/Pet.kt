@@ -25,6 +25,20 @@ enum class PetId(val key: String) {
 const val MAX_PET_NAME_LENGTH = 12
 
 /**
+ * What the name field keeps while typing or pasting: one line, at most [MAX_PET_NAME_LENGTH]
+ * characters, never cutting an emoji in half.
+ */
+fun limitPetNameInput(input: String): String {
+    val oneLine = input.filterNot { it.isISOControl() }
+    if (oneLine.length <= MAX_PET_NAME_LENGTH) return oneLine
+    val end = if (oneLine[MAX_PET_NAME_LENGTH - 1].isHighSurrogate()) MAX_PET_NAME_LENGTH - 1 else MAX_PET_NAME_LENGTH
+    return oneLine.substring(0, end)
+}
+
+/** The name to save; null (keep the pet's own name) if nothing but spaces was typed. */
+fun cleanPetName(input: String): String? = limitPetNameInput(input).trim().ifEmpty { null }
+
+/**
  * The pet that is "with you": shown on Home, in break sessions, notifications and the widget.
  * [chosenName] is the name the user gave in onboarding (M9); it belongs to Bun, the pet they named.
  * Every other pet keeps its own name.
