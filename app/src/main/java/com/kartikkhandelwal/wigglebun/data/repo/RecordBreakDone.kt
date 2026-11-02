@@ -44,13 +44,14 @@ class RecordBreakDone @Inject constructor(
         val earned = wallet.award(RewardRules.breakKey(today, type), type.defaultReward, SparkReason.BREAK, at)
 
         val history = settingsRepository.workDayHistory.first()
+        val goals = settingsRepository.dailyGoalHistory.first()
         val streak = StreakCalculator.compute(
             done = breakRepository.doneBreaks(),
             zone = zone,
             today = today,
             isWorkDay = history::isWorkDay,
-            // All types are on until the Settings toggles exist (M9).
-            goal = RewardRules.dailyGoal(enabledTypeCount = BreakType.entries.size),
+            goal = goals.goalOn(today),
+            goalOn = goals::goalOn,
         )
         val start = streak.startDate
         val bonuses = if (start == null) {

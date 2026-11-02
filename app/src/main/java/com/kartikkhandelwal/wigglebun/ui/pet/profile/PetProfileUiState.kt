@@ -44,8 +44,9 @@ fun toPetProfileUiState(
     zone: ZoneId,
     isWorkDay: (LocalDate) -> Boolean,
     goal: Int,
+    goalOn: (LocalDate) -> Int = { goal },
 ): PetProfileUiState {
-    val streak = StreakCalculator.compute(done, zone, today, isWorkDay, goal)
+    val streak = StreakCalculator.compute(done, zone, today, isWorkDay, goal, goalOn)
     return PetProfileUiState(
         pet = pet,
         mood = mood,

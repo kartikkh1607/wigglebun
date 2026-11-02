@@ -34,6 +34,7 @@ import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfilePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreen
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsActions
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsPreviewStates
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsScreen
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsScreenRoute
@@ -133,7 +134,7 @@ internal fun WigglebunNavHostPreview() {
             homeContent = { HomeScreen(HomePreviewStates.Tired, debugEntry = it.debugEntry) },
             collectionContent = { CollectionScreen(CollectionPreviewStates.OnlyBun) },
             petContent = { PetProfileScreen(PetProfilePreviewStates.EmptyWeek) },
-            settingsContent = { SettingsScreen(SettingsPreviewStates.AllOff, {}) },
+            settingsContent = { SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.AllOff, SettingsActions()) },
         )
     }
 }

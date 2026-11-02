@@ -99,7 +99,8 @@ fun toHomeUiState(
         energy = quantize(status.energy),
         mood = status.mood,
         pill = pill,
-        showBreakCta = status.isWorkTime && status.mood == Mood.STIFF && !status.isOnWalk,
+        // The button starts the 2-min walk, so it goes if the walk is switched off.
+        showBreakCta = status.isWorkTime && status.mood == Mood.STIFF && !status.isOnWalk && BreakType.WALK in enabledTypes,
         sparks = sparks,
         breaks = enabledTypes.map { BreakCardUi(it, doneToday = it in done, skippedToday = it in skipped && it !in done) },
         intervalMinutes = settings.interval,

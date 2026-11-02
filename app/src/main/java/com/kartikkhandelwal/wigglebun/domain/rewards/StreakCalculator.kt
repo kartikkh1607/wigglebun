@@ -34,6 +34,8 @@ object StreakCalculator {
         today: LocalDate,
         isWorkDay: (LocalDate) -> Boolean,
         goal: Int,
+        /** The goal on a past day, which may differ from today's [goal] (see [DailyGoalHistory]). */
+        goalOn: (LocalDate) -> Int = { goal },
     ): Streak {
         val typesByDate: Map<LocalDate, Set<BreakType>> = done
             .groupBy(keySelector = { it.at.atZone(zone).toLocalDate() }, valueTransform = { it.type })
@@ -48,7 +50,7 @@ object StreakCalculator {
         var date = today
         while (!date.isBefore(firstDay)) {
             if (isWorkDay(date)) {
-                val met = (typesByDate[date]?.size ?: 0) >= goal
+                val met = (typesByDate[date]?.size ?: 0) >= goalOn(date)
                 if (met) {
                     days++
                     start = date

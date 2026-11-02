@@ -188,7 +188,7 @@ internal fun OnboardingQuestion(
 }
 
 @Composable
-private fun DayChips(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit) {
+internal fun DayChips(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit) {
     val locale: Locale = LocalConfiguration.current.locales[0]
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         DayOfWeek.entries.forEach { day ->
@@ -222,7 +222,7 @@ private fun DayChips(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit) {
 }
 
 @Composable
-private fun TimeRow(@StringRes label: Int, minute: Int, note: String? = null, onClick: () -> Unit) {
+internal fun TimeRow(@StringRes label: Int, minute: Int, note: String? = null, onClick: () -> Unit) {
     PillCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {

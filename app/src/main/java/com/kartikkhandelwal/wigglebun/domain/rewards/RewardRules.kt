@@ -32,7 +32,7 @@ object RewardRules {
     const val REPEAT_EVERY_DAYS = 30
     const val REPEAT_BONUS = 250
 
-    /** Never more than the break types the user has switched on (toggles arrive in M9). */
+    /** Never more than the break types the user has switched on. */
     fun dailyGoal(enabledTypeCount: Int): Int = minOf(DAILY_STREAK_GOAL, enabledTypeCount).coerceAtLeast(1)
 
     fun milestonesReached(streakDays: Int): List<Milestone> = MILESTONES.filter { it.days <= streakDays }

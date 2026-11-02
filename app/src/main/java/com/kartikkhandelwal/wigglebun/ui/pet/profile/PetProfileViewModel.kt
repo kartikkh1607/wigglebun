@@ -7,9 +7,7 @@ import com.kartikkhandelwal.wigglebun.data.repo.BreakRepository
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
-import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
-import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.ui.home.quantize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,7 +42,8 @@ class PetProfileViewModel @Inject constructor(
         live,
         breakRepository.observeDoneBreaks(),
         settingsRepository.workDayHistory,
-    ) { pet, now, done, history ->
+        settingsRepository.dailyGoalHistory,
+    ) { pet, now, done, history, goals ->
         toPetProfileUiState(
             pet = pet,
             mood = now.mood,
@@ -53,8 +52,8 @@ class PetProfileViewModel @Inject constructor(
             today = now.today,
             zone = clock.zone,
             isWorkDay = history::isWorkDay,
-            // All types are on until the Settings toggles exist (M9), as in RecordBreakDone.
-            goal = RewardRules.dailyGoal(enabledTypeCount = BreakType.entries.size),
+            goal = goals.goalOn(now.today),
+            goalOn = goals::goalOn,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 }

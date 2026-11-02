@@ -131,7 +131,7 @@ class SitRepository @Inject constructor(
         if (status.shouldNotify && due != null) {
             notifier.showReminder(
                 pet = petRepository.activePet.first(),
-                suggested = BreakType.suggestedFor(due.epochSecond / 60),
+                suggested = BreakType.suggestedFor(due.epochSecond / 60, settingsRepository.enabledBreaks.first()),
                 snoozesLeft = status.snoozesLeft,
             )
             // Marked even if notifications are blocked, so we don't retry every second.

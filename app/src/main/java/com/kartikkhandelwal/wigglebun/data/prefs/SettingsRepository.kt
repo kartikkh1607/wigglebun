@@ -7,7 +7,10 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.Outfit
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalHistory
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDayHistory
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
@@ -53,6 +56,12 @@ class SettingsRepository @Inject constructor(
     /** Null until [decideOnboarding] has run (CLAUDE.md §6.2); the app shows nothing until then. */
     val onboardingDone: Flow<Boolean?> = prefs.map { it[PrefsKeys.OnboardingDone] }.distinctUntilChanged()
 
+    /** The break types switched on, in display order; never empty (CLAUDE.md §5.3). */
+    val enabledBreaks: Flow<List<BreakType>> = prefs.map { it.toEnabledBreaks() }.distinctUntilChanged()
+
+    /** The streak's goal over time, so past days keep the goal they had (see [DailyGoalHistory]). */
+    val dailyGoalHistory: Flow<DailyGoalHistory> = prefs.map { it.toDailyGoalHistory() }.distinctUntilChanged()
+
     suspend fun current(): SittingSettings = settings.first()
 
     /**
@@ -71,14 +80,38 @@ class SettingsRepository @Inject constructor(
     }
 
     /** Changing the work days takes effect today and is recorded in [workDayHistory]. */
-    suspend fun setSchedule(schedule: WorkSchedule) {
-        val today = clock.instant().atZone(clock.zone).toLocalDate()
+    suspend fun setSchedule(schedule: WorkSchedule) = updateSchedule { schedule }
+
+    /** [setSchedule] from the stored schedule, in one atomic write, so quick changes can't overwrite each other. */
+    suspend fun updateSchedule(transform: (WorkSchedule) -> WorkSchedule) {
+        val today = today()
         dataStore.edit {
+            val schedule = transform(it.toSittingSettings().schedule)
             val history = it.toWorkDayHistory().withChange(schedule.days, today)
             it.writeSchedule(schedule)
             it.writeWorkDayHistory(history)
         }
     }
+
+    /**
+     * Switches a break type on or off. Refuses (returns false) to switch off the last one. The
+     * streak's goal follows the number switched on, from today (see [DailyGoalHistory]).
+     */
+    suspend fun setBreakEnabled(type: BreakType, enabled: Boolean): Boolean {
+        val today = today()
+        var changed = false
+        dataStore.edit {
+            val current = it.toEnabledBreaks()
+            val next = if (enabled) current + type else current - type
+            if (next.isEmpty()) return@edit
+            changed = true
+            it[PrefsKeys.EnabledBreaks] = next.map { break_ -> break_.name }.toSet()
+            it.writeDailyGoalHistory(it.toDailyGoalHistory().withChange(RewardRules.dailyGoal(next.toSet().size), today))
+        }
+        return changed
+    }
+
+    private fun today() = clock.instant().atZone(clock.zone).toLocalDate()
 
     suspend fun setOutfit(pet: PetId, outfit: Outfit) {
         dataStore.edit { it[PrefsKeys.Worn(pet)] = outfit.items.mapTo(mutableSetOf()) { item -> item.key } }
