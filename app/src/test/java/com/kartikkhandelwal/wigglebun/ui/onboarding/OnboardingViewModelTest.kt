@@ -72,6 +72,9 @@ class OnboardingViewModelTest {
     @Test
     fun aBlankNameKeepsBunsOwnName() = runBlocking {
         app.settings.setPetName("Old")
+        // petName may still hold the null it read before "Old" was written. Without this wait, that
+        // null would pass the wait below before the save had run, and the pet would still be "Old".
+        waitUntil { petName.value == "Old" }
         loadedViewModel()
         viewModel.onNameChange("   ")
         viewModel.saveName()
