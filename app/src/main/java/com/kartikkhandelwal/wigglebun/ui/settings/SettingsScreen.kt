@@ -28,7 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +42,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.ui.collection.PetSheet
+import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
 import com.kartikkhandelwal.wigglebun.ui.home.BreakIconTile
 import com.kartikkhandelwal.wigglebun.ui.labelRes
@@ -84,6 +87,7 @@ class SettingsActions(
     val onOpenSetup: (SetupCard) -> Unit = {},
     val onToggleDay: (DayOfWeek) -> Unit = {},
     val onPickTime: (WorkTime) -> Unit = {},
+    val onSaveHours: () -> Unit = {},
     val onPickInterval: () -> Unit = {},
     val onBreakToggled: (BreakType, Boolean) -> Unit = { _, _ -> },
     val onOpenPrivacy: (() -> Unit)? = null,
@@ -112,6 +116,7 @@ fun SettingsScreenRoute(
                 onOpenSetup = openSetup,
                 onToggleDay = viewModel::onToggleDay,
                 onPickTime = { pickingTime = it },
+                onSaveHours = viewModel::onSaveHours,
                 onPickInterval = { pickingInterval = true },
                 onBreakToggled = viewModel::onBreakToggled,
                 onOpenPrivacy = PRIVACY_POLICY_URL?.let { url ->
@@ -188,17 +193,25 @@ fun SettingsScreen(
             note = if (state.hours.endsNextDay) stringResource(R.string.hours_next_day) else null,
             onClick = { actions.onPickTime(WorkTime.END) },
         )
-        state.hoursProblem?.let { problem ->
-            Text(
-                stringResource(
-                    when (problem) {
-                        WorkHoursProblem.NO_DAYS -> R.string.hours_no_days
-                        WorkHoursProblem.SAME_TIME -> R.string.hours_same_time
-                    },
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Coral,
-                textAlign = TextAlign.Center,
+        if (state.hoursChanged) {
+            // Checked only on Save, and the reason shows right by it.
+            state.hoursProblem?.let { problem ->
+                Text(
+                    stringResource(
+                        when (problem) {
+                            WorkHoursProblem.NO_DAYS -> R.string.hours_no_days
+                            WorkHoursProblem.SAME_TIME -> R.string.hours_same_time
+                        },
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Coral,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+            ChunkyButton(
+                text = stringResource(R.string.settings_save_hours),
+                onClick = actions.onSaveHours,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -328,6 +341,7 @@ internal object SettingsPreviewStates {
 
     val Default = SettingsUiState(
         hours = WorkHoursDraft.of(WorkSchedule.Default),
+        hoursChanged = false,
         hoursProblem = null,
         intervalMinutes = SittingSettings.DEFAULT_INTERVAL_MINUTES,
         enabledBreaks = BreakType.entries,
@@ -370,13 +384,25 @@ internal fun SettingsOvernightOneBreakPreview() {
     WigglebunTheme { SettingsScreen(state, SettingsPreviewStates.Mixed, SettingsActions()) }
 }
 
-/** Tried to switch off the last work day: it stays on, and the screen says why. */
+/** Halfway from 9–18 to 18–02: start and end match for now, which is fine until Save. */
+@Preview(widthDp = 390, heightDp = 1500)
+@Composable
+internal fun SettingsHoursEditingPreview() {
+    val state = SettingsPreviewStates.Default.copy(
+        hours = WorkHoursDraft.of(WorkSchedule.Default).copy(startMinute = 18 * 60),
+        hoursChanged = true,
+    )
+    WigglebunTheme { SettingsScreen(state, SettingsPreviewStates.Mixed, SettingsActions()) }
+}
+
+/** Saved while start and end match: nothing is saved, and the reason shows by Save. */
 @Preview(widthDp = 390, heightDp = 1500)
 @Composable
 internal fun SettingsHoursProblemPreview() {
     val state = SettingsPreviewStates.Default.copy(
-        hours = WorkHoursDraft.of(WorkSchedule.Default).copy(days = setOf(DayOfWeek.MONDAY)),
-        hoursProblem = WorkHoursProblem.NO_DAYS,
+        hours = WorkHoursDraft.of(WorkSchedule.Default).copy(startMinute = 18 * 60),
+        hoursChanged = true,
+        hoursProblem = WorkHoursProblem.SAME_TIME,
     )
     WigglebunTheme { SettingsScreen(state, SettingsPreviewStates.Mixed, SettingsActions()) }
 }

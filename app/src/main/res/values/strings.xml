@@ -144,6 +144,7 @@
 
     <!-- Settings (CLAUDE.md §6.7) -->
     <string name="settings_work_hours">Work hours</string>
+    <string name="settings_save_hours">Save work hours</string>
     <string name="settings_breaks">Breaks</string>
     <string name="settings_breaks_hint">Choose which breaks show on Home.</string>
     <string name="settings_keep_one">Keep at least one break on.</string>
@@ -343,9 +344,9 @@
     <!-- %d is how many different breaks a work day needs (1 once Settings can turn types off) -->
     <plurals name="profile_streak_hint">
         <item quantity="one">Do %d break on a work day to start a streak.</item>
-        <item quantity="other">Do %d different breaks on a work day to start a streak.</item>
+        <item quantity="other">Do %d breaks on a work day to start a streak.</item>
     </plurals>
-    <!-- e.g. "Today 2 of 4" (different breaks done / needed) -->
+    <!-- e.g. "Today 2 of 3" (breaks done / needed) -->
     <string name="profile_today_progress">Today %1$d of %2$d</string>
     <string name="profile_day_off">Today is a day off.</string>
     <string name="profile_total">Total breaks</string>

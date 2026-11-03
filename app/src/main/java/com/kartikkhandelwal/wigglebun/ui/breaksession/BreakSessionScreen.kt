@@ -244,11 +244,11 @@ internal object BreakSessionPreviewStates {
             type = BreakType.NECK,
             sparksEarned = BreakType.NECK.defaultReward,
             bonuses = listOf(Milestone(days = 3, bonus = 20)),
-            streak = Streak(days = 3, startDate = today.minusDays(2), goal = 4, todayDistinct = 4, todayIsWorkDay = true),
+            streak = Streak(days = 3, startDate = today.minusDays(2), goal = 3, todayDone = 3, todayIsWorkDay = true),
         ),
     )
 
-    /** A repeat neck stretch: celebrates, but no sparks; 3 of 4 types done today. */
+    /** A repeat neck stretch: celebrates, but no sparks; 2 of 3 breaks done today. */
     val CelebrateNoBadge = midStep(
         BreakType.NECK,
         step = 3,
@@ -257,7 +257,7 @@ internal object BreakSessionPreviewStates {
             type = BreakType.NECK,
             sparksEarned = 0,
             bonuses = emptyList(),
-            streak = Streak(days = 2, startDate = today.minusDays(2), goal = 4, todayDistinct = 3, todayIsWorkDay = true),
+            streak = Streak(days = 2, startDate = today.minusDays(2), goal = 3, todayDone = 2, todayIsWorkDay = true),
         ),
     )
 }

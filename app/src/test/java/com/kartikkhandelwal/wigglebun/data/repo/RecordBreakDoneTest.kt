@@ -7,11 +7,13 @@ import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
 import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoal
 import com.kartikkhandelwal.wigglebun.domain.rewards.Milestone
 import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -97,7 +99,8 @@ class RecordBreakDoneTest {
     fun streakMilestoneIsPaidOncePerStreak() = runBlocking {
         app.sittingFor(10)
         val now = Instant.now()
-        val goalTypes = BreakType.entries.take(RewardRules.DAILY_STREAK_GOAL)
+        app.dailyGoalSince(app.today().minusDays(2)) // the 3-break rule on all three days
+        val goalTypes = BreakType.entries.take(RewardRules.DAILY_GOAL.count)
         // Two earlier work days that met the goal (every day is a work day here).
         listOf(2L, 1L).forEach { daysAgo -> goalTypes.forEach { app.logDone(it, now.minus(daysAgo, ChronoUnit.DAYS)) } }
         // Today: all but the last goal type already done (straight to the log, so unpaid).
@@ -123,9 +126,36 @@ class RecordBreakDoneTest {
     fun belowTheGoalTodayShowsProgressAndPaysNoBonus() = runBlocking {
         app.sittingFor(10)
         val result = app.recordBreakDone(BreakType.NECK)
-        assertEquals(1, result.streak.todayDistinct)
-        assertEquals(RewardRules.DAILY_STREAK_GOAL, result.streak.goal)
+        assertEquals(1, result.streak.todayDone)
+        assertEquals(RewardRules.DAILY_GOAL.count, result.streak.goal)
         assertEquals(0, result.streak.days)
         assertTrue(result.bonuses.isEmpty())
+    }
+
+    /** A new install's first Done adopts the 3-break rule from today, so repeats of one type count. */
+    @Test
+    fun threeOfOneTypeMeetTheGoal() = runBlocking {
+        app.sittingFor(10)
+        repeat(2) { app.recordBreakDone(BreakType.WATER) }
+        val third = app.recordBreakDone(BreakType.WATER)
+        assertEquals(3, third.streak.todayDone)
+        assertTrue(third.streak.todayCounts)
+        assertEquals(1, third.streak.days)
+        assertEquals(BreakType.WATER.defaultReward, app.balance()) // the type still pays once a day
+    }
+
+    /** The rule change is recorded from the first day it's seen, so earlier days keep the old rule. */
+    @Test
+    fun earlierDaysKeepTheOldRule() = runBlocking {
+        app.sittingFor(10)
+        val now = Instant.now()
+        // Yesterday: 3 different types, which the old rule (4 different types) didn't count.
+        BreakType.entries.take(3).forEach { app.logDone(it, now.minus(1, ChronoUnit.DAYS)) }
+        repeat(2) { app.logDone(BreakType.WATER, now) }
+
+        val result = app.recordBreakDone(BreakType.WATER)
+        assertEquals(1, result.streak.days) // today only
+        assertEquals(app.today(), result.streak.startDate)
+        assertEquals(DailyGoal.Breaks(3), app.settings.dailyGoalHistory.first().goalOn(app.today()))
     }
 }

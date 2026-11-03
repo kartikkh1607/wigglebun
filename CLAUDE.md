@@ -133,13 +133,13 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 - Currency: one soft currency (working name: "sparks"). Earned only by completing breaks and streak milestones.
 - A break type earns its spark reward only the first time it is completed each day; repeat Done resets the timer and celebrates but gives no sparks.
 - Spend on: new pets (collection) and accessories (4 in v1, then 4 more post-launch; see §6 and §7). Pet prices (`domain/rewards/PetPrices.kt`): Pip 75, Toast 150, Nimbus 300 sparks. Targets are in work days; `EconomyTest` pins them (see the table below).
-- Streak: number of work days in a row with at least N breaks (default 4, never more than the break types switched on). Each past day keeps the goal it had (`domain/rewards/DailyGoalHistory.kt`), so switching a type on never breaks a streak.
+- Streak: number of work days in a row with at least **3 completed breaks** (`RewardRules.DAILY_GOAL`), whichever types are switched on; repeats of one type count, so one type switched on is enough. The switches never change the goal. A change to the rule applies from the day an install first sees it and never re-judges a past day (`domain/rewards/DailyGoalHistory.kt`): days before an install adopted the 3-break rule keep the original one (4 different types).
 - Streak bonuses (`domain/rewards/RewardRules.kt`): the 3 / 7 / 14 / 30-day milestones (20 / 50 / 100 / 250 sparks) pay **once per lifetime** (ledger key `milestone:<days>`), so breaking a streak on purpose and rebuilding it never pays them again. After 30 days, every further 30 days of the **same unbroken streak** (day 60, 90, …) pays +250 (key `streak:<days>:<start>`). DB v4 migrated older installs: each milestone's first per-streak payment was renamed to its lifetime key, so nothing is paid twice and no sparks are taken back.
 - Work days to afford each pet, bought cheapest first (`EconomyTest`; every day a work day):
 
   | User | Breaks a day | Sparks a day | Pip (75) | Toast (+150) | Nimbus (+300) |
   |---|---|---|---|---|---|
-  | Light | 3 types, below the streak goal | 15 | day 5 | day 15 | day 35 |
+  | Light | 3 types, just meets the streak goal | 15 + milestones | day 4 | day 11 | day 24 |
   | Normal | 4 types incl. Walk, streak kept | 25 + milestones | day 3 | day 7 | day 15 |
   | Heavy | all 7 types, streak kept | 40 + milestones | day 2 | day 6 | day 12 |
 
@@ -176,7 +176,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
    - **Accessories (v1: 4 items)**, the ongoing spark sink once every pet is owned: bought once with sparks (50, 75, 100, 125) and worn by any pet, one per slot (head, face, neck). Collection has a Pets | Accessories switch; worn items show on Home, in break sessions, on the profile and in Collection, **not on the widget** (its mood images stay one static PNG per pet and mood).
    - **Post-launch update:** 4 more accessories (150, 200, 250, 300), so a Normal user keeps something to buy for about 8 weeks after owning every pet.
 6. **Pet profile** (tab 3, tab label = pet's name) – name, streak card, total breaks, weekly bar chart.
-7. **Menu / Settings** – cards: "Add the widget", "Enable notifications", "Enable movement detection" (each opens the permission flow; once on they read "Widget", "Notifications", "Movement detection" and the chip shows the state), work hours, interval, break types toggles, Premium card ("Try 7 days free", from `Trial.FREE_TRIAL_DAYS`; arrives with M10), privacy policy (no URL yet, `PRIVACY_POLICY_URL` in `ui/settings/SettingsScreen.kt`), about ("Made with love in India"). Everything saves straight away. A change that would leave no work days, the same start and end, or no break types isn't made.
+7. **Menu / Settings** – cards: "Add the widget", "Enable notifications", "Enable movement detection" (each opens the permission flow; once on they read "Widget", "Notifications", "Movement detection" and the chip shows the state), work hours, interval, break types toggles, Premium card ("Try 7 days free", from `Trial.FREE_TRIAL_DAYS`; arrives with M10), privacy policy (no URL yet, `PRIVACY_POLICY_URL` in `ui/settings/SettingsScreen.kt`), about ("Made with love in India"). Work hours are edited freely (18–18 on the way from 9–18 to 18–02 is fine) and checked only on "Save work hours", which shows while they differ from what's stored; a save with no work days or the same start and end is refused and the reason shows by the button. The interval and the break-type switches save straight away; the last break type can't be switched off.
 8. **Paywall** – pet illustration, 3 benefits, plan selector (yearly highlighted), "Start free trial" CTA, price after trial in plain text, how to cancel, restore purchases, terms/privacy links.
 
 **Not in v1:** friends, seasons/events, outfits beyond the 4 v1 accessories, furniture, adventure map, AI coach, iOS.

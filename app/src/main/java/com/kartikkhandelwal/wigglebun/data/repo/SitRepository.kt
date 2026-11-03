@@ -96,6 +96,7 @@ class SitRepository @Inject constructor(
     suspend fun onAppStart() {
         mutex.withLock {
             settingsRepository.decideOnboarding() // must see whether the timer was already saved
+            settingsRepository.adoptDailyGoal() // a new streak rule applies from today, not to past days
             if (store.current().sitStartedAt == null) {
                 store.update { engine.resetTimer(it) }
                 captureStepBaseline()

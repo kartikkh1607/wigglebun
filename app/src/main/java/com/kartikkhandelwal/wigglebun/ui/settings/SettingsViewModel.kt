@@ -19,54 +19,67 @@ import java.time.DayOfWeek
 import javax.inject.Inject
 
 data class SettingsUiState(
+    /** The work hours on screen: what's stored, or the unsaved edit. */
     val hours: WorkHoursDraft,
-    /** Why the last change to the hours wasn't made; the stored hours stay as they were. */
+    /** [hours] differs from what's stored, so Save shows. */
+    val hoursChanged: Boolean,
+    /** Why the last Save didn't save; the next edit clears it. */
     val hoursProblem: WorkHoursProblem?,
     val intervalMinutes: Int,
     val enabledBreaks: List<BreakType>,
 )
 
-/** Everything saves straight away. There's no Save button and nothing to lose. */
+/**
+ * Work hours are edited freely and checked only on Save, so going from 9–18 to 18–02 works in
+ * either order (18–18 on the way is fine). The interval and the break switches save straight away.
+ */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val widget: WidgetRefresher,
 ) : ViewModel() {
 
+    /** Null while there's no edit, so the screen follows what's stored. */
+    private val hoursEdit = MutableStateFlow<WorkHoursDraft?>(null)
     private val hoursProblem = MutableStateFlow<WorkHoursProblem?>(null)
 
     /** Null until the stored settings have loaded. */
     val state: StateFlow<SettingsUiState?> = combine(
         settings.settings,
         settings.enabledBreaks,
+        hoursEdit,
         hoursProblem,
-    ) { stored, breaks, problem ->
-        SettingsUiState(WorkHoursDraft.of(stored.schedule), problem, stored.interval, breaks)
+    ) { stored, breaks, edit, problem ->
+        val saved = WorkHoursDraft.of(stored.schedule)
+        val hours = edit ?: saved
+        SettingsUiState(hours, hoursChanged = hours != saved, problem, stored.interval, breaks)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
-    fun onToggleDay(day: DayOfWeek) = changeHours { it.toggled(day) }
+    fun onToggleDay(day: DayOfWeek) = editHours { it.toggled(day) }
 
-    fun onTimePicked(time: WorkTime, minute: Int) = changeHours {
+    fun onTimePicked(time: WorkTime, minute: Int) = editHours {
         when (time) {
             WorkTime.START -> it.copy(startMinute = minute)
             WorkTime.END -> it.copy(endMinute = minute)
         }
     }
 
-    /**
-     * Applied to what's stored inside one atomic write, so quick taps can't overwrite each other.
-     * A change that would leave an impossible schedule isn't made, and the screen says why.
-     */
-    private fun changeHours(change: (WorkHoursDraft) -> WorkHoursDraft) {
+    private fun editHours(change: (WorkHoursDraft) -> WorkHoursDraft) {
+        val current = hoursEdit.value ?: state.value?.hours ?: return
+        hoursEdit.value = change(current)
+        hoursProblem.value = null
+    }
+
+    /** Saves the edited hours, or says why it can't (no work days, or the same start and end). */
+    fun onSaveHours() {
+        val hours = hoursEdit.value ?: return
+        hoursProblem.value = hours.problem
+        if (hours.problem != null) return
         viewModelScope.launch {
-            var problem: WorkHoursProblem? = null
-            settings.updateSchedule { schedule ->
-                val next = change(WorkHoursDraft.of(schedule))
-                problem = next.problem
-                if (next.problem == null) next.toSchedule() else schedule
-            }
-            hoursProblem.value = problem
-            if (problem == null) widget.requestUpdate() // the hours decide whether the pet sleeps
+            settings.setSchedule(hours.toSchedule())
+            // Only if nothing was edited while saving: a newer edit stays on screen, unsaved.
+            hoursEdit.compareAndSet(hours, null)
+            widget.requestUpdate() // the hours decide whether the pet sleeps
         }
     }
 

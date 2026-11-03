@@ -13,55 +13,63 @@ class DailyGoalHistoryTest {
     private val monday = LocalDate.of(2026, 10, 26)
 
     private fun done(date: LocalDate, vararg types: BreakType) =
-        types.map { DoneBreak(it, date.atTime(12, 0).atZone(zone).toInstant()) }
+        types.mapIndexed { i, type -> DoneBreak(type, date.atTime(9 + i, 0).atZone(zone).toInstant()) }
 
     @Test
-    fun theDefaultGoalAppliesUntilAChange() {
-        assertEquals(RewardRules.DAILY_STREAK_GOAL, DailyGoalHistory().goalOn(monday))
+    fun theCurrentRuleIsThreeCompletedBreaks() {
+        assertEquals(DailyGoal.Breaks(3), RewardRules.DAILY_GOAL)
+    }
+
+    /** Installs from before the history existed had 4 different types. */
+    @Test
+    fun beforeAnyChangeTheOriginalRuleApplies() {
+        assertEquals(DailyGoal.DifferentTypes(4), DailyGoalHistory().goalOn(monday))
     }
 
     @Test
     fun aChangeAppliesFromThatDayOn() {
-        val history = DailyGoalHistory().withChange(3, monday)
-        assertEquals(RewardRules.DAILY_STREAK_GOAL, history.goalOn(monday.minusDays(1)))
-        assertEquals(3, history.goalOn(monday))
-        assertEquals(3, history.goalOn(monday.plusDays(5)))
+        val history = DailyGoalHistory().withChange(DailyGoal.Breaks(3), monday)
+        assertEquals(DailyGoalHistory.BEFORE_HISTORY, history.goalOn(monday.minusDays(1)))
+        assertEquals(DailyGoal.Breaks(3), history.goalOn(monday))
+        assertEquals(DailyGoal.Breaks(3), history.goalOn(monday.plusDays(5)))
     }
 
     @Test
     fun aSecondChangeTheSameDayReplacesTheFirst() {
-        val history = DailyGoalHistory().withChange(3, monday).withChange(2, monday)
-        assertEquals(listOf(DailyGoalChange(monday, 2)), history.changes)
+        val history = DailyGoalHistory().withChange(DailyGoal.Breaks(3), monday).withChange(DailyGoal.Breaks(2), monday)
+        assertEquals(listOf(DailyGoalChange(monday, DailyGoal.Breaks(2))), history.changes)
     }
 
     @Test
     fun noChangeWritesNothing() {
-        assertEquals(DailyGoalHistory(), DailyGoalHistory().withChange(RewardRules.DAILY_STREAK_GOAL, monday))
+        assertEquals(DailyGoalHistory(), DailyGoalHistory().withChange(DailyGoalHistory.BEFORE_HISTORY, monday))
+        val adopted = DailyGoalHistory().withChange(RewardRules.DAILY_GOAL, monday)
+        assertEquals(adopted, adopted.withChange(RewardRules.DAILY_GOAL, monday.plusDays(3)))
+    }
+
+    /** Completed breaks count repeats; the old rule counted each type once. */
+    @Test
+    fun theTwoRulesCountDifferently() {
+        val day = listOf(BreakType.WATER, BreakType.WATER, BreakType.NECK)
+        assertEquals(3, DailyGoal.Breaks(3).progress(day))
+        assertEquals(2, DailyGoal.DifferentTypes(4).progress(day))
     }
 
     /**
-     * Three types on for three days, then a fourth switched on. Judging the past by today's goal
-     * of 4 would wipe out the streak. It keeps the three days, and today counts once it meets 4.
+     * Mon and Tue had 4 different types under the old rule; the new rule arrives on Wednesday,
+     * where 3 waters are enough. The streak runs through all three days.
      */
     @Test
-    fun switchingATypeOnDoesNotBreakTheStreak() {
-        val today = monday.plusDays(3)
-        val threeTypes = arrayOf(BreakType.WALK, BreakType.NECK, BreakType.WATER)
-        val goals = DailyGoalHistory().withChange(3, monday).withChange(4, today)
-        val past = done(monday, *threeTypes) + done(monday.plusDays(1), *threeTypes) + done(monday.plusDays(2), *threeTypes)
+    fun theStreakCarriesOverTheRuleChange() {
+        val wednesday = monday.plusDays(2)
+        val goals = DailyGoalHistory().withChange(RewardRules.DAILY_GOAL, wednesday)
+        val fourTypes = arrayOf(BreakType.WALK, BreakType.NECK, BreakType.WATER, BreakType.EYES)
+        val breaks = done(monday, *fourTypes) + done(monday.plusDays(1), *fourTypes) +
+            done(wednesday, BreakType.WATER, BreakType.WATER, BreakType.WATER)
 
-        val before = StreakCalculator.compute(past, zone, today, { true }, goals.goalOn(today), goals::goalOn)
-        assertEquals(3, before.days)
-        assertEquals(4, before.goal)
-
-        val after = StreakCalculator.compute(
-            past + done(today, *threeTypes, BreakType.EYES),
-            zone,
-            today,
-            { true },
-            goals.goalOn(today),
-            goals::goalOn,
-        )
-        assertEquals(4, after.days)
+        val streak = StreakCalculator.compute(breaks, zone, wednesday, { true }, goals::goalOn)
+        assertEquals(3, streak.days)
+        assertEquals(3, streak.goal)
+        assertEquals(3, streak.todayDone)
     }
 }

@@ -16,10 +16,14 @@ import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.prefs.inMemoryPreferencesDataStore
+import com.kartikkhandelwal.wigglebun.data.prefs.writeDailyGoalHistory
 import com.kartikkhandelwal.wigglebun.data.prefs.writeSchedule
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoal
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalHistory
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.notify.ReminderNotifier
@@ -31,6 +35,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.time.Instant
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 /**
@@ -88,6 +93,16 @@ internal class TestDataLayer(context: Application, val clock: AppClock = AppCloc
     fun balance(): Int = runBlocking { wallet.balance.first() }
 
     fun ledger() = runBlocking { db.sparkLedgerDao().all() }
+
+    /**
+     * The streak's goal has been [goal] since [from], as if the install first started then. Without
+     * it, days before the first adoption keep the original rule (see [DailyGoalHistory]).
+     */
+    fun dailyGoalSince(from: LocalDate, goal: DailyGoal = RewardRules.DAILY_GOAL) = runBlocking {
+        dataStore.edit { it.writeDailyGoalHistory(DailyGoalHistory().withChange(goal, from)) }
+    }
+
+    fun today(): LocalDate = clock.instant().atZone(clock.zone).toLocalDate()
 
     /** A completed break written straight to the log (no reward), e.g. on an earlier day. */
     fun logDone(type: BreakType, at: Instant) = runBlocking {

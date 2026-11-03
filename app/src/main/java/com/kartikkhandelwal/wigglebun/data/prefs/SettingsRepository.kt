@@ -59,7 +59,7 @@ class SettingsRepository @Inject constructor(
     /** The break types switched on, in display order; never empty (CLAUDE.md §5.3). */
     val enabledBreaks: Flow<List<BreakType>> = prefs.map { it.toEnabledBreaks() }.distinctUntilChanged()
 
-    /** The streak's goal over time, so past days keep the goal they had (see [DailyGoalHistory]). */
+    /** The streak's goal over time, so past days keep the goal they had (see [adoptDailyGoal]). */
     val dailyGoalHistory: Flow<DailyGoalHistory> = prefs.map { it.toDailyGoalHistory() }.distinctUntilChanged()
 
     suspend fun current(): SittingSettings = settings.first()
@@ -80,13 +80,9 @@ class SettingsRepository @Inject constructor(
     }
 
     /** Changing the work days takes effect today and is recorded in [workDayHistory]. */
-    suspend fun setSchedule(schedule: WorkSchedule) = updateSchedule { schedule }
-
-    /** [setSchedule] from the stored schedule, in one atomic write, so quick changes can't overwrite each other. */
-    suspend fun updateSchedule(transform: (WorkSchedule) -> WorkSchedule) {
+    suspend fun setSchedule(schedule: WorkSchedule) {
         val today = today()
         dataStore.edit {
-            val schedule = transform(it.toSittingSettings().schedule)
             val history = it.toWorkDayHistory().withChange(schedule.days, today)
             it.writeSchedule(schedule)
             it.writeWorkDayHistory(history)
@@ -95,10 +91,9 @@ class SettingsRepository @Inject constructor(
 
     /**
      * Switches a break type on or off. Refuses (returns false) to switch off the last one. The
-     * streak's goal follows the number switched on, from today (see [DailyGoalHistory]).
+     * streak's goal doesn't depend on which types are on (see [RewardRules.DAILY_GOAL]).
      */
     suspend fun setBreakEnabled(type: BreakType, enabled: Boolean): Boolean {
-        val today = today()
         var changed = false
         dataStore.edit {
             val current = it.toEnabledBreaks()
@@ -106,9 +101,28 @@ class SettingsRepository @Inject constructor(
             if (next.isEmpty()) return@edit
             changed = true
             it[PrefsKeys.EnabledBreaks] = next.map { break_ -> break_.name }.toSet()
-            it.writeDailyGoalHistory(it.toDailyGoalHistory().withChange(RewardRules.dailyGoal(next.toSet().size), today))
         }
         return changed
+    }
+
+    /**
+     * Makes [RewardRules.DAILY_GOAL] the goal from today on, if the history doesn't say so yet, and
+     * returns the history. Run on every app start and before paying a streak bonus, so a new rule
+     * (like the move from 4 different types to 3 breaks) applies from the day an install first
+     * sees it and never re-judges an earlier day.
+     */
+    suspend fun adoptDailyGoal(): DailyGoalHistory {
+        val today = today()
+        var history = DailyGoalHistory()
+        dataStore.edit {
+            history = it.toDailyGoalHistory()
+            val adopted = history.withChange(RewardRules.DAILY_GOAL, today)
+            if (adopted != history) {
+                it.writeDailyGoalHistory(adopted)
+                history = adopted
+            }
+        }
+        return history
     }
 
     private fun today() = clock.instant().atZone(clock.zone).toLocalDate()

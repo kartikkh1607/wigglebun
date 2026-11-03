@@ -34,6 +34,9 @@ class SettingsScreenshotTest {
     fun overnightOneBreakLeft() = capture("settings_overnight_one_break") { SettingsOvernightOneBreakPreview() }
 
     @Test
+    fun hoursEditing() = capture("settings_hours_editing") { SettingsHoursEditingPreview() }
+
+    @Test
     fun hoursProblem() = capture("settings_hours_problem") { SettingsHoursProblemPreview() }
 
     @Config(qualifiers = "w390dp-h844dp-xxhdpi")

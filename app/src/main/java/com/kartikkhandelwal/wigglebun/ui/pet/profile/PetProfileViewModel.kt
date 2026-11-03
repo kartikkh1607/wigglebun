@@ -52,7 +52,6 @@ class PetProfileViewModel @Inject constructor(
             today = now.today,
             zone = clock.zone,
             isWorkDay = history::isWorkDay,
-            goal = goals.goalOn(now.today),
             goalOn = goals::goalOn,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

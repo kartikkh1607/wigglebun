@@ -10,17 +10,18 @@ data class Streak(
     val days: Int,
     /** First day of the current streak; null when [days] is 0. */
     val startDate: LocalDate?,
+    /** How many today's goal needs (see [DailyGoal.count]). */
     val goal: Int,
-    /** Distinct break types done today. */
-    val todayDistinct: Int,
+    /** Today's progress toward [goal] (see [DailyGoal.progress]). */
+    val todayDone: Int,
     val todayIsWorkDay: Boolean,
 ) {
-    val todayCounts: Boolean get() = todayIsWorkDay && todayDistinct >= goal
+    val todayCounts: Boolean get() = todayIsWorkDay && todayDone >= goal
 }
 
 /**
  * The work-day streak (CLAUDE.md §5.4). Pure: days are local calendar dates in [zone].
- * - A work day counts when it has at least [goal] distinct break types done.
+ * - A work day counts when its breaks meet the goal it had that day ([goalOn]).
  * - Non-work days are skipped: they never break the streak and never add to it.
  * - Today counts as soon as it meets the goal; until then it is in progress, not missed.
  * - A finished work day below the goal ends the streak. Days before the first logged break
@@ -33,24 +34,25 @@ object StreakCalculator {
         zone: ZoneId,
         today: LocalDate,
         isWorkDay: (LocalDate) -> Boolean,
-        goal: Int,
-        /** The goal on a past day, which may differ from today's [goal] (see [DailyGoalHistory]). */
-        goalOn: (LocalDate) -> Int = { goal },
+        /** The goal each day had, so a change to the rule never re-judges a past day (see [DailyGoalHistory]). */
+        goalOn: (LocalDate) -> DailyGoal,
     ): Streak {
-        val typesByDate: Map<LocalDate, Set<BreakType>> = done
+        val breaksByDate: Map<LocalDate, List<BreakType>> = done
             .groupBy(keySelector = { it.at.atZone(zone).toLocalDate() }, valueTransform = { it.type })
-            .mapValues { it.value.toSet() }
+        fun progress(date: LocalDate) = goalOn(date).progress(breaksByDate[date].orEmpty())
+
+        val goal = goalOn(today).count
         val todayIsWorkDay = isWorkDay(today)
-        val todayDistinct = typesByDate[today]?.size ?: 0
-        val firstDay = typesByDate.keys.minOrNull()
-            ?: return Streak(days = 0, startDate = null, goal = goal, todayDistinct = 0, todayIsWorkDay = todayIsWorkDay)
+        val todayDone = progress(today)
+        val firstDay = breaksByDate.keys.minOrNull()
+            ?: return Streak(days = 0, startDate = null, goal = goal, todayDone = 0, todayIsWorkDay = todayIsWorkDay)
 
         var days = 0
         var start: LocalDate? = null
         var date = today
         while (!date.isBefore(firstDay)) {
             if (isWorkDay(date)) {
-                val met = (typesByDate[date]?.size ?: 0) >= goalOn(date)
+                val met = progress(date) >= goalOn(date).count
                 if (met) {
                     days++
                     start = date
@@ -60,6 +62,6 @@ object StreakCalculator {
             }
             date = date.minusDays(1)
         }
-        return Streak(days, start, goal, todayDistinct, todayIsWorkDay)
+        return Streak(days, start, goal, todayDone, todayIsWorkDay)
     }
 }
