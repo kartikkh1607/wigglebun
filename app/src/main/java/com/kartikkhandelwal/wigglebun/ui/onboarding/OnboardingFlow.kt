@@ -63,6 +63,11 @@ class OnboardingViewModel @Inject constructor(private val settings: SettingsRepo
     private val _workHours = MutableStateFlow(WorkHoursDraft())
     val workHours: StateFlow<WorkHoursDraft> = _workHours.asStateFlow()
 
+    private val _hoursProblem = MutableStateFlow<WorkHoursProblem?>(null)
+
+    /** Why the last Continue didn't save the hours; the next edit clears it. */
+    val hoursProblem: StateFlow<WorkHoursProblem?> = _hoursProblem.asStateFlow()
+
     private val _intervalMinutes = MutableStateFlow(SittingSettings.DEFAULT_INTERVAL_MINUTES)
     val intervalMinutes: StateFlow<Int> = _intervalMinutes.asStateFlow()
 
@@ -85,20 +90,32 @@ class OnboardingViewModel @Inject constructor(private val settings: SettingsRepo
         viewModelScope.launch { settings.setPetName(name) }
     }
 
-    fun onToggleDay(day: DayOfWeek) = _workHours.update { it.toggled(day) }
+    fun onToggleDay(day: DayOfWeek) = editHours { it.toggled(day) }
 
-    fun onTimePicked(time: WorkTime, minute: Int) = _workHours.update {
+    fun onTimePicked(time: WorkTime, minute: Int) = editHours {
         when (time) {
             WorkTime.START -> it.copy(startMinute = minute)
             WorkTime.END -> it.copy(endMinute = minute)
         }
     }
 
-    /** Skipped steps never save: what's stored (the defaults on a new install) stays. */
-    fun saveWorkHours() {
+    /** Edits are never checked on the way (18–18 between 9–18 and 18–02 is fine), as in Settings. */
+    private fun editHours(change: (WorkHoursDraft) -> WorkHoursDraft) {
+        _workHours.update(change)
+        _hoursProblem.value = null
+    }
+
+    /**
+     * Continue: saves the hours and returns true, or returns false and says why (no work days, or
+     * the same start and end). Skipped steps never save: what's stored (the defaults on a new
+     * install) stays.
+     */
+    fun saveWorkHours(): Boolean {
         val draft = _workHours.value
-        if (draft.problem != null) return
+        _hoursProblem.value = draft.problem
+        if (draft.problem != null) return false
         viewModelScope.launch { settings.setSchedule(draft.toSchedule()) }
+        return true
     }
 
     fun onIntervalPicked(minutes: Int) {
@@ -120,10 +137,12 @@ class OnboardingViewModel @Inject constructor(private val settings: SettingsRepo
 fun OnboardingFlowRoute(viewModel: OnboardingViewModel = hiltViewModel()) {
     val nameDraft by viewModel.nameDraft.collectAsStateWithLifecycle()
     val workHours by viewModel.workHours.collectAsStateWithLifecycle()
+    val hoursProblem by viewModel.hoursProblem.collectAsStateWithLifecycle()
     val intervalMinutes by viewModel.intervalMinutes.collectAsStateWithLifecycle()
     OnboardingFlow(
         nameDraft = nameDraft,
         workHours = workHours,
+        hoursProblem = hoursProblem,
         intervalMinutes = intervalMinutes,
         actions = OnboardingActions(
             onNameChange = viewModel::onNameChange,
@@ -144,7 +163,8 @@ class OnboardingActions(
     val onSaveName: () -> Unit = {},
     val onToggleDay: (DayOfWeek) -> Unit = {},
     val onTimePicked: (WorkTime, Int) -> Unit = { _, _ -> },
-    val onSaveWorkHours: () -> Unit = {},
+    /** True when the hours were fine and saved, so the flow moves on. */
+    val onSaveWorkHours: () -> Boolean = { true },
     val onIntervalPicked: (Int) -> Unit = {},
     val onSaveInterval: () -> Unit = {},
     val onFinish: () -> Unit = {},
@@ -160,6 +180,8 @@ fun OnboardingFlow(
     workHours: WorkHoursDraft,
     intervalMinutes: Int,
     actions: OnboardingActions,
+    /** Why the last Continue on the hours didn't go through, shown by Continue. */
+    hoursProblem: WorkHoursProblem? = null,
     navController: NavHostController = rememberNavController(),
     /** Overridable so tests can stand in for the Hilt-backed break session. */
     sessionContent: @Composable (onExit: () -> Unit, onCompleted: () -> Unit) -> Unit = { onExit, onCompleted ->
@@ -189,12 +211,10 @@ fun OnboardingFlow(
             val next = dropUnlessResumed { navController.navigate(IntervalRoute) { launchSingleTop = true } }
             WorkHoursScreenRoute(
                 draft = workHours,
+                problem = hoursProblem,
                 onToggleDay = actions.onToggleDay,
                 onTimePicked = actions.onTimePicked,
-                onContinue = {
-                    actions.onSaveWorkHours()
-                    next()
-                },
+                onContinue = { if (actions.onSaveWorkHours()) next() },
                 onSkip = next,
             )
         }

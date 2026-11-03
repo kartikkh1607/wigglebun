@@ -139,6 +139,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
   | User | Breaks a day | Sparks a day | Pip (75) | Toast (+150) | Nimbus (+300) |
   |---|---|---|---|---|---|
+  | No streak | 1–2 breaks, below the streak goal (pinned: 2 types) | 10 | day 8 | day 23 | day 53 |
   | Light | 3 types, just meets the streak goal | 15 + milestones | day 4 | day 11 | day 24 |
   | Normal | 4 types incl. Walk, streak kept | 25 + milestones | day 3 | day 7 | day 15 |
   | Heavy | all 7 types, streak kept | 40 + milestones | day 2 | day 6 | day 12 |
@@ -162,7 +163,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 2. **Onboarding**
    - First-launch gate (`ui/onboarding/AppGate.kt`): `onboarding_done` in the backed-up settings. It is decided once, on the first app start after it exists: a sit timer already saved means an install from before onboarding, which never sees it. A new install keeps seeing it until it is finished, even if the app is killed halfway.
    - Wake-up moment: pet asleep as a round blob → user taps → pet stretches awake and introduces itself, asks the user's name, user names the pet. The name field allows at most `MAX_PET_NAME_LENGTH` (12, `domain/model/Pet.kt`) characters.
-   - One question per screen: work hours, break interval. Bottom sheets for pickers. "Skip" always visible.
+   - One question per screen: work hours, break interval. Bottom sheets for pickers. "Skip" always visible. Work hours are checked only on Continue, as in Settings: no work days, or the same start and end, keeps the step and shows the reason above Continue; the next edit clears it.
    - Permissions are **not** asked here (ask just-in-time, see Settings/Home cards in `ui/setup/`: tap → explanation sheet → the system's dialog). Home offers one card at a time and only once ("Not now" or a refusal hides it there); Settings always has all three, and sends a refused permission to the phone's settings.
    - First 1-minute stretch with the pet (a real Stand up break: it logs and earns its sparks) → celebrate → **paywall with free trial** (see 5.5). Until M10 the paywall is `ui/paywall/PaywallPlaceholderScreen.kt`, which offers nothing to buy.
    - Skip moves on one step and keeps that step's default, so it never bypasses the stretch and paywall. Interrupted onboarding restarts at the wake-up; answers already given stay.

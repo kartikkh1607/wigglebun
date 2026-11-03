@@ -32,8 +32,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -109,8 +112,19 @@ internal class TestDataLayer(context: Application, val clock: AppClock = AppCloc
         db.breakLogDao().insert(BreakLogEntity(type = type, completedAt = at.toEpochMilli(), reward = type.defaultReward, outcome = BreakOutcome.DONE))
     }
 
+    /**
+     * Stops the background work first (SitRepository's settings collector runs checkReminder after
+     * every settings write), then closes the database. The other way round, a check still running
+     * hits the closed database, and the error fails whichever test runs next.
+     */
     override fun close() {
-        db.close()
+        runBlocking { withTimeoutOrNull(CLOSE_TIMEOUT_MILLIS) { scope.coroutineContext.job.cancelAndJoin() } }
         scope.cancel()
+        db.close()
+    }
+
+    private companion object {
+        /** Bounded, so a coroutine waiting for the main thread can't hang the teardown. */
+        const val CLOSE_TIMEOUT_MILLIS = 5_000L
     }
 }

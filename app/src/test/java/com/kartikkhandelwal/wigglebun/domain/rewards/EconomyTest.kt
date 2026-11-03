@@ -13,6 +13,9 @@ import org.junit.Test
  */
 class EconomyTest {
 
+    /** 2 types a day (10 sparks): below the 3-break goal, so no streak and no milestones. */
+    private val noStreak = listOf(BreakType.STAND_UP, BreakType.WATER)
+
     /** 3 types a day (15 sparks): just meets the 3-break goal, so it keeps the streak too. */
     private val light = listOf(BreakType.STAND_UP, BreakType.EYES, BreakType.WATER)
 
@@ -51,6 +54,7 @@ class EconomyTest {
 
     @Test
     fun workDaysToEachPet() {
+        assertEquals(listOf(8, 23, 53), daysToEachPet(noStreak))
         assertEquals(listOf(4, 11, 24), daysToEachPet(light))
         assertEquals(listOf(3, 7, 15), daysToEachPet(normal))
         assertEquals(listOf(2, 6, 12), daysToEachPet(heavy))
@@ -62,6 +66,7 @@ class EconomyTest {
      */
     @Test
     fun workDaysToEachAccessoryAfterThePets() {
+        assertEquals(listOf(58, 65, 75, 88), daysToEachAccessory(noStreak))
         assertEquals(listOf(27, 30, 30, 31), daysToEachAccessory(light))
         assertEquals(listOf(17, 20, 24, 29), daysToEachAccessory(normal))
         assertEquals(listOf(13, 14, 15, 18), daysToEachAccessory(heavy))
