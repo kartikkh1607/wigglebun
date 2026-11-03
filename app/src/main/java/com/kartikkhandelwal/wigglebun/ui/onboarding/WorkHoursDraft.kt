@@ -13,7 +13,7 @@ data class WorkHoursDraft(
     val problem: WorkHoursProblem?
         get() = when {
             days.isEmpty() -> WorkHoursProblem.NO_DAYS
-            startMinute == endMinute % WorkSchedule.MINUTES_PER_DAY -> WorkHoursProblem.SAME_TIME
+            startMinute == endMinute -> WorkHoursProblem.SAME_TIME
             else -> null
         }
 

@@ -7,9 +7,13 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoal
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalChange
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalHistory
 import com.kartikkhandelwal.wigglebun.domain.sitting.SitState
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDayHistory
@@ -32,6 +36,10 @@ internal object PrefsKeys {
     fun Worn(pet: PetId) = stringSetPreferencesKey("worn_${pet.key}")
     /** "2026-10-27=MONDAY,TUESDAY;…" (see [writeWorkDayHistory]). */
     val WorkDayHistory = stringPreferencesKey("work_day_history")
+    /** [BreakType] names switched on (CLAUDE.md §5.3). Missing = all of them. */
+    val EnabledBreaks = stringSetPreferencesKey("enabled_breaks")
+    /** "2026-11-02=breaks:3;…" (see [writeDailyGoalHistory]). */
+    val DailyGoalHistory = stringPreferencesKey("daily_goal_history")
     /** Missing = not decided yet; false = onboarding still to do; true = done or never needed. */
     val OnboardingDone = booleanPreferencesKey("onboarding_done")
 
@@ -93,9 +101,49 @@ internal fun MutablePreferences.writeWorkDayHistory(history: WorkDayHistory) {
     }
 }
 
+internal fun Preferences.toEnabledBreaks(): List<BreakType> {
+    val stored = this[PrefsKeys.EnabledBreaks].orEmpty().mapNotNull { enumOrNull<BreakType>(it) }.toSet()
+    // Always at least one, whatever was stored, and always in the same order.
+    return BreakType.entries.filter { it in stored }.ifEmpty { BreakType.entries }
+}
+
+/** Bad entries are skipped. */
+internal fun Preferences.toDailyGoalHistory(): DailyGoalHistory = DailyGoalHistory(
+    this[PrefsKeys.DailyGoalHistory].orEmpty()
+        .split(HISTORY_SEPARATOR)
+        .mapNotNull { entry ->
+            val date = runCatching { LocalDate.parse(entry.substringBefore(HISTORY_ASSIGN, missingDelimiterValue = "")) }.getOrNull()
+            val goal = parseDailyGoal(entry.substringAfter(HISTORY_ASSIGN))
+            if (date == null || goal == null) null else DailyGoalChange(date, goal)
+        }
+        .sortedBy { it.from },
+)
+
+internal fun MutablePreferences.writeDailyGoalHistory(history: DailyGoalHistory) {
+    this[PrefsKeys.DailyGoalHistory] = history.changes.joinToString(HISTORY_SEPARATOR) { change ->
+        val kind = when (change.goal) {
+            is DailyGoal.Breaks -> GOAL_BREAKS
+            is DailyGoal.DifferentTypes -> GOAL_TYPES
+        }
+        "${change.from}$HISTORY_ASSIGN$kind$GOAL_COUNT_SEPARATOR${change.goal.count}"
+    }
+}
+
+private fun parseDailyGoal(text: String): DailyGoal? {
+    val count = text.substringAfter(GOAL_COUNT_SEPARATOR, missingDelimiterValue = "").toIntOrNull()?.takeIf { it > 0 } ?: return null
+    return when (text.substringBefore(GOAL_COUNT_SEPARATOR)) {
+        GOAL_BREAKS -> DailyGoal.Breaks(count)
+        GOAL_TYPES -> DailyGoal.DifferentTypes(count)
+        else -> null
+    }
+}
+
 private const val HISTORY_SEPARATOR = ";"
 private const val HISTORY_ASSIGN = "="
 private const val HISTORY_DAY_SEPARATOR = ","
+private const val GOAL_COUNT_SEPARATOR = ":"
+private const val GOAL_BREAKS = "breaks"
+private const val GOAL_TYPES = "types"
 
 internal fun Preferences.toSitState(): SitState = SitState(
     sitStartedAt = instant(PrefsKeys.SitStartedAt),

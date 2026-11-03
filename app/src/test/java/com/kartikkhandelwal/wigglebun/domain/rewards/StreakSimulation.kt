@@ -26,7 +26,7 @@ internal class StreakSimulation(private val firstDay: LocalDate = LocalDate.of(2
             done += DoneBreak(type, today.atTime(LocalTime.NOON).atZone(zone).toInstant())
             if (paidKeys.add(RewardRules.breakKey(today, type))) total += type.defaultReward
         }
-        val streak = StreakCalculator.compute(done, zone, today, isWorkDay = { true }, goal = RewardRules.DAILY_STREAK_GOAL)
+        val streak = StreakCalculator.compute(done, zone, today, isWorkDay = { true }, goalOn = { RewardRules.DAILY_GOAL })
         val start = streak.startDate ?: return emptyList()
         return RewardRules.bonusesFor(streak.days, start)
             .filter { paidKeys.add(it.key) }
@@ -34,13 +34,13 @@ internal class StreakSimulation(private val firstDay: LocalDate = LocalDate.of(2
             .onEach { total += it.bonus }
     }
 
-    /** [days] work days that keep the streak (the daily goal of distinct types). */
+    /** [days] work days that keep the streak (the daily goal of completed breaks). */
     fun keepStreak(days: Int): List<Milestone> = (1..days).flatMap { play(GOAL_TYPES) }
 
     /** One work day below the goal: the streak ends. */
     fun miss(): List<Milestone> = play(emptyList())
 
     companion object {
-        val GOAL_TYPES: List<BreakType> = BreakType.entries.take(RewardRules.DAILY_STREAK_GOAL)
+        val GOAL_TYPES: List<BreakType> = BreakType.entries.take(RewardRules.DAILY_GOAL.count)
     }
 }

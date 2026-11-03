@@ -143,13 +143,13 @@ private fun BonusBadge(milestone: Milestone) {
     }
 }
 
-/** "3 of 4 breaks for your streak" with one bar per break needed, or "Today counts! 5-day streak". */
+/** "2 of 3 breaks for your streak" with one bar per break needed, or "Today counts! 5-day streak". */
 @Composable
 private fun StreakCard(streak: Streak, modifier: Modifier = Modifier) {
     val text = if (streak.todayCounts) {
         pluralStringResource(R.plurals.streak_today_counts, streak.days, streak.days)
     } else {
-        pluralStringResource(R.plurals.streak_progress, streak.goal, streak.todayDistinct, streak.goal)
+        pluralStringResource(R.plurals.streak_progress, streak.goal, streak.todayDone, streak.goal)
     }
     ChunkySurface(
         shape = WigglebunShapes.Card,
@@ -166,7 +166,7 @@ private fun StreakCard(streak: Streak, modifier: Modifier = Modifier) {
             Text(text, style = MaterialTheme.typography.titleMedium, color = Ink, textAlign = TextAlign.Center)
             Segments(
                 count = streak.goal,
-                filled = minOf(streak.todayDistinct, streak.goal),
+                filled = minOf(streak.todayDone, streak.goal),
                 filledColor = if (streak.todayCounts) DoneGreen else SessionAccent,
             )
         }

@@ -123,6 +123,16 @@ object Dimens {
         val StretchButtonBottom = 24.dp
     }
 
+    /** The Settings tab (no mockup: sized from the card and icon-tile tokens). */
+    object Settings {
+        val SectionTop = 14.dp
+        val AboutVertical = 12.dp
+        val ToggleTop = 10.dp
+        val ToggleGap = 12.dp
+        val ToggleTile = 40.dp
+        val ToggleIcon = 22.dp
+    }
+
     /** Setup cards in Settings and on Home (no mockup: sized from the card and icon-tile tokens). */
     object Setup {
         val IconTile = 44.dp

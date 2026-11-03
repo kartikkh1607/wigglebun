@@ -33,8 +33,15 @@ class WorkHoursDraftTest {
     @Test
     fun theSameStartAndEndIsAProblem() {
         assertEquals(WorkHoursProblem.SAME_TIME, nineToSix.copy(startMinute = 600, endMinute = 600).problem)
-        // Midnight is 0 and 1440 in the schedule: both are the same time as a midnight start.
-        assertEquals(WorkHoursProblem.SAME_TIME, nineToSix.copy(startMinute = 0, endMinute = WorkSchedule.MINUTES_PER_DAY).problem)
+        assertEquals(WorkHoursProblem.SAME_TIME, nineToSix.copy(startMinute = 0, endMinute = 0).problem)
+    }
+
+    /** 0 to 1440 is all day (the Pet lab's "always work hours"), and can still be edited. */
+    @Test
+    fun allDayIsFine() {
+        val allDay = WorkHoursDraft.of(WorkSchedule.AlwaysOn)
+        assertNull(allDay.problem)
+        assertNull(allDay.toggled(DayOfWeek.SUNDAY).problem)
     }
 
     @Test

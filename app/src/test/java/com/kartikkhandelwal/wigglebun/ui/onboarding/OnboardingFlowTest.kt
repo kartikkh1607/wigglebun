@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -47,18 +46,27 @@ class OnboardingFlowTest {
     private fun start() {
         var draft by mutableStateOf("")
         var hours by mutableStateOf(WorkHoursDraft())
+        var hoursProblem by mutableStateOf<WorkHoursProblem?>(null)
         composeRule.setContent {
             CompositionLocalProvider(LocalInspectionMode provides true) {
                 WigglebunTheme {
                     OnboardingFlow(
                         nameDraft = draft,
                         workHours = hours,
+                        hoursProblem = hoursProblem,
                         intervalMinutes = SittingSettings.DEFAULT_INTERVAL_MINUTES,
                         actions = OnboardingActions(
                             onNameChange = { draft = it },
                             onSaveName = { saved += "name" },
-                            onToggleDay = { hours = hours.toggled(it) },
-                            onSaveWorkHours = { saved += "hours" },
+                            // As OnboardingViewModel does: edits clear the reason, Continue checks.
+                            onToggleDay = {
+                                hours = hours.toggled(it)
+                                hoursProblem = null
+                            },
+                            onSaveWorkHours = {
+                                hoursProblem = hours.problem
+                                (hoursProblem == null).also { ok -> if (ok) saved += "hours" }
+                            },
                             onSaveInterval = { saved += "interval" },
                             onFinish = { finished++ },
                         ),
@@ -141,19 +149,31 @@ class OnboardingFlowTest {
         }
     }
 
-    /** No work days means the pet would never wake, so the answer has to be fixed or skipped. */
+    private fun toggle(day: DayOfWeek) =
+        composeRule.onNodeWithContentDescription(day.getDisplayName(TextStyle.FULL, Locale.getDefault())).performClick()
+
+    /**
+     * No work days means the pet would never wake. That's said only once Continue is tapped, which
+     * then stays on the step; the next edit clears it, and Skip always moves on.
+     */
     @Test
-    fun noWorkDaysBlocksContinueButNotSkip() {
+    fun noWorkDaysIsCaughtOnContinue() {
         start()
         tap("Skip")
         tap("Skip")
-        DayOfWeek.entries.take(5).forEach { day ->
-            composeRule.onNodeWithContentDescription(day.getDisplayName(TextStyle.FULL, Locale.getDefault())).performClick()
-        }
+        DayOfWeek.entries.take(5).forEach(::toggle)
+        composeRule.onNodeWithText("Pick at least one work day.").assertDoesNotExist()
+
+        tap("Continue")
         composeRule.onNodeWithText("Pick at least one work day.").assertIsDisplayed()
-        composeRule.onNodeWithText("Continue").assertIsNotEnabled()
+        composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
+
+        toggle(DayOfWeek.MONDAY)
+        composeRule.onNodeWithText("Pick at least one work day.").assertDoesNotExist()
+        toggle(DayOfWeek.MONDAY)
         tap("Skip")
         composeRule.onNodeWithText("How often should I nudge you?").assertIsDisplayed()
+        assertTrue(saved.isEmpty())
     }
 
     /** "Skip" is on every step and keeps the default: nothing is saved. */

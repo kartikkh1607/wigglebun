@@ -96,6 +96,7 @@ class SitRepository @Inject constructor(
     suspend fun onAppStart() {
         mutex.withLock {
             settingsRepository.decideOnboarding() // must see whether the timer was already saved
+            settingsRepository.adoptDailyGoal() // a new streak rule applies from today, not to past days
             if (store.current().sitStartedAt == null) {
                 store.update { engine.resetTimer(it) }
                 captureStepBaseline()
@@ -131,7 +132,7 @@ class SitRepository @Inject constructor(
         if (status.shouldNotify && due != null) {
             notifier.showReminder(
                 pet = petRepository.activePet.first(),
-                suggested = BreakType.suggestedFor(due.epochSecond / 60),
+                suggested = BreakType.suggestedFor(due.epochSecond / 60, settingsRepository.enabledBreaks.first()),
                 snoozesLeft = status.snoozesLeft,
             )
             // Marked even if notifications are blocked, so we don't retry every second.

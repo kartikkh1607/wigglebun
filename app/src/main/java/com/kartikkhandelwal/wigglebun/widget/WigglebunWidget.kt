@@ -37,7 +37,7 @@ internal suspend fun loadWidgetState(context: Context): WidgetUiState {
     val app = EntryPointAccessors.fromApplication(context.applicationContext, WidgetEntryPoint::class.java)
     val status = app.engine().status(app.store().current(), app.settings().current())
     val pet = app.pets().activePet.first()
-    return WidgetUiState.from(status, pet.id, pet.displayName(context))
+    return WidgetUiState.from(status, pet.id, pet.displayName(context), app.settings().enabledBreaks.first())
 }
 
 /**

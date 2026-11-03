@@ -19,6 +19,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
@@ -108,7 +111,7 @@ class OnboardingViewModelTest {
         assertEquals(WorkSchedule.Default, app.settings.current().schedule)
         assertEquals(STORED_INTERVAL, app.settings.current().intervalMinutes)
 
-        viewModel.saveWorkHours()
+        assertTrue(viewModel.saveWorkHours())
         viewModel.saveInterval()
         waitUntil { settings.value?.intervalMinutes == 60 && settings.value?.schedule != WorkSchedule.Default }
         val schedule = app.settings.current().schedule
@@ -117,15 +120,37 @@ class OnboardingViewModelTest {
         assertEquals(17 * 60, schedule.endMinute)
     }
 
+    /** Continue checks: nothing is saved, the reason is given, and the next edit clears it. */
     @Test
     fun anImpossibleScheduleIsNeverSaved() = runBlocking {
         loadedViewModel()
         DayOfWeek.entries.take(5).forEach(viewModel::onToggleDay)
-        viewModel.saveWorkHours()
+        assertNull(viewModel.hoursProblem.value) // not while editing
+        assertFalse(viewModel.saveWorkHours())
+        assertEquals(WorkHoursProblem.NO_DAYS, viewModel.hoursProblem.value)
+        viewModel.onToggleDay(DayOfWeek.MONDAY)
+        assertNull(viewModel.hoursProblem.value)
+
+        viewModel.onTimePicked(WorkTime.END, WorkSchedule.Default.startMinute)
+        assertFalse(viewModel.saveWorkHours())
+        assertEquals(WorkHoursProblem.SAME_TIME, viewModel.hoursProblem.value)
+
         viewModel.onIntervalPicked(60)
         viewModel.saveInterval() // something later to wait for
         waitUntil { settings.value?.intervalMinutes == 60 }
         assertEquals(WorkSchedule.Default, app.settings.current().schedule)
+    }
+
+    /** 9–18 to 18–02, start first: 18–18 on the way isn't flagged, and Continue saves the end result. */
+    @Test
+    fun startAndEndCanMatchOnTheWay() = runBlocking {
+        loadedViewModel()
+        viewModel.onTimePicked(WorkTime.START, 18 * 60)
+        assertNull(viewModel.hoursProblem.value)
+        viewModel.onTimePicked(WorkTime.END, 2 * 60)
+        assertTrue(viewModel.saveWorkHours())
+        waitUntil { settings.value?.schedule?.startMinute == 18 * 60 }
+        assertEquals(2 * 60, app.settings.current().schedule.endMinute)
     }
 
     @Test
