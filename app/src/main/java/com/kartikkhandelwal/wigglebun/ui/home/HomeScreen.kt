@@ -38,6 +38,7 @@ import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
@@ -80,12 +81,16 @@ class HomeViewModel @Inject constructor(
     private val focused = MutableStateFlow<BreakType?>(null)
     private val status = sitRepository.status.filterNotNull()
 
-    /** Today's BreakLog, re-queried when the local date changes. */
+    /**
+     * Today's BreakLog, re-queried when the break day changes: at midnight, or at the shift start
+     * when work hours cross midnight (see [BreakDays]), and when a change of hours moves it.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val logsToday = status
-        .map { it.now.atZone(clock.zone).toLocalDate() }
+    private val logsToday = combine(status, settingsRepository.dayBoundaryHistory) { st, history ->
+        history to BreakDays(history, clock.zone).dayOf(st.now)
+    }
         .distinctUntilChanged()
-        .flatMapLatest { breakRepository.observeDay(it, clock.zone) }
+        .flatMapLatest { (history, day) -> breakRepository.observeDay(BreakDays(history, clock.zone).span(day)) }
 
     private val profile = combine(
         settingsRepository.settings,

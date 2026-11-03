@@ -2,6 +2,8 @@ package com.kartikkhandelwal.wigglebun.domain.rewards
 
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.DoneBreak
+import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -19,7 +21,7 @@ data class Streak(
 }
 
 /**
- * The work-day streak (CLAUDE.md §5.4). Pure: days are local calendar dates in [zone].
+ * The work-day streak (CLAUDE.md §5.4). Pure: days are break days ([dayOf], see [BreakDays]).
  * - A work day counts when it has at least [goal] distinct break types done.
  * - Non-work days are skipped: they never break the streak and never add to it.
  * - Today counts as soon as it meets the goal; until then it is in progress, not missed.
@@ -34,9 +36,11 @@ object StreakCalculator {
         today: LocalDate,
         isWorkDay: (LocalDate) -> Boolean,
         goal: Int,
+        /** The break day of each break; calendar dates in [zone] unless a night shift says otherwise. */
+        dayOf: (Instant) -> LocalDate = { it.atZone(zone).toLocalDate() },
     ): Streak {
         val typesByDate: Map<LocalDate, Set<BreakType>> = done
-            .groupBy(keySelector = { it.at.atZone(zone).toLocalDate() }, valueTransform = { it.type })
+            .groupBy(keySelector = { dayOf(it.at) }, valueTransform = { it.type })
             .mapValues { it.value.toSet() }
         val todayIsWorkDay = isWorkDay(today)
         val todayDistinct = typesByDate[today]?.size ?: 0

@@ -28,6 +28,12 @@ data class WorkSchedule(
 
     val isOvernight: Boolean get() = endMinute <= startMinute
 
+    /**
+     * The shift really runs past midnight (22:00–06:00). Unlike [isOvernight], a shift that ends
+     * exactly at midnight (end 0 or 1440) doesn't: it stays within one calendar day.
+     */
+    val crossesMidnight: Boolean get() = endMinute in 1 until startMinute
+
     /** The session that starts on [date], or null if [date] is not a work day. */
     fun sessionStartingOn(date: LocalDate, zone: ZoneId): WorkSession? {
         if (date.dayOfWeek !in days) return null

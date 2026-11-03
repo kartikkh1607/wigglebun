@@ -6,6 +6,8 @@ import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.rewards.DayBar
 import com.kartikkhandelwal.wigglebun.domain.rewards.StreakCalculator
 import com.kartikkhandelwal.wigglebun.domain.rewards.WeeklyChart
+import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -44,8 +46,10 @@ fun toPetProfileUiState(
     zone: ZoneId,
     isWorkDay: (LocalDate) -> Boolean,
     goal: Int,
+    /** The break day of each break, as [today] is one (see [BreakDays]); calendar dates by default. */
+    dayOf: (Instant) -> LocalDate = { it.atZone(zone).toLocalDate() },
 ): PetProfileUiState {
-    val streak = StreakCalculator.compute(done, zone, today, isWorkDay, goal)
+    val streak = StreakCalculator.compute(done, zone, today, isWorkDay, goal, dayOf)
     return PetProfileUiState(
         pet = pet,
         mood = mood,
@@ -57,6 +61,6 @@ fun toPetProfileUiState(
             todayIsWorkDay = streak.todayIsWorkDay,
         ),
         totalBreaks = done.size,
-        week = WeeklyChart.lastSevenDays(done, today, zone),
+        week = WeeklyChart.lastSevenDays(done, today, zone, dayOf),
     )
 }
