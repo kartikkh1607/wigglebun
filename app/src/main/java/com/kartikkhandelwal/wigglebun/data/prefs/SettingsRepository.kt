@@ -9,6 +9,9 @@ import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.Outfit
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
+import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundary
+import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundaryHistory
 import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalHistory
 import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
@@ -79,13 +82,40 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[PrefsKeys.OnboardingDone] = true }
     }
 
-    /** Changing the work days takes effect today and is recorded in [workDayHistory]. */
+    /** When break days have turned (midnight, or a night shift's start), see [BreakDays]. */
+    val dayBoundaryHistory: Flow<DayBoundaryHistory> = prefs.map { it.toDayBoundaryHistory() }.distinctUntilChanged()
+
+    /** Today's break days, in the clock's zone right now. */
+    suspend fun breakDays(): BreakDays = BreakDays(dayBoundaryHistory.first(), clock.zone)
+
+    /**
+     * Changing the work days takes effect today (the break day in progress) and is recorded in
+     * [workDayHistory]. Hours that start or stop crossing midnight move the day boundary, which is
+     * recorded in [dayBoundaryHistory], so breaks already done keep their day.
+     */
     suspend fun setSchedule(schedule: WorkSchedule) {
-        val today = today()
+        val now = clock.instant()
+        val zone = clock.zone
         dataStore.edit {
-            val history = it.toWorkDayHistory().withChange(schedule.days, today)
+            val boundaries = it.toDayBoundaryHistory()
+            val today = BreakDays(boundaries, zone).dayOf(now)
+            it.writeWorkDayHistory(it.toWorkDayHistory().withChange(schedule.days, today))
             it.writeSchedule(schedule)
-            it.writeWorkDayHistory(history)
+            val moved = boundaries.withChange(DayBoundary.of(schedule), now)
+            if (moved != boundaries) it.writeDayBoundaryHistory(moved)
+        }
+    }
+
+    /**
+     * Run on every app start. Hours set before break days followed night shifts (or restored from
+     * a backup without the history) start following them now, without renaming today.
+     */
+    suspend fun adoptDayBoundary() {
+        val now = clock.instant()
+        dataStore.edit {
+            val boundaries = it.toDayBoundaryHistory()
+            val adopted = boundaries.withChange(DayBoundary.of(it.toSittingSettings().schedule), now)
+            if (adopted != boundaries) it.writeDayBoundaryHistory(adopted)
         }
     }
 
@@ -112,9 +142,12 @@ class SettingsRepository @Inject constructor(
      * sees it and never re-judges an earlier day.
      */
     suspend fun adoptDailyGoal(): DailyGoalHistory {
-        val today = today()
+        val now = clock.instant()
+        val zone = clock.zone
         var history = DailyGoalHistory()
         dataStore.edit {
+            // "Today" is the break day in progress, so a night shift's day isn't split at midnight.
+            val today = BreakDays(it.toDayBoundaryHistory(), zone).dayOf(now)
             history = it.toDailyGoalHistory()
             val adopted = history.withChange(RewardRules.DAILY_GOAL, today)
             if (adopted != history) {
@@ -124,8 +157,6 @@ class SettingsRepository @Inject constructor(
         }
         return history
     }
-
-    private fun today() = clock.instant().atZone(clock.zone).toLocalDate()
 
     suspend fun setOutfit(pet: PetId, outfit: Outfit) {
         dataStore.edit { it[PrefsKeys.Worn(pet)] = outfit.items.mapTo(mutableSetOf()) { item -> item.key } }

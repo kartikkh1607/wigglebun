@@ -38,6 +38,7 @@ import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
@@ -81,12 +82,16 @@ class HomeViewModel @Inject constructor(
     private val focused = MutableStateFlow<BreakType?>(null)
     private val status = sitRepository.status.filterNotNull()
 
-    /** Today's BreakLog, re-queried when the local date changes. */
+    /**
+     * Today's BreakLog, re-queried when the break day changes: at midnight, or at the shift start
+     * when work hours cross midnight (see [BreakDays]), and when a change of hours moves it.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val logsToday = status
-        .map { it.now.atZone(clock.zone).toLocalDate() }
+    private val logsToday = combine(status, settingsRepository.dayBoundaryHistory) { st, history ->
+        history to BreakDays(history, clock.zone).dayOf(st.now)
+    }
         .distinctUntilChanged()
-        .flatMapLatest { breakRepository.observeDay(it, clock.zone) }
+        .flatMapLatest { (history, day) -> breakRepository.observeDay(BreakDays(history, clock.zone).span(day)) }
 
     private data class Profile(val settings: SittingSettings, val pet: ActivePet, val sparks: Int, val breaks: List<BreakType>)
 
@@ -260,7 +265,7 @@ fun HomeScreen(
             }
         }
         item(key = "setup") { setupPrompt() }
-        item(key = "header") { BreaksHeader(state.doneCount, state.totalCount) }
+        item(key = "header") { BreaksHeader(state.doneCount, state.totalCount, lastShift = state.lastShift) }
         itemsIndexed(state.breaks, key = { _, card -> card.type }) { index, card ->
             BreakCard(
                 card = card,
@@ -326,6 +331,13 @@ internal object HomePreviewStates {
     )
     val AllDone = state(Mood.HAPPY, 0.9f, PillState.Sitting(5, 5 / 45f, MoodChip.GREAT), done = BreakType.entries.toSet())
 
+    /** 6 pm after a 22:00–06:00 shift: the list is last night's breaks, so it says "Last shift". */
+    val AsleepAfterNightShift = state(
+        Mood.SLEEPING,
+        1f,
+        PillState.Asleep(LocalDateTime.of(2026, 10, 26, 22, 0)),
+    ).copy(workStartMinute = 22 * 60, workEndMinute = 6 * 60, lastShift = true)
+
     /** Just after Done on the 2-min walk: timer back to 0, card green, pet celebrating. */
     val Celebrate = state(
         Mood.CELEBRATE,
@@ -387,6 +399,12 @@ private fun HomeOnWalkPreview() {
 @Composable
 private fun HomeAsleepPreview() {
     WigglebunTheme { HomeScreen(HomePreviewStates.Asleep) }
+}
+
+@Preview(widthDp = 390, heightDp = 1100)
+@Composable
+private fun HomeAsleepAfterNightShiftPreview() {
+    WigglebunTheme { HomeScreen(HomePreviewStates.AsleepAfterNightShift) }
 }
 
 @Preview(widthDp = 390, heightDp = 844)

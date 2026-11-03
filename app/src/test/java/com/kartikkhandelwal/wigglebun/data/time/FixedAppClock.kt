@@ -6,10 +6,10 @@ import java.time.ZoneId
 /**
  * An [AppClock] stopped at noon on a Monday, for tests that sit for a while before "now". Real
  * time would make them fail just after midnight, when a work day that ends at midnight has only
- * just started and the sit timer can't be older than that.
+ * just started and the sit timer can't be older than that. A test moves it by setting [now].
  */
 internal class FixedAppClock(
-    private val now: Instant = NOON,
+    @Volatile var now: Instant = NOON,
     private val fixedZone: ZoneId = ZONE,
 ) : AppClock() {
     override fun realMillis(): Long = now.toEpochMilli()

@@ -6,11 +6,12 @@ import com.kartikkhandelwal.wigglebun.data.db.DoneBreakRow
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.DoneBreak
+import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
+import com.kartikkhandelwal.wigglebun.domain.sitting.DaySpan
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,9 +35,10 @@ class BreakRepository @Inject constructor(
 
     private fun DoneBreakRow.toDoneBreak() = DoneBreak(type, Instant.ofEpochMilli(completedAt))
 
-    /** Everything logged on [date] in [zone] (local midnight to midnight, DST-safe). */
-    fun observeDay(date: LocalDate, zone: ZoneId): Flow<List<BreakLogEntity>> = dao.observeBetween(
-        date.atStartOfDay(zone).toInstant().toEpochMilli(),
-        date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
-    )
+    /**
+     * Everything logged during one break day (see [BreakDays.span]): midnight to midnight, or
+     * shift start to shift start when work hours cross midnight. Nothing for a skipped day.
+     */
+    fun observeDay(span: DaySpan?): Flow<List<BreakLogEntity>> =
+        if (span == null) flowOf(emptyList()) else dao.observeBetween(span.start.toEpochMilli(), span.end.toEpochMilli())
 }

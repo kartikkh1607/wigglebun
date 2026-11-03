@@ -11,6 +11,9 @@ import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.MovementActivity
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.model.ResetReason
+import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundary
+import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundaryChange
+import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundaryHistory
 import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoal
 import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalChange
 import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalHistory
@@ -36,6 +39,8 @@ internal object PrefsKeys {
     fun Worn(pet: PetId) = stringSetPreferencesKey("worn_${pet.key}")
     /** "2026-10-27=MONDAY,TUESDAY;…" (see [writeWorkDayHistory]). */
     val WorkDayHistory = stringPreferencesKey("work_day_history")
+    /** "1761584400000=1320;…": epoch millis = minute of day (see [writeDayBoundaryHistory]). */
+    val DayBoundaryHistory = stringPreferencesKey("day_boundary_history")
     /** [BreakType] names switched on (CLAUDE.md §5.3). Missing = all of them. */
     val EnabledBreaks = stringSetPreferencesKey("enabled_breaks")
     /** "2026-11-02=breaks:3;…" (see [writeDailyGoalHistory]). */
@@ -98,6 +103,24 @@ internal fun MutablePreferences.writeWorkDayHistory(history: WorkDayHistory) {
     }
     this[PrefsKeys.WorkDayHistory] = history.changes.joinToString(HISTORY_SEPARATOR) { change ->
         change.from.toString() + HISTORY_ASSIGN + change.days.sorted().joinToString(HISTORY_DAY_SEPARATOR) { it.name }
+    }
+}
+
+/** Bad entries are skipped; nothing stored means midnight, always. */
+internal fun Preferences.toDayBoundaryHistory(): DayBoundaryHistory = DayBoundaryHistory(
+    this[PrefsKeys.DayBoundaryHistory].orEmpty()
+        .split(HISTORY_SEPARATOR)
+        .mapNotNull { entry ->
+            val at = entry.substringBefore(HISTORY_ASSIGN, missingDelimiterValue = "").toLongOrNull()
+            val minute = entry.substringAfter(HISTORY_ASSIGN).toIntOrNull()
+                ?.takeIf { it in 0 until WorkSchedule.MINUTES_PER_DAY }
+            if (at == null || minute == null) null else DayBoundaryChange(Instant.ofEpochMilli(at), DayBoundary(minute))
+        },
+)
+
+internal fun MutablePreferences.writeDayBoundaryHistory(history: DayBoundaryHistory) {
+    this[PrefsKeys.DayBoundaryHistory] = history.changes.joinToString(HISTORY_SEPARATOR) { change ->
+        "${change.at.toEpochMilli()}$HISTORY_ASSIGN${change.boundary.minuteOfDay}"
     }
 }
 

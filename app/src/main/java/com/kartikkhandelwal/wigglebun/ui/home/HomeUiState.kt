@@ -53,6 +53,11 @@ data class HomeUiState(
     val reminderDue: Boolean,
     val today: LocalDate,
     val focus: FocusUi?,
+    /**
+     * Night-shift hours and outside them: the list is the last shift's breaks (the break day runs
+     * on until the next shift starts), so it isn't called "today" at 6 pm (CLAUDE.md §5.4).
+     */
+    val lastShift: Boolean = false,
 ) {
     val doneCount: Int get() = breaks.count { it.doneToday }
     val totalCount: Int get() = breaks.size
@@ -111,6 +116,7 @@ fun toHomeUiState(
         focus = focused?.let {
             FocusUi(it, doneToday = it in done, canSnooze = reminderDue && status.snoozesLeft > 0)
         },
+        lastShift = settings.schedule.crossesMidnight && !status.isWorkTime,
     )
 }
 

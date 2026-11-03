@@ -349,7 +349,7 @@ private fun MoodChip.colors(): Pair<Color, Color> = when (this) {
 // ---------- Breaks list ----------
 
 @Composable
-fun BreaksHeader(doneCount: Int, totalCount: Int, modifier: Modifier = Modifier) {
+fun BreaksHeader(doneCount: Int, totalCount: Int, modifier: Modifier = Modifier, lastShift: Boolean = false) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -362,7 +362,7 @@ fun BreaksHeader(doneCount: Int, totalCount: Int, modifier: Modifier = Modifier)
         horizontalArrangement = Arrangement.spacedBy(H.CardGap),
     ) {
         Text(
-            stringResource(R.string.home_breaks_title),
+            stringResource(if (lastShift) R.string.home_breaks_title_last_shift else R.string.home_breaks_title),
             style = MaterialTheme.typography.titleLarge,
             color = Ink,
             modifier = Modifier.weight(1f).alignByBaseline(),

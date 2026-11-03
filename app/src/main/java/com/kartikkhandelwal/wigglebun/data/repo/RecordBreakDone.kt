@@ -40,7 +40,9 @@ class RecordBreakDone @Inject constructor(
 
         val at = clock.instant()
         val zone = clock.zone
-        val today = at.atZone(zone).toLocalDate()
+        // On a 22:00–06:00 shift, a break at 00:10 is still the evening's day: it doesn't pay again.
+        val days = settingsRepository.breakDays()
+        val today = days.dayOf(at)
         val earned = wallet.award(RewardRules.breakKey(today, type), type.defaultReward, SparkReason.BREAK, at)
 
         val history = settingsRepository.workDayHistory.first()
@@ -51,8 +53,10 @@ class RecordBreakDone @Inject constructor(
             done = breakRepository.doneBreaks(),
             zone = zone,
             today = today,
-            isWorkDay = history::isWorkDay,
+            // A date a change of hours skipped has no time, so it can't be a missed work day.
+            isWorkDay = { days.exists(it) && history.isWorkDay(it) },
             goalOn = goals::goalOn,
+            dayOf = days::dayOf,
         )
         val start = streak.startDate
         val bonuses = if (start == null) {
