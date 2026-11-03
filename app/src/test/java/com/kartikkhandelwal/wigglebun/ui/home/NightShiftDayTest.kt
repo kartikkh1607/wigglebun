@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -94,10 +95,11 @@ class NightShiftDayTest {
         try {
             collector.launch { home.state.collect {} } // WhileSubscribed: keep it hot
             waitUntil { home.state.value?.neckDone() == true }
+            assertFalse(home.state.value!!.lastShift) // on shift: "Breaks for today"
 
             clock.now = at("2026-10-31T21:59")
             Thread.sleep(TICK_MILLIS) // the status ticks every second
-            waitUntil { home.state.value?.neckDone() == true }
+            waitUntil { home.state.value?.let { it.neckDone() && it.lastShift } == true } // "Last shift"
 
             clock.now = at("2026-10-31T22:00")
             waitUntil { home.state.value?.neckDone() == false }

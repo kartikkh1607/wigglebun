@@ -99,6 +99,39 @@ class OvernightShiftTest {
         assertEquals(Mood.SLEEPING, after.mood)
     }
 
+    private fun homeAt(settings: SittingSettings) = toHomeUiState(
+        status = engine.status(sinceBeforeMidnight, settings),
+        settings = settings,
+        pet = ActivePet.Default,
+        sparks = 0,
+        logsToday = emptyList(),
+        focused = null,
+        zone = zone,
+    )
+
+    /**
+     * Outside 22:00–06:00 hours the list is the last shift's breaks (its day runs until 22:00), so
+     * it's headed "Last shift" rather than "Breaks for today". During the shift it is today's.
+     */
+    @Test
+    fun outsideTheShiftTheListIsTheLastShift() {
+        assertFalse(homeAt(nights).lastShift) // 00:10, on shift
+        clock.now = at(27, "18:00")
+        assertTrue(homeAt(nights).lastShift)
+        clock.now = at(27, "22:00")
+        assertFalse(homeAt(nights).lastShift)
+    }
+
+    /** Daytime hours: the list is today's, in hours or not. */
+    @Test
+    fun daytimeHoursAlwaysSayToday() {
+        val days = SittingSettings(schedule = WorkSchedule.Default)
+        clock.now = at(27, "20:00")
+        assertFalse(homeAt(days).lastShift)
+        clock.now = at(27, "07:00")
+        assertFalse(homeAt(days).lastShift)
+    }
+
     /** The next night starts fresh: yesterday's sit doesn't carry over. */
     @Test
     fun theNextShiftStartsFresh() {

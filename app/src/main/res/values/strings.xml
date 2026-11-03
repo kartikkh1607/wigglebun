@@ -77,6 +77,8 @@
     <string name="home_no_work_hours">No work hours set</string>
     <string name="home_take_break">Take a 2-min break</string>
     <string name="home_breaks_title">Breaks for today</string>
+    <!-- Home, outside night-shift hours: the list is the last shift's breaks, which run on until the next shift starts -->
+    <string name="home_breaks_title_last_shift">Last shift</string>
     <string name="home_breaks_done">%1$d of %2$d done</string>
     <string name="home_break_skipped">Skipped today</string>
     <string name="home_reward">+%1$d</string>

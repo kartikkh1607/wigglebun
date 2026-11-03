@@ -69,6 +69,9 @@ class HomeScreenshotTest {
 
     @Test fun asleep() = capture("asleep", home(HomePreviewStates.Asleep))
 
+    /** Outside 22:00–06:00 hours the list is the last shift's, and says so (CLAUDE.md §5.4). */
+    @Test fun asleepAfterNightShift() = capture("asleep_last_shift", home(HomePreviewStates.AsleepAfterNightShift))
+
     @Test fun celebrate() = capture("celebrate", home(HomePreviewStates.Celebrate))
 
     @Test fun focusDue() = capture("focus_due") { HomeWithFocusPreview(HomePreviewStates.FocusDue) }

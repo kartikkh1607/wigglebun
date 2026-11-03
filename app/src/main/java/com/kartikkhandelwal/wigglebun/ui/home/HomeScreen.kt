@@ -260,7 +260,7 @@ fun HomeScreen(
             }
         }
         item(key = "setup") { setupPrompt() }
-        item(key = "header") { BreaksHeader(state.doneCount, state.totalCount) }
+        item(key = "header") { BreaksHeader(state.doneCount, state.totalCount, lastShift = state.lastShift) }
         itemsIndexed(state.breaks, key = { _, card -> card.type }) { index, card ->
             BreakCard(
                 card = card,
@@ -326,6 +326,13 @@ internal object HomePreviewStates {
     )
     val AllDone = state(Mood.HAPPY, 0.9f, PillState.Sitting(5, 5 / 45f, MoodChip.GREAT), done = BreakType.entries.toSet())
 
+    /** 6 pm after a 22:00–06:00 shift: the list is last night's breaks, so it says "Last shift". */
+    val AsleepAfterNightShift = state(
+        Mood.SLEEPING,
+        1f,
+        PillState.Asleep(LocalDateTime.of(2026, 10, 26, 22, 0)),
+    ).copy(workStartMinute = 22 * 60, workEndMinute = 6 * 60, lastShift = true)
+
     /** Just after Done on the 2-min walk: timer back to 0, card green, pet celebrating. */
     val Celebrate = state(
         Mood.CELEBRATE,
@@ -387,6 +394,12 @@ private fun HomeOnWalkPreview() {
 @Composable
 private fun HomeAsleepPreview() {
     WigglebunTheme { HomeScreen(HomePreviewStates.Asleep) }
+}
+
+@Preview(widthDp = 390, heightDp = 1100)
+@Composable
+private fun HomeAsleepAfterNightShiftPreview() {
+    WigglebunTheme { HomeScreen(HomePreviewStates.AsleepAfterNightShift) }
 }
 
 @Preview(widthDp = 390, heightDp = 844)
