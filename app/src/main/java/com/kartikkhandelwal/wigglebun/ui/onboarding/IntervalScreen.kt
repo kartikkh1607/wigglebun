@@ -83,7 +83,6 @@ fun IntervalScreen(
         title = stringResource(R.string.interval_title),
         body = stringResource(R.string.interval_body),
         step = 4,
-        continueEnabled = true,
         onContinue = onContinue,
         onSkip = onSkip,
         modifier = modifier,

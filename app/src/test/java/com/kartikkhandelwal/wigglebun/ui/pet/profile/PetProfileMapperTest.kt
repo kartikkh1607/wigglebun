@@ -4,6 +4,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.DoneBreak
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -29,38 +30,38 @@ class PetProfileMapperTest {
         today = today,
         zone = zone,
         isWorkDay = weekdays,
-        goal = 4,
+        goalOn = { RewardRules.DAILY_GOAL },
     )
 
-    private val fourTypes = arrayOf(BreakType.STAND_UP, BreakType.WALK, BreakType.NECK, BreakType.EYES)
+    private val threeTypes = arrayOf(BreakType.STAND_UP, BreakType.WALK, BreakType.NECK)
 
     @Test
     fun firstDayHasNoStreakNoBreaksAndAnEmptyWeek() {
         val state = map(emptyList())
-        assertEquals(StreakCardUi(days = 0, todayDone = 0, goal = 4, todayIsWorkDay = true), state.streak)
+        assertEquals(StreakCardUi(days = 0, todayDone = 0, goal = 3, todayIsWorkDay = true), state.streak)
         assertEquals(0, state.totalBreaks)
         assertEquals(7, state.week.size)
         assertEquals(0, state.weekTotal)
     }
 
-    /** "Today 2 of 4" counts distinct types; the streak ends at the last finished work day. */
+    /** "Today 2 of 3" counts completed breaks; the streak ends at the last finished work day. */
     @Test
     fun streakCardShowsTodaysProgress() {
-        val done = on(wednesday.minusDays(2), *fourTypes) + // Monday
-            on(wednesday.minusDays(1), *fourTypes) + // Tuesday
-            on(wednesday, BreakType.WALK, BreakType.WALK, BreakType.WATER) // a repeat: 2 distinct
+        val done = on(wednesday.minusDays(2), *threeTypes) + // Monday
+            on(wednesday.minusDays(1), *threeTypes) + // Tuesday
+            on(wednesday, BreakType.WALK, BreakType.WALK) // a repeat counts too
         val state = map(done)
         assertEquals(2, state.streak.days)
         assertEquals(2, state.streak.todayDone)
-        assertEquals(4, state.streak.goal)
+        assertEquals(3, state.streak.goal)
         assertFalse(state.streak.todayCounts)
-        assertEquals(11, state.totalBreaks) // repeats count in the total
-        assertEquals(3, state.week.last().total)
+        assertEquals(8, state.totalBreaks)
+        assertEquals(2, state.week.last().total)
     }
 
     @Test
     fun todayCountsOnceTheGoalIsMet() {
-        val done = on(wednesday.minusDays(1), *fourTypes) + on(wednesday, *fourTypes)
+        val done = on(wednesday.minusDays(1), *threeTypes) + on(wednesday, BreakType.WATER, BreakType.WATER, BreakType.EYES)
         val state = map(done)
         assertTrue(state.streak.todayCounts)
         assertEquals(2, state.streak.days)
@@ -71,9 +72,9 @@ class PetProfileMapperTest {
     fun aDayOffSaysSo() {
         val saturday = LocalDate.of(2026, 10, 31)
         val friday = saturday.minusDays(1)
-        val state = map(on(friday, *fourTypes), today = saturday)
+        val state = map(on(friday, *threeTypes), today = saturday)
         assertFalse(state.streak.todayIsWorkDay)
         assertEquals(1, state.streak.days)
-        assertEquals(4, state.totalBreaks)
+        assertEquals(3, state.totalBreaks)
     }
 }

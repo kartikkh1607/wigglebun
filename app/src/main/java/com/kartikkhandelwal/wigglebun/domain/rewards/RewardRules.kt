@@ -14,8 +14,11 @@ data class StreakBonus(val milestone: Milestone, val key: String)
  * they are an open decision (CLAUDE.md §15).
  */
 object RewardRules {
-    /** Distinct break types a work day needs to count for the streak. */
-    const val DAILY_STREAK_GOAL = 4
+    /**
+     * What a work day needs to count for the streak: 3 completed breaks, whichever types are on.
+     * A change here applies from the day an install first sees it (see [DailyGoalHistory]).
+     */
+    val DAILY_GOAL: DailyGoal = DailyGoal.Breaks(3)
 
     /**
      * Streak length in work days → bonus sparks. Each pays once per lifetime, so breaking a streak
@@ -31,9 +34,6 @@ object RewardRules {
     /** After the last milestone, every further [REPEAT_EVERY_DAYS] of the same streak pays [REPEAT_BONUS]. */
     const val REPEAT_EVERY_DAYS = 30
     const val REPEAT_BONUS = 250
-
-    /** Never more than the break types the user has switched on (toggles arrive in M9). */
-    fun dailyGoal(enabledTypeCount: Int): Int = minOf(DAILY_STREAK_GOAL, enabledTypeCount).coerceAtLeast(1)
 
     fun milestonesReached(streakDays: Int): List<Milestone> = MILESTONES.filter { it.days <= streakDays }
 

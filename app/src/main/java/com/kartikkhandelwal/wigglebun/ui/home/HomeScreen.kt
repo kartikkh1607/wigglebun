@@ -39,6 +39,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
+import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
@@ -92,15 +93,19 @@ class HomeViewModel @Inject constructor(
         .distinctUntilChanged()
         .flatMapLatest { (history, day) -> breakRepository.observeDay(BreakDays(history, clock.zone).span(day)) }
 
+    private data class Profile(val settings: SittingSettings, val pet: ActivePet, val sparks: Int, val breaks: List<BreakType>)
+
     private val profile = combine(
         settingsRepository.settings,
         petRepository.activePet,
         walletRepository.balance,
-    ) { settings, pet, sparks -> Triple(settings, pet, sparks) }
+        settingsRepository.enabledBreaks,
+        ::Profile,
+    )
 
     /** Null until the saved state has loaded (no default pet flashing on a cold start). */
-    val state: StateFlow<HomeUiState?> = combine(status, profile, logsToday, focused) { st, (settings, pet, sparks), logs, focus ->
-        toHomeUiState(st, settings, pet, sparks, logs, focus, clock.zone)
+    val state: StateFlow<HomeUiState?> = combine(status, profile, logsToday, focused) { st, (settings, pet, sparks, breaks), logs, focus ->
+        toHomeUiState(st, settings, pet, sparks, logs, focus, clock.zone, breaks)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun openBreak(type: BreakType) {

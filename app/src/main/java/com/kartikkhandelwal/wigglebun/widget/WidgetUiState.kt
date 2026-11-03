@@ -24,12 +24,17 @@ data class WidgetUiState(
     val petImage: Int get() = moodImage(pet, mood)
 
     companion object {
-        fun from(status: SitStatus, pet: PetId, petName: String): WidgetUiState = WidgetUiState(
+        fun from(
+            status: SitStatus,
+            pet: PetId,
+            petName: String,
+            enabledBreaks: List<BreakType> = BreakType.entries,
+        ): WidgetUiState = WidgetUiState(
             mood = widgetMood(status),
             minutes = if (status.isWorkTime) status.sitMinutes else null,
             pet = pet,
             petName = petName,
-            suggestedBreak = BreakType.suggestedFor(status.now.epochSecond / 60),
+            suggestedBreak = BreakType.suggestedFor(status.now.epochSecond / 60, enabledBreaks),
         )
 
         /**

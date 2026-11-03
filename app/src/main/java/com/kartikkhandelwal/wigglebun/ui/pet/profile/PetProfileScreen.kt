@@ -297,7 +297,6 @@ internal object PetProfilePreviewStates {
     private val zone = ZoneOffset.UTC
     private val today = LocalDate.of(2026, 10, 28) // Wednesday
     private val workDays = WorkSchedule.Default.days
-    private val goal = RewardRules.dailyGoal(BreakType.entries.size)
 
     private fun on(date: LocalDate, vararg types: BreakType): List<DoneBreak> = types.mapIndexed { i, type ->
         DoneBreak(type, Instant.from(date.atTime(10 + i, 0).atZone(zone)))
@@ -312,10 +311,10 @@ internal object PetProfilePreviewStates {
         today = today,
         zone = zone,
         isWorkDay = { it.dayOfWeek in workDays },
-        goal = goal,
+        goalOn = { RewardRules.DAILY_GOAL },
     )
 
-    /** Pip, a 4-day streak, 2 of 4 today, 128 breaks in all (105 of them in September). */
+    /** Pip, a 4-day streak, 2 of 3 today, 128 breaks in all (105 of them in September). */
     val BusyWeek = run {
         val older = (0 until 105).map { i ->
             DoneBreak(BreakType.entries[i % BreakType.entries.size], Instant.from(LocalDate.of(2026, 9, 1 + i / 5).atTime(9 + i % 5, 0).atZone(zone)))
@@ -334,7 +333,7 @@ internal object PetProfilePreviewStates {
             today = today,
             zone = zone,
             isWorkDay = { it.dayOfWeek in workDays },
-            goal = goal,
+            goalOn = { RewardRules.DAILY_GOAL },
         )
     }
 }

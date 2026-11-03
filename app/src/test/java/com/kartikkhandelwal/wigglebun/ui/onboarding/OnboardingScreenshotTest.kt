@@ -67,6 +67,9 @@ class OnboardingScreenshotTest {
     fun workHoursNoDays() = capture("onboarding_hours_no_days") { WorkHoursNoDaysPreview() }
 
     @Test
+    fun workHoursSameTimeWhileEditing() = capture("onboarding_hours_same_time_editing") { WorkHoursSameTimeEditingPreview() }
+
+    @Test
     fun workHoursOvernight() = capture("onboarding_hours_overnight") { WorkHoursOvernightPreview() }
 
     @Test

@@ -7,9 +7,7 @@ import com.kartikkhandelwal.wigglebun.data.repo.BreakRepository
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
-import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
-import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
 import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundaryHistory
 import com.kartikkhandelwal.wigglebun.ui.home.quantize
@@ -46,7 +44,8 @@ class PetProfileViewModel @Inject constructor(
         live,
         breakRepository.observeDoneBreaks(),
         settingsRepository.workDayHistory,
-    ) { pet, now, done, history ->
+        settingsRepository.dailyGoalHistory,
+    ) { pet, now, done, history, goals ->
         val days = BreakDays(now.boundaries, clock.zone)
         toPetProfileUiState(
             pet = pet,
@@ -56,8 +55,7 @@ class PetProfileViewModel @Inject constructor(
             today = now.today,
             zone = clock.zone,
             isWorkDay = { days.exists(it) && history.isWorkDay(it) },
-            // All types are on until the Settings toggles exist (M9), as in RecordBreakDone.
-            goal = RewardRules.dailyGoal(enabledTypeCount = BreakType.entries.size),
+            goalOn = goals::goalOn,
             dayOf = days::dayOf,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

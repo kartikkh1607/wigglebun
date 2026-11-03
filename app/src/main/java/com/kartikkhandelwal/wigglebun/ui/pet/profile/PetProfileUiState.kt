@@ -3,6 +3,7 @@ package com.kartikkhandelwal.wigglebun.ui.pet.profile
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.DoneBreak
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoal
 import com.kartikkhandelwal.wigglebun.domain.rewards.DayBar
 import com.kartikkhandelwal.wigglebun.domain.rewards.StreakCalculator
 import com.kartikkhandelwal.wigglebun.domain.rewards.WeeklyChart
@@ -14,7 +15,7 @@ import java.time.ZoneId
 /** The streak card: "3 days" and today's progress, or a day off. */
 data class StreakCardUi(
     val days: Int,
-    /** Distinct break types done today. */
+    /** Today's progress toward [goal]. */
     val todayDone: Int,
     val goal: Int,
     val todayIsWorkDay: Boolean,
@@ -45,18 +46,18 @@ fun toPetProfileUiState(
     today: LocalDate,
     zone: ZoneId,
     isWorkDay: (LocalDate) -> Boolean,
-    goal: Int,
+    goalOn: (LocalDate) -> DailyGoal,
     /** The break day of each break, as [today] is one (see [BreakDays]); calendar dates by default. */
     dayOf: (Instant) -> LocalDate = { it.atZone(zone).toLocalDate() },
 ): PetProfileUiState {
-    val streak = StreakCalculator.compute(done, zone, today, isWorkDay, goal, dayOf)
+    val streak = StreakCalculator.compute(done, zone, today, isWorkDay, goalOn, dayOf)
     return PetProfileUiState(
         pet = pet,
         mood = mood,
         energy = energy,
         streak = StreakCardUi(
             days = streak.days,
-            todayDone = streak.todayDistinct,
+            todayDone = streak.todayDone,
             goal = streak.goal,
             todayIsWorkDay = streak.todayIsWorkDay,
         ),

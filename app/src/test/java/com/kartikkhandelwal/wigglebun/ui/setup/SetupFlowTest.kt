@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.kartikkhandelwal.wigglebun.ui.settings.SettingsActions
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsPreviewStates
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsScreen
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
@@ -35,7 +36,7 @@ class SetupFlowTest {
             CompositionLocalProvider(LocalInspectionMode provides true) {
                 WigglebunTheme {
                     SetupCardsSheetHost(SettingsPreviewStates.AllOff, perform = { performed += it }) { open ->
-                        SettingsScreen(SettingsPreviewStates.AllOff, open)
+                        SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.AllOff, SettingsActions(onOpenSetup = open))
                     }
                 }
             }
@@ -59,7 +60,7 @@ class SetupFlowTest {
     fun cardsThatAreOnDropTheWordEnable() {
         composeRule.setContent {
             CompositionLocalProvider(LocalInspectionMode provides true) {
-                WigglebunTheme { SettingsScreen(SettingsPreviewStates.Mixed, {}) }
+                WigglebunTheme { SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.Mixed, SettingsActions()) }
             }
         }
         composeRule.onNodeWithText("Notifications").assertIsDisplayed()

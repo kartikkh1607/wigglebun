@@ -116,7 +116,7 @@ class NightShiftDayTest {
         doneAt("2026-10-31T00:10", BreakType.WALK)
         doneAt("2026-10-31T01:00", BreakType.EYES)
         val last = doneAt("2026-10-31T03:00", BreakType.WATER)
-        assertEquals(4, last.streak.todayDistinct)
+        assertEquals(4, last.streak.todayDone)
         assertTrue(last.streak.todayCounts)
         assertEquals(1, last.streak.days)
         assertEquals(LocalDate.of(2026, 10, 30), last.streak.startDate)

@@ -7,10 +7,13 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.Outfit
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
 import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundary
 import com.kartikkhandelwal.wigglebun.domain.sitting.DayBoundaryHistory
+import com.kartikkhandelwal.wigglebun.domain.rewards.DailyGoalHistory
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkDayHistory
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
@@ -55,6 +58,12 @@ class SettingsRepository @Inject constructor(
 
     /** Null until [decideOnboarding] has run (CLAUDE.md §6.2); the app shows nothing until then. */
     val onboardingDone: Flow<Boolean?> = prefs.map { it[PrefsKeys.OnboardingDone] }.distinctUntilChanged()
+
+    /** The break types switched on, in display order; never empty (CLAUDE.md §5.3). */
+    val enabledBreaks: Flow<List<BreakType>> = prefs.map { it.toEnabledBreaks() }.distinctUntilChanged()
+
+    /** The streak's goal over time, so past days keep the goal they had (see [adoptDailyGoal]). */
+    val dailyGoalHistory: Flow<DailyGoalHistory> = prefs.map { it.toDailyGoalHistory() }.distinctUntilChanged()
 
     suspend fun current(): SittingSettings = settings.first()
 
@@ -108,6 +117,45 @@ class SettingsRepository @Inject constructor(
             val adopted = boundaries.withChange(DayBoundary.of(it.toSittingSettings().schedule), now)
             if (adopted != boundaries) it.writeDayBoundaryHistory(adopted)
         }
+    }
+
+    /**
+     * Switches a break type on or off. Refuses (returns false) to switch off the last one. The
+     * streak's goal doesn't depend on which types are on (see [RewardRules.DAILY_GOAL]).
+     */
+    suspend fun setBreakEnabled(type: BreakType, enabled: Boolean): Boolean {
+        var changed = false
+        dataStore.edit {
+            val current = it.toEnabledBreaks()
+            val next = if (enabled) current + type else current - type
+            if (next.isEmpty()) return@edit
+            changed = true
+            it[PrefsKeys.EnabledBreaks] = next.map { break_ -> break_.name }.toSet()
+        }
+        return changed
+    }
+
+    /**
+     * Makes [RewardRules.DAILY_GOAL] the goal from today on, if the history doesn't say so yet, and
+     * returns the history. Run on every app start and before paying a streak bonus, so a new rule
+     * (like the move from 4 different types to 3 breaks) applies from the day an install first
+     * sees it and never re-judges an earlier day.
+     */
+    suspend fun adoptDailyGoal(): DailyGoalHistory {
+        val now = clock.instant()
+        val zone = clock.zone
+        var history = DailyGoalHistory()
+        dataStore.edit {
+            // "Today" is the break day in progress, so a night shift's day isn't split at midnight.
+            val today = BreakDays(it.toDayBoundaryHistory(), zone).dayOf(now)
+            history = it.toDailyGoalHistory()
+            val adopted = history.withChange(RewardRules.DAILY_GOAL, today)
+            if (adopted != history) {
+                it.writeDailyGoalHistory(adopted)
+                history = adopted
+            }
+        }
+        return history
     }
 
     suspend fun setOutfit(pet: PetId, outfit: Outfit) {
