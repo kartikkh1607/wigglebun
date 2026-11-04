@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="96" height="96">
+  <!-- Drink water: a tumbler with a straw and a drop. -->
+  <path d="M27.5 14 L32 4 H38.5" fill="none" stroke="#CF6890" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10 14 H38 L35 43 C34.8 45.3 33 47 30.7 47 H17.3 C15 47 13.2 45.3 13 43 Z" fill="#E683A7"/>
+  <path d="M10 12 H38 L35 41 C34.8 43.3 33 45 30.7 45 H17.3 C15 45 13.2 43.3 13 41 Z" fill="#F4A3C0"/>
+  <rect x="8.5" y="9.5" width="31" height="6" rx="3" fill="#E683A7"/>
+  <rect x="14.6" y="19" width="2.8" height="13" rx="1.4" fill="#FFFFFF" fill-opacity="0.65" transform="rotate(-6 16 25)"/>
+  <path d="M25 22 C25 22 19.8 28 19.8 31.6 C19.8 34.5 22.1 36.8 25 36.8 C27.9 36.8 30.2 34.5 30.2 31.6 C30.2 28 25 22 25 22 Z" fill="#FFFFFF"/>
+</svg>
