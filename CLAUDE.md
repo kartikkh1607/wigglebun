@@ -126,7 +126,7 @@ Energy level is continuous: `energy = clamp(1 - sitMinutes / (interval * 1.2), 0
 
 ### 5.3 Break types (user can toggle which appear on Home)
 
-Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eyes rest (20-20-20) · Drink water. Each has a colour, a duration, a coin reward (default 5) and 4–6 simple step illustrations.
+Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eyes rest (20-20-20) · Drink water. Each has a colour, a duration, a coin reward (default 5) and simple step illustrations: 2–4 steps in v1.0 (`ui/breaksession/BreakRoutines.kt`; Drink water has no prop art and Eyes rest only moves the eyes), 4–6 each in v1.1.
 
 ### 5.4 Economy
 
@@ -149,7 +149,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 - Model: **hard paywall + free trial.** The app's core loop requires an active trial or subscription.
 - Paywall appears in the **first session, right after one value moment** (pet wakes up, user names it, does the first 1-minute stretch, pet celebrates). Most trial starts happen on install day, so this first paywall is the most important screen in the app.
-- Products: yearly subscription with a **7-day free trial** (default, highlighted), monthly subscription, lifetime one-time. Prices decided in Play Console. The trial length lives in code in one place, `billing/Trial.kt` (`FREE_TRIAL_DAYS`); the Play Console offer's free phase must match it.
+- Products: yearly subscription with a **7-day free trial** (default, highlighted), monthly subscription, lifetime one-time. Prices (USD, set in Play Console, which converts them for other countries): yearly **$29.99** after the trial, monthly **$4.99**, lifetime **$59.99**. The app always shows the store's localised price, never a hard-coded one. The trial length lives in code in one place, `billing/Trial.kt` (`FREE_TRIAL_DAYS`); the Play Console offer's free phase must match it.
 - In Play Console, make sure the yearly base plan has an offer with a **free phase**; in code, check the offer actually has a free trial phase before showing "Start free trial" text.
 - **Trial-end reminder:** Android does not send one. Schedule our own local notification 2 days before trial ends (`Trial.END_REMINDER_DAYS_BEFORE`): 5 days after the trial starts, i.e. on day 6 counting install day as day 1 (the trial ends at the same time of day on day 8) ("Your free trial ends on …"). Honest and reduces refunds/1-star reviews.
 - Paywall must show: price after trial, billing period, how to cancel (Play Store → Subscriptions), restore purchases, terms + privacy links.
@@ -182,6 +182,8 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 8. **Paywall** – pet illustration, 3 benefits, plan selector (yearly highlighted), "Start free trial" CTA, price after trial in plain text, how to cancel, restore purchases, terms/privacy links.
 
 **Not in v1:** friends, seasons/events, outfits beyond the 4 v1 accessories, furniture, adventure map, AI coach, iOS.
+
+**Moved to v1.1 (decided 2026-11-04, to ship sooner):** richer break routines (4–6 steps for every type, cup art for Drink water, a body pose for Eyes rest), haptics and sounds on Done and the celebration, 2.0× font screenshots for Break session, Collection, Onboarding and Pet profile (v1.0 fixes only what the accessibility pass finds), a custom splash or the core-splashscreen library. Also later: the 4 post-launch accessories, localisation, the large widget, a store video, an in-app review prompt.
 
 ---
 
@@ -327,6 +329,9 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 | M9 | Onboarding (wake-up, naming, settings) + just-in-time permission cards | Fresh install flows end to end |
 | M10 | RevenueCat + paywall + restore + trial-end reminder | Test purchases work with license testers; entitlement survives offline restart |
 | M11 | Polish, accessibility (TalkBack labels, contrast), privacy policy, store assets | Ready for closed testing |
+| M12 | Release candidate: the full phone checklist on a real phone and on an Android 8 emulator, license-tester purchase / restore / cancel / lapse, OEM battery check | Closed-test AAB uploaded |
+
+v1.0 build order (approved 2026-11-04): release foundations + cleanup → privacy policy + terms → M10a RevenueCat layer (only once the Play Console app and products exist) → M10b paywall → M10c gating → M10d trial-end reminder → M11 accessibility + large fonts → M11 store listing → M12.
 
 ---
 
@@ -334,7 +339,8 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 
 - ~~App name~~ Decided: Wigglebun (pending domain + trademark check by Kartik)
 - ~~Final colour palette and font~~ Decided: see section 11
-- Prices (~~trial length~~ decided: 7 days)
-- Which 3 pets ship in v1
-- Streak milestone amounts (3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks, once per lifetime, then +250 per further 30 days of one streak; amounts are placeholders in `domain/rewards/RewardRules.kt`)
+- ~~Prices~~ Decided: yearly $29.99 with a 7-day free trial, monthly $4.99, lifetime $59.99 (see §5.5)
+- ~~Which 3 pets ship in v1~~ Decided: Pip, Toast, Nimbus
+- ~~Streak milestone amounts~~ Decided, final for v1.0: 3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks, once per lifetime, then +250 per further 30 days of one streak (`domain/rewards/RewardRules.kt`)
+- Paywall benefit lines: Claude proposes 3 that match what the app does; Kartik approves before they're used (the mockup's lines overpromise)
 - ~~Pet prices~~ Decided: Pip 75 / Toast 150 / Nimbus 300 sparks (`domain/rewards/PetPrices.kt`)

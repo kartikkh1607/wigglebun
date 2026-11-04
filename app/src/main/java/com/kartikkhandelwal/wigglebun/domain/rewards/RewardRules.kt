@@ -9,10 +9,7 @@ data class Milestone(val days: Int, val bonus: Int)
 /** A bonus a streak has earned and the ledger key that pays it at most once. */
 data class StreakBonus(val milestone: Milestone, val key: String)
 
-/**
- * Reward numbers and ledger keys (CLAUDE.md §5.4). The milestone amounts are placeholders:
- * they are an open decision (CLAUDE.md §15).
- */
+/** Reward numbers and ledger keys (CLAUDE.md §5.4). */
 object RewardRules {
     /**
      * What a work day needs to count for the streak: 3 completed breaks, whichever types are on.
