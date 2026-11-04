@@ -1,3 +1,5 @@
+import com.android.build.api.variant.HostTestBuilder
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -20,10 +22,29 @@ android {
         applicationId = "com.kartikkhandelwal.wigglebun"
         minSdk = 26
         targetSdk = 36
+        // Play rejects an upload whose versionCode it has seen before, on any track. Add 1 for every
+        // AAB uploaded (closed test or production); never reuse or lower it. versionName is what
+        // people see; closed-test builds add "-closedtest" to it (below).
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Closing the paywall leaves the app locked (CLAUDE.md §5.5). Only the closedTest build
+        // turns this off; ReleaseBuildTest fails CI if release ever does.
+        buildConfigField("boolean", "PAYWALL_LOCKS", "true")
+    }
+
+    // The upload key never goes into git. Put these four in ~/.gradle/gradle.properties (or pass
+    // -P...); without them the release builds come out unsigned, which is what CI builds.
+    val uploadStoreFile = providers.gradleProperty("WIGGLEBUN_UPLOAD_STORE_FILE").orNull
+    val uploadKey = uploadStoreFile?.let {
+        signingConfigs.create("upload") {
+            storeFile = file(it)
+            storePassword = providers.gradleProperty("WIGGLEBUN_UPLOAD_STORE_PASSWORD").get()
+            keyAlias = providers.gradleProperty("WIGGLEBUN_UPLOAD_KEY_ALIAS").get()
+            keyPassword = providers.gradleProperty("WIGGLEBUN_UPLOAD_KEY_PASSWORD").get()
+        }
     }
 
     buildTypes {
@@ -32,6 +53,16 @@ android {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
+            signingConfig = uploadKey
+        }
+        // The Play closed test (CLAUDE.md §12): the release build, except that closing the paywall
+        // doesn't lock, because Play's test subscriptions lapse within hours. Never promote a
+        // closedTest release to production; upload a release build instead.
+        create("closedTest") {
+            initWith(getByName("release"))
+            versionNameSuffix = "-closedtest"
+            matchingFallbacks += "release"
+            buildConfigField("boolean", "PAYWALL_LOCKS", "false")
         }
     }
     compileOptions {
@@ -58,6 +89,14 @@ android {
                 it.systemProperty("robolectric.dependency.repo.url", "https://maven-central.storage-download.googleapis.com/maven2/")
             }
         }
+    }
+}
+
+androidComponents {
+    // AGP 9 only makes unit-test tasks for debug. Release needs them too, for ReleaseBuildTest
+    // (src/testRelease), which CI runs on its own: testReleaseUnitTest --tests '*.ReleaseBuildTest'.
+    beforeVariants(selector().withBuildType("release")) { variant ->
+        variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = true
     }
 }
 

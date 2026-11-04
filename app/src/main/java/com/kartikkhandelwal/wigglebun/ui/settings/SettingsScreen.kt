@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
@@ -82,6 +83,9 @@ private val S = Dimens.Settings
  * a real one before release.
  */
 private val PRIVACY_POLICY_URL: String? = null
+
+/** What previews and screenshot tests show, so a version bump doesn't change reference images. */
+private const val PREVIEW_VERSION = "1.0.0"
 
 class SettingsActions(
     val onOpenSetup: (SetupCard) -> Unit = {},
@@ -256,7 +260,10 @@ fun SettingsScreen(
         ) {
             Text(stringResource(R.string.settings_made_in), style = MaterialTheme.typography.bodyMedium, color = InkMuted)
             Text(
-                stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+                stringResource(
+                    R.string.settings_version,
+                    if (LocalInspectionMode.current) PREVIEW_VERSION else BuildConfig.VERSION_NAME,
+                ),
                 style = MaterialTheme.typography.labelMedium,
                 color = InkMuted,
             )

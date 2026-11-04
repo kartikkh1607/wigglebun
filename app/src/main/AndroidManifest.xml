@@ -2,8 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Declared now, requested just-in-time in M9. Until granted, reminders no-op (Android 13+). -->
+    <!-- Asked just-in-time from the Home / Settings cards. Until granted, reminders no-op (Android 13+). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Play Console only lets you create subscriptions and in-app products once a build that
+         declares this is on a track. The billing library (M10) declares it too. -->
+    <uses-permission android:name="com.android.vending.BILLING" />
     <!-- Re-arm the reminder alarm after a reboot. Normal permission, no prompt. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Movement detection (M4). API 29+: runtime permission for both the Activity Recognition

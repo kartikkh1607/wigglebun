@@ -1,4 +1,5 @@
-# Build, lint and screenshot-verify every PR and every push to main (CLAUDE.md §13).
+# Build, lint and screenshot-verify every PR and every push to main, then build release and check
+# that it locks the paywall (CLAUDE.md §13).
 # Reference images in app/src/test/screenshots are recorded and verified on this Linux runner only.
 name: Android
 
@@ -34,6 +35,12 @@ jobs:
 
       - name: Build, lint, unit + screenshot tests
         run: ./gradlew assembleDebug lintDebug verifyRoborazziDebug --stacktrace
+
+      # The production build: R8 must still produce a working release (unsigned here; the upload
+      # key never leaves Kartik's machine), the closed-test build must compile, and ReleaseBuildTest
+      # fails if release would let people close the paywall and keep using the app.
+      - name: Release build + production guard
+        run: ./gradlew assembleRelease compileClosedTestKotlin testReleaseUnitTest --tests 'com.kartikkhandelwal.wigglebun.ReleaseBuildTest' --stacktrace
 
       - name: Upload screenshot diffs
         if: failure()
