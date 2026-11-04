@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="96" height="96">
+  <!-- Work hours: starts -->
+  <path d="M24 7.5 V12.5 M10 14 L13.4 17.4 M38 14 L34.6 17.4 M4.5 27.5 H9 M43.5 27.5 H39" fill="none" stroke="#D08A24" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M11.5 34 A12.5 12.5 0 0 1 36.5 34 Z" fill="#E9A93A"/>
+  <path d="M11.5 32 A12.5 12.5 0 0 1 36.5 32 Z" fill="#FFC857"/>
+  <path d="M17 26.5 C18.3 24.2 20.4 22.6 23 22" fill="none" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="2.6" stroke-linecap="round"/>
+  <rect x="5" y="34" width="38" height="5" rx="2.5" fill="#2B2A3A"/>
+</svg>
