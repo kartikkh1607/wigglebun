@@ -17,3 +17,8 @@ local.properties
 /.idea/deploymentTargetSelector.xml
 /.idea/appInsightsSettings.xml
 /.idea/deviceManager.xml
+
+# Signing keys and their passwords never go into git (see app/build.gradle.kts).
+*.jks
+*.keystore
+keystore.properties
