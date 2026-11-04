@@ -180,7 +180,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
    - **Post-launch update:** 4 more accessories (150, 200, 250, 300), so a Normal user keeps something to buy for about 8 weeks after owning every pet.
 6. **Pet profile** (tab 3, tab label = pet's name) – name, streak card, total breaks, weekly bar chart.
 7. **Menu / Settings** – cards: "Add the widget", "Enable notifications", "Enable movement detection" (each opens the permission flow; once on they read "Widget", "Notifications", "Movement detection" and the chip shows the state), work hours, interval, break types toggles, Premium card ("Try 7 days free", from `Trial.FREE_TRIAL_DAYS`; arrives with M10), privacy policy (no URL yet, `PRIVACY_POLICY_URL` in `ui/settings/SettingsScreen.kt`), about ("Made with love in India"). Work hours are edited freely (18–18 on the way from 9–18 to 18–02 is fine); "Save work hours" shows while they differ from what's stored. With no work day ticked, Save is off and the reason shows by it at once. The same start and end is checked only on Save, which then refuses and shows the reason by the button. The interval and the break-type switches save straight away; the last break type can't be switched off.
-8. **Paywall** – pet illustration, 3 benefits, plan selector (yearly highlighted), "Start free trial" CTA, price after trial in plain text, how to cancel, restore purchases, terms/privacy links.
+8. **Paywall** – pet illustration, 3 benefits (approved copy, in this order: "Your pet gets tired as you sit and perks up when you move" · "Gentle nudges and 1–2 minute guided stretches" · "Earn sparks for breaks to adopt new pets and accessories"), plan selector (yearly highlighted), "Start free trial" CTA, price after trial in plain text, how to cancel, restore purchases, terms/privacy links.
 
 **Not in v1:** friends, seasons/events, outfits beyond the 4 v1 accessories, furniture, adventure map, AI coach, iOS.
 
@@ -345,5 +345,5 @@ v1.0 build order (approved 2026-11-04): release foundations + cleanup → privac
 - ~~Prices~~ Decided: yearly $29.99 with a 7-day free trial, monthly $4.99, lifetime $59.99 (see §5.5)
 - ~~Which 3 pets ship in v1~~ Decided: Pip, Toast, Nimbus
 - ~~Streak milestone amounts~~ Decided, final for v1.0: 3 / 7 / 14 / 30 days → 20 / 50 / 100 / 250 sparks, once per lifetime, then +250 per further 30 days of one streak (`domain/rewards/RewardRules.kt`)
-- Paywall benefit lines: Claude proposes 3 that match what the app does; Kartik approves before they're used (the mockup's lines overpromise)
+- ~~Paywall benefit lines~~ Decided: the 3 in §6.8 (the mockup's original lines overpromised: no calendar, no custom breaks, pets come from sparks)
 - ~~Pet prices~~ Decided: Pip 75 / Toast 150 / Nimbus 300 sparks (`domain/rewards/PetPrices.kt`)
