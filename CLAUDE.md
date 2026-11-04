@@ -155,12 +155,13 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 - Paywall must show: price after trial, billing period, how to cancel (Play Store → Subscriptions), restore purchases, terms + privacy links.
 - If the user closes the paywall: show a calm "locked" home with the sleeping pet and a single "Start free trial" button. No dark patterns, no fake timers.
 - Entitlement checks go through RevenueCat (`CustomerInfo`), cached for offline use.
+- **Closed test:** Play's test subscriptions lapse within hours (a 3-minute trial, then at most 6 renewals), so the `closedTest` build type shows the paywall and lets testers buy with test accounts, but closing it doesn't lock (`BuildConfig.PAYWALL_LOCKS = false`). `release` (production) always locks: `ReleaseBuildTest` (`src/testRelease`) fails CI otherwise. Never promote a closedTest release to production in Play Console; upload a release build.
 
 ---
 
 ## 6. Screens for v1 (build in this order)
 
-1. **Splash** – logo only.
+1. **Splash** – logo only: Android 12+'s system splash, the launcher icon on cream (`res/values-v31/themes.xml`). Android 8–11 show the cream window background. No splash library.
 2. **Onboarding**
    - First-launch gate (`ui/onboarding/AppGate.kt`): `onboarding_done` in the backed-up settings. It is decided once, on the first app start after it exists: a sit timer already saved means an install from before onboarding, which never sees it. A new install keeps seeing it until it is finished, even if the app is killed halfway.
    - Wake-up moment: pet asleep as a round blob → user taps → pet stretches awake and introduces itself, asks the user's name, user names the pet. The name field allows at most `MAX_PET_NAME_LENGTH` (12, `domain/model/Pet.kt`) characters.
@@ -289,6 +290,8 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 ## 12. Play Store readiness checklist
 
 - [ ] Target SDK 36, Billing Library ≥ 8
+- [ ] Release signing: Play App Signing, with the upload key kept outside git. `app/build.gradle.kts` reads `WIGGLEBUN_UPLOAD_STORE_FILE`, `_STORE_PASSWORD`, `_KEY_ALIAS` and `_KEY_PASSWORD` from `~/.gradle/gradle.properties`; without them release builds are unsigned (as in CI). `./gradlew bundleRelease` makes the production AAB, `bundleClosedTest` the closed-test one
+- [ ] versionCode goes up by 1 for every AAB uploaded to Play, on any track; versionName is `1.0.0` (closed-test builds show `1.0.0-closedtest`)
 - [ ] Privacy policy page (host free on GitHub Pages or Vercel)
 - [ ] Data safety form: activity data processed on device only, not collected/shared
 - [ ] **Health apps declaration** (Play Console → Policy → App content). Every app must fill it; this app likely falls under "Activity and Fitness"
@@ -303,7 +306,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 2. After every change: `./gradlew assembleDebug` must pass; run unit tests for `domain/`; `./gradlew lintDebug` must pass (it catches APIs missing on older Android versions, which the Robolectric tests on API 36 cannot).
 3. For every UI change: add/update a `@Preview` and a Roborazzi screenshot test, render it, **look at the PNG yourself**, fix obvious issues, then show Kartik.
    After every UI change run `./gradlew verifyRoborazziDebug` so unintended changes to existing screens fail the build. When a change is intended, re-record (`recordRoborazziDebug`) and tell Kartik exactly which reference images changed (`git status app/src/test/screenshots`).
-   **CI is the source of truth** (`.github/workflows/android.yml`): every PR and every push to `main` runs `assembleDebug lintDebug verifyRoborazziDebug` on a Linux runner; on failure the screenshot diffs are uploaded as the `roborazzi-diffs` artifact. Reference images are recorded and verified on Linux only. Local Windows runs can show tiny font-rendering differences: don't re-record from Windows; record on Linux (CI image or a Linux machine) instead.
+   **CI is the source of truth** (`.github/workflows/android.yml`): every PR and every push to `main` runs `assembleDebug lintDebug verifyRoborazziDebug`, then `assembleRelease compileClosedTestKotlin` and `ReleaseBuildTest`, on a Linux runner; on failure the screenshot diffs are uploaded as the `roborazzi-diffs` artifact. Reference images are recorded and verified on Linux only. Local Windows runs can show tiny font-rendering differences: don't re-record from Windows; record on Linux (CI image or a Linux machine) instead.
 4. When Kartik attaches reference screenshots or mockups, match spacing, radius, hierarchy and motion feel; never copy another app's artwork or brand.
 5. Keep composables small and stateless; state lives in ViewModels.
 6. No hard-coded strings, colours or dimensions inside screens; use theme tokens.
