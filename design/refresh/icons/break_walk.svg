@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="96" height="96">
+  <!-- 2-min walk: a sneaker on the move. -->
+  <path d="M2.5 19.5 H8.5 M1.5 25.5 H8 M3.5 31.5 H8.5" fill="none" stroke="#3E9E78" stroke-width="3" stroke-linecap="round"/>
+  <path d="M12.5 33 V20 C12.5 15.5 15.2 12.5 19.5 12.5 H23.5 C24.5 17.5 28 20.8 32.5 21.8 L39 23.2 C43.5 24.2 46 27.4 46 31.5 V33 Z" fill="#7DD3B0"/>
+  <path d="M36.5 22.7 L39 23.2 C43.5 24.2 46 27.4 46 31.5 V33 H36.5 Z" fill="#5BBE96"/>
+  <rect x="15" y="15.5" width="2.8" height="9" rx="1.4" fill="#FFFFFF" fill-opacity="0.65"/>
+  <path d="M25.3 19.8 L22.6 23.4 M29.4 22.4 L26.7 26" fill="none" stroke="#2B2A3A" stroke-width="2.6" stroke-linecap="round"/>
+  <rect x="10.5" y="33" width="37" height="9" rx="4.5" fill="#BFE3D3"/>
+  <rect x="10.5" y="31" width="37" height="8.5" rx="4.25" fill="#FFFFFF"/>
+</svg>

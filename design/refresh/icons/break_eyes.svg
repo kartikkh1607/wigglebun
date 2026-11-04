@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="96" height="96">
+  <!-- Eyes rest: a resting eye, with a small z like a sleeping pet's. -->
+  <path d="M4 28 C11 17 37 17 44 28 C37 39 11 39 4 28 Z" fill="#A08AE4"/>
+  <path d="M4 26 C11 15 37 15 44 26 C37 37 11 37 4 26 Z" fill="#B9A3F0"/>
+  <path d="M12.5 21.2 C17 18.4 21.5 17.5 25.5 17.6" fill="none" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M9.5 25 C16.5 32.5 31.5 32.5 38.5 25" fill="none" stroke="#2B2A3A" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M14.6 30.4 L12.4 34.4 M24 32.4 V37 M33.4 30.4 L35.6 34.4" fill="none" stroke="#2B2A3A" stroke-width="3" stroke-linecap="round"/>
+  <path d="M35.5 4.5 H42 L35.5 11 H42" fill="none" stroke="#7E66C9" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

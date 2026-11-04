@@ -18,4 +18,5 @@ Everything the app needs visually. Vectors are the source of truth; PNGs are exp
 | `previews/*.png` | PNG renders of the SVGs above | Just for looking |
 | `mockups_source/*.dc.html` | HTML source of every mockup screen (Home tired/stiff, break card, break session, wake-up onboarding, paywall, collection, pet moods, tokens) | Layout reference — read as code |
 | `mockups/` | Put screenshots of the canvas here | Visual reference |
+| `refresh/` | Visual refresh: three colour directions for Home, Collection and Settings, the new filled break icons (`refresh/icons/*.svg`) and the recomposed desk scene (see `refresh/README.md`) | Mockups to pick from; not used by the app yet |
 | `reference/` | Original Gemini / AI Studio concept images | Inspiration only — do not ship these files |
