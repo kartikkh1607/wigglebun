@@ -65,7 +65,10 @@ class OnboardingViewModel @Inject constructor(private val settings: SettingsRepo
 
     private val _hoursProblem = MutableStateFlow<WorkHoursProblem?>(null)
 
-    /** Why the last Continue didn't save the hours; the next edit clears it. */
+    /**
+     * What the last Continue found (the same start and end); the next edit clears it. No work days
+     * needs no Continue: the screen turns Continue off and shows why ([WorkHoursDraft.shownProblem]).
+     */
     val hoursProblem: StateFlow<WorkHoursProblem?> = _hoursProblem.asStateFlow()
 
     private val _intervalMinutes = MutableStateFlow(SittingSettings.DEFAULT_INTERVAL_MINUTES)
@@ -99,19 +102,20 @@ class OnboardingViewModel @Inject constructor(private val settings: SettingsRepo
         }
     }
 
-    /** Edits are never checked on the way (18–18 between 9–18 and 18–02 is fine), as in Settings. */
+    /** The same start and end is never flagged on the way (18–18 between 9–18 and 18–02 is fine), as in Settings. */
     private fun editHours(change: (WorkHoursDraft) -> WorkHoursDraft) {
         _workHours.update(change)
         _hoursProblem.value = null
     }
 
     /**
-     * Continue: saves the hours and returns true, or returns false and says why (no work days, or
-     * the same start and end). Skipped steps never save: what's stored (the defaults on a new
-     * install) stays.
+     * Continue: saves the hours and returns true, or returns false and says why (the same start
+     * and end). With no work days Continue is off, so nothing happens. Skipped steps never save:
+     * what's stored (the defaults on a new install) stays.
      */
     fun saveWorkHours(): Boolean {
         val draft = _workHours.value
+        if (!draft.canSave) return false
         _hoursProblem.value = draft.problem
         if (draft.problem != null) return false
         viewModelScope.launch { settings.setSchedule(draft.toSchedule()) }

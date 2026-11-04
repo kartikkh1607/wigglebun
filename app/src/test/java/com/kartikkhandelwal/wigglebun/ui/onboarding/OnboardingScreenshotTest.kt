@@ -63,8 +63,13 @@ class OnboardingScreenshotTest {
     @Test
     fun workHours() = capture("onboarding_hours") { WorkHoursPreview() }
 
+    /** No work days: Continue is off at once and the reason shows above it. */
     @Test
     fun workHoursNoDays() = capture("onboarding_hours_no_days") { WorkHoursNoDaysPreview() }
+
+    /** Continue found the same start and end: Continue stays on, the reason shows above it. */
+    @Test
+    fun workHoursSameTime() = capture("onboarding_hours_same_time") { WorkHoursSameTimePreview() }
 
     @Test
     fun workHoursSameTimeWhileEditing() = capture("onboarding_hours_same_time_editing") { WorkHoursSameTimeEditingPreview() }
