@@ -194,7 +194,8 @@ fun SettingsScreen(
             onClick = { actions.onPickTime(WorkTime.END) },
         )
         if (state.hoursChanged) {
-            // Checked only on Save, and the reason shows right by it.
+            // No work days shows at once and turns Save off; the same start and end only shows once
+            // Save has found it. Either way the reason sits right above the button.
             state.hoursProblem?.let { problem ->
                 Text(
                     stringResource(
@@ -212,6 +213,7 @@ fun SettingsScreen(
             ChunkyButton(
                 text = stringResource(R.string.settings_save_hours),
                 onClick = actions.onSaveHours,
+                enabled = state.canSaveHours,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -391,6 +393,19 @@ internal fun SettingsHoursEditingPreview() {
     val state = SettingsPreviewStates.Default.copy(
         hours = WorkHoursDraft.of(WorkSchedule.Default).copy(startMinute = 18 * 60),
         hoursChanged = true,
+    )
+    WigglebunTheme { SettingsScreen(state, SettingsPreviewStates.Mixed, SettingsActions()) }
+}
+
+/** Every work day switched off: Save is off at once, and the reason shows above it. */
+@Preview(widthDp = 390, heightDp = 1500)
+@Composable
+internal fun SettingsHoursNoDaysPreview() {
+    val hours = WorkHoursDraft.of(WorkSchedule.Default).copy(days = emptySet())
+    val state = SettingsPreviewStates.Default.copy(
+        hours = hours,
+        hoursChanged = true,
+        hoursProblem = hours.shownProblem(null),
     )
     WigglebunTheme { SettingsScreen(state, SettingsPreviewStates.Mixed, SettingsActions()) }
 }

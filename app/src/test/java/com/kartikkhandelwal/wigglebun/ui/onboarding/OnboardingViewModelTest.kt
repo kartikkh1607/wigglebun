@@ -120,20 +120,28 @@ class OnboardingViewModelTest {
         assertEquals(17 * 60, schedule.endMinute)
     }
 
-    /** Continue checks: nothing is saved, the reason is given, and the next edit clears it. */
+    /**
+     * Nothing impossible is ever saved. No work days turns Continue off at once (the draft says so,
+     * no Continue needed). The same start and end is found by Continue, and the next edit clears it.
+     */
     @Test
     fun anImpossibleScheduleIsNeverSaved() = runBlocking {
         loadedViewModel()
         DayOfWeek.entries.take(5).forEach(viewModel::onToggleDay)
-        assertNull(viewModel.hoursProblem.value) // not while editing
-        assertFalse(viewModel.saveWorkHours())
-        assertEquals(WorkHoursProblem.NO_DAYS, viewModel.hoursProblem.value)
+        val noDays = viewModel.workHours.value
+        assertFalse(noDays.canSave)
+        assertEquals(WorkHoursProblem.NO_DAYS, noDays.shownProblem(viewModel.hoursProblem.value))
+        assertFalse(viewModel.saveWorkHours()) // the button is off; even if called, nothing is saved
         viewModel.onToggleDay(DayOfWeek.MONDAY)
-        assertNull(viewModel.hoursProblem.value)
+        assertTrue(viewModel.workHours.value.canSave)
+        assertNull(viewModel.workHours.value.shownProblem(viewModel.hoursProblem.value))
 
         viewModel.onTimePicked(WorkTime.END, WorkSchedule.Default.startMinute)
+        assertNull(viewModel.hoursProblem.value) // not while editing
         assertFalse(viewModel.saveWorkHours())
         assertEquals(WorkHoursProblem.SAME_TIME, viewModel.hoursProblem.value)
+        viewModel.onTimePicked(WorkTime.END, WorkSchedule.Default.endMinute)
+        assertNull(viewModel.hoursProblem.value)
 
         viewModel.onIntervalPicked(60)
         viewModel.saveInterval() // something later to wait for

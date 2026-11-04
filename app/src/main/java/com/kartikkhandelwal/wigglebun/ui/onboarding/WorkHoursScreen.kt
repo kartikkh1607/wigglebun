@@ -102,8 +102,9 @@ fun WorkHoursScreenRoute(
 }
 
 /**
- * One question: when do you work? (CLAUDE.md §6.2). Times are picked in a bottom sheet. Nothing
- * is checked while editing; [problem] is why the last Continue didn't go through.
+ * One question: when do you work? (CLAUDE.md §6.2). Times are picked in a bottom sheet. No work
+ * days turns Continue off and says why at once; [problem] is what the last Continue found (the
+ * same start and end), which is never flagged while editing.
  */
 @Composable
 fun WorkHoursScreen(
@@ -122,7 +123,8 @@ fun WorkHoursScreen(
         onContinue = onContinue,
         onSkip = onSkip,
         modifier = modifier,
-        error = problem?.let {
+        continueEnabled = draft.canSave,
+        error = draft.shownProblem(problem)?.let {
             stringResource(
                 when (it) {
                     WorkHoursProblem.NO_DAYS -> R.string.hours_no_days
@@ -154,6 +156,7 @@ internal fun OnboardingQuestion(
     onContinue: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
+    continueEnabled: Boolean = true,
     error: String? = null,
     content: @Composable () -> Unit,
 ) {
@@ -194,6 +197,7 @@ internal fun OnboardingQuestion(
         ChunkyButton(
             text = stringResource(R.string.onboarding_continue),
             onClick = onContinue,
+            enabled = continueEnabled,
             modifier = Modifier.fillMaxWidth().padding(horizontal = S.NameButtonHorizontal, vertical = S.CtaBottomShort),
         )
         StepDots(step = step, active = Sun, inactive = CheckIdle)
@@ -330,10 +334,18 @@ internal fun WorkHoursPreview() {
     WigglebunTheme { WorkHoursScreen(PreviewDraft, null, {}, {}, {}, {}) }
 }
 
+/** Every day unticked: Continue is off straight away, and the reason shows above it. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WorkHoursNoDaysPreview() {
-    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(days = emptySet()), WorkHoursProblem.NO_DAYS, {}, {}, {}, {}) }
+    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(days = emptySet()), null, {}, {}, {}, {}) }
+}
+
+/** Continue was tapped with the same start and end: the step stays, and the reason shows above Continue. */
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+internal fun WorkHoursSameTimePreview() {
+    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 18 * 60), WorkHoursProblem.SAME_TIME, {}, {}, {}, {}) }
 }
 
 /** Halfway from 9–18 to 18–02: start and end match for now, and nothing complains until Continue. */

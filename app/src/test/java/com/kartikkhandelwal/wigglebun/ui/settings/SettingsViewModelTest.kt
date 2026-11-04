@@ -29,8 +29,9 @@ import org.robolectric.annotation.Config
 import java.time.DayOfWeek
 
 /**
- * Work hours are edited freely and checked only on Save; the interval and the break switches
- * save straight away. Nothing can leave the app with no work days or no breaks.
+ * Work hours are edited freely: no work days turns Save off at once, and the same start and end is
+ * checked only on Save. The interval and the break switches save straight away. Nothing can leave
+ * the app with no work days or no breaks.
  */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class)
@@ -138,16 +139,23 @@ class SettingsViewModelTest {
         assertEquals(17 * 60, stored().endMinute)
     }
 
+    /** No work days: Save turns off and the reason shows at once, without tapping anything. */
     @Test
-    fun savingWithNoWorkDaysIsRefusedWithAReason() = runBlocking {
+    fun noWorkDaysTurnsSaveOffAtOnce() = runBlocking {
         waitUntil { true }
         WorkSchedule.Default.days.forEach(viewModel::onToggleDay)
         waitUntil { it.hours.days.isEmpty() }
-        assertNull(viewModel.state.value!!.hoursProblem)
+        val state = viewModel.state.value!!
+        assertEquals(WorkHoursProblem.NO_DAYS, state.hoursProblem)
+        assertFalse(state.canSaveHours)
 
-        viewModel.onSaveHours()
-        waitUntil { it.hoursProblem == WorkHoursProblem.NO_DAYS }
+        viewModel.onSaveHours() // the button is off; even if called, nothing is saved
+        viewModel.onIntervalPicked(60) // something later to wait for
+        waitUntil { it.intervalMinutes == 60 }
         assertEquals(WorkSchedule.Default, stored())
+
+        viewModel.onToggleDay(DayOfWeek.MONDAY)
+        waitUntil { it.hoursProblem == null && it.canSaveHours }
     }
 
     /** Changing the hours back to what's stored leaves nothing to save. */

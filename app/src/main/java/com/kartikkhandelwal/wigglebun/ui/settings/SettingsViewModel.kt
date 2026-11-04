@@ -23,15 +23,19 @@ data class SettingsUiState(
     val hours: WorkHoursDraft,
     /** [hours] differs from what's stored, so Save shows. */
     val hoursChanged: Boolean,
-    /** Why the last Save didn't save; the next edit clears it. */
+    /** No work days (at once), or the same start and end (found by the last Save). */
     val hoursProblem: WorkHoursProblem?,
     val intervalMinutes: Int,
     val enabledBreaks: List<BreakType>,
-)
+) {
+    /** Save is off while no work day is ticked. */
+    val canSaveHours: Boolean get() = hours.canSave
+}
 
 /**
- * Work hours are edited freely and checked only on Save, so going from 9–18 to 18–02 works in
- * either order (18–18 on the way is fine). The interval and the break switches save straight away.
+ * Work hours: no work days turns Save off and says why at once. The same start and end is only
+ * checked on Save, so going from 9–18 to 18–02 works in either order (18–18 on the way is fine).
+ * The interval and the break switches save straight away.
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -52,7 +56,7 @@ class SettingsViewModel @Inject constructor(
     ) { stored, breaks, edit, problem ->
         val saved = WorkHoursDraft.of(stored.schedule)
         val hours = edit ?: saved
-        SettingsUiState(hours, hoursChanged = hours != saved, problem, stored.interval, breaks)
+        SettingsUiState(hours, hoursChanged = hours != saved, hours.shownProblem(problem), stored.interval, breaks)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
     fun onToggleDay(day: DayOfWeek) = editHours { it.toggled(day) }
@@ -70,9 +74,10 @@ class SettingsViewModel @Inject constructor(
         hoursProblem.value = null
     }
 
-    /** Saves the edited hours, or says why it can't (no work days, or the same start and end). */
+    /** Saves the edited hours, or says why it can't (the same start and end). Off with no work days. */
     fun onSaveHours() {
         val hours = hoursEdit.value ?: return
+        if (!hours.canSave) return
         hoursProblem.value = hours.problem
         if (hours.problem != null) return
         viewModelScope.launch {

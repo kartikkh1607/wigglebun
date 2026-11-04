@@ -12,6 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -64,8 +66,10 @@ class OnboardingFlowTest {
                                 hoursProblem = null
                             },
                             onSaveWorkHours = {
-                                hoursProblem = hours.problem
-                                (hoursProblem == null).also { ok -> if (ok) saved += "hours" }
+                                hours.canSave && run {
+                                    hoursProblem = hours.problem
+                                    (hoursProblem == null).also { ok -> if (ok) saved += "hours" }
+                                }
                             },
                             onSaveInterval = { saved += "interval" },
                             onFinish = { finished++ },
@@ -153,23 +157,28 @@ class OnboardingFlowTest {
         composeRule.onNodeWithContentDescription(day.getDisplayName(TextStyle.FULL, Locale.getDefault())).performClick()
 
     /**
-     * No work days means the pet would never wake. That's said only once Continue is tapped, which
-     * then stays on the step; the next edit clears it, and Skip always moves on.
+     * No work days means the pet would never wake. The moment the last day is unticked, Continue
+     * turns off and the reason shows above it; ticking a day brings Continue back. Skip always
+     * moves on.
      */
     @Test
-    fun noWorkDaysIsCaughtOnContinue() {
+    fun noWorkDaysTurnsContinueOffAtOnce() {
         start()
         tap("Skip")
         tap("Skip")
-        DayOfWeek.entries.take(5).forEach(::toggle)
+        DayOfWeek.entries.take(4).forEach(::toggle)
         composeRule.onNodeWithText("Pick at least one work day.").assertDoesNotExist()
+        composeRule.onNodeWithText("Continue").assertIsEnabled()
 
-        tap("Continue")
+        toggle(DayOfWeek.FRIDAY)
         composeRule.onNodeWithText("Pick at least one work day.").assertIsDisplayed()
+        composeRule.onNodeWithText("Continue").assertIsNotEnabled()
+        tap("Continue")
         composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
 
         toggle(DayOfWeek.MONDAY)
         composeRule.onNodeWithText("Pick at least one work day.").assertDoesNotExist()
+        composeRule.onNodeWithText("Continue").assertIsEnabled()
         toggle(DayOfWeek.MONDAY)
         tap("Skip")
         composeRule.onNodeWithText("How often should I nudge you?").assertIsDisplayed()

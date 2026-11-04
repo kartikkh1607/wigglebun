@@ -39,6 +39,10 @@ class SettingsScreenshotTest {
     @Test
     fun hoursProblem() = capture("settings_hours_problem") { SettingsHoursProblemPreview() }
 
+    /** No work days: Save is off at once and the reason shows above it. */
+    @Test
+    fun hoursNoDays() = capture("settings_hours_no_days") { SettingsHoursNoDaysPreview() }
+
     @Config(qualifiers = "w390dp-h844dp-xxhdpi")
     @Test
     fun timeSheet() = capture("settings_time_sheet") { SettingsTimeSheetPreview() }

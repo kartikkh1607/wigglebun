@@ -9,13 +9,24 @@ data class WorkHoursDraft(
     val startMinute: Int = WorkSchedule.Default.startMinute,
     val endMinute: Int = WorkSchedule.Default.endMinute,
 ) {
-    /** Why Continue isn't available, or null if it is. */
+    /** Why these hours can't be saved, or null if they can. */
     val problem: WorkHoursProblem?
         get() = when {
             days.isEmpty() -> WorkHoursProblem.NO_DAYS
             startMinute == endMinute -> WorkHoursProblem.SAME_TIME
             else -> null
         }
+
+    /** Continue or Save is off, straight away: without a work day there's nothing to save. */
+    val canSave: Boolean get() = days.isNotEmpty()
+
+    /**
+     * The reason to show. No work days shows at once (and [canSave] is false). The same start and
+     * end only shows once Continue or Save found it ([checked]), because it's often a step on the
+     * way, as in 9–18 → 18–18 → 18–02.
+     */
+    fun shownProblem(checked: WorkHoursProblem?): WorkHoursProblem? =
+        if (days.isEmpty()) WorkHoursProblem.NO_DAYS else checked
 
     /** Finishes after midnight. Ending exactly at midnight still ends the same day. */
     val endsNextDay: Boolean get() = endMinute != 0 && endMinute != WorkSchedule.MINUTES_PER_DAY && endMinute < startMinute

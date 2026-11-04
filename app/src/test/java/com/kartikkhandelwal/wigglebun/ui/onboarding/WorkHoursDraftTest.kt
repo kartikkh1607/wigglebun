@@ -36,6 +36,25 @@ class WorkHoursDraftTest {
         assertEquals(WorkHoursProblem.SAME_TIME, nineToSix.copy(startMinute = 0, endMinute = 0).problem)
     }
 
+    /** No work days turns Continue / Save off and shows the reason straight away. */
+    @Test
+    fun noDaysShowsAtOnceAndCantBeSaved() {
+        val noDays = nineToSix.copy(days = emptySet())
+        assertFalse(noDays.canSave)
+        assertEquals(WorkHoursProblem.NO_DAYS, noDays.shownProblem(checked = null))
+        // Even over what an earlier Continue found: the days are what's wrong now.
+        assertEquals(WorkHoursProblem.NO_DAYS, noDays.copy(startMinute = 600, endMinute = 600).shownProblem(WorkHoursProblem.SAME_TIME))
+    }
+
+    /** The same start and end is often a step on the way (9–18 → 18–18 → 18–02), so only a check shows it. */
+    @Test
+    fun theSameStartAndEndOnlyShowsOnceChecked() {
+        val sameTime = nineToSix.copy(startMinute = 18 * 60)
+        assertTrue(sameTime.canSave) // Continue / Save stays on, and does the check
+        assertNull(sameTime.shownProblem(checked = null))
+        assertEquals(WorkHoursProblem.SAME_TIME, sameTime.shownProblem(WorkHoursProblem.SAME_TIME))
+    }
+
     /** 0 to 1440 is all day (the Pet lab's "always work hours"), and can still be edited. */
     @Test
     fun allDayIsFine() {
