@@ -361,6 +361,8 @@ v1.0 build order (approved 2026-11-04): release foundations + cleanup → privac
 
 **M11 accessibility list (found while reviewing, fix in M11):**
 - Settings, Work hours: at 200% font on a small phone (360 dp) the day circles (M T W T F S S) touch each other and their 48 dp tap targets may overlap. Needs a layout that keeps the circles apart (smaller circles, or wrapping to two rows), with a 200% / 360 dp screenshot. The same `DayChips` is on onboarding's Hours screen.
+- Naming screen at 130% font (360 dp): the speech bubble's "nap!" wraps alone onto its own line. Rebalance the line break (or the bubble width).
+- Wake-up at 200% font on 360×640: the last body line sits partly behind the button; it can be reached by scrolling, but the squeeze could leave it whole.
 
 ---
 
