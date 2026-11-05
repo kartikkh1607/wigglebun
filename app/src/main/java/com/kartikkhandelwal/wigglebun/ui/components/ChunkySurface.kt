@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
+import com.kartikkhandelwal.wigglebun.ui.theme.LocalSurface
 
 /**
  * Shared "chunky" look: a solid face with a darker, same-shaped edge offset below it.
@@ -37,9 +38,10 @@ import androidx.compose.ui.unit.Dp
 internal fun ChunkySurface(
     shape: Shape,
     faceColor: Color,
-    edgeColor: Color,
     edgeHeight: Dp,
     modifier: Modifier = Modifier,
+    /** Defaults to the edge of the surface it sits on ([LocalSurface]). */
+    edgeColor: Color = LocalSurface.current.edge,
     border: BorderStroke? = null,
     onClick: (() -> Unit)? = null,
     /** What TalkBack says after "Double tap to"; null uses the default ("activate"). */

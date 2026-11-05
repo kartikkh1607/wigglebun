@@ -66,7 +66,8 @@ import com.kartikkhandelwal.wigglebun.ui.setup.SetupExplainContent
 import com.kartikkhandelwal.wigglebun.ui.setup.SetupStatus
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Coral
-import com.kartikkhandelwal.wigglebun.ui.theme.Cream
+import com.kartikkhandelwal.wigglebun.ui.theme.OnSurface
+import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreen
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
@@ -106,7 +107,7 @@ fun SettingsScreenRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val loaded = state
     if (loaded == null) {
-        Box(modifier.fillMaxSize().background(Cream))
+        Box(modifier.fillMaxSize().background(Surfaces.Settings.background))
         return
     }
     val context = LocalContext.current
@@ -169,10 +170,20 @@ fun SettingsScreen(
     actions: SettingsActions,
     modifier: Modifier = Modifier,
 ) {
+    OnSurface(Surfaces.Settings) { SettingsContent(state, setup, actions, modifier) }
+}
+
+@Composable
+private fun SettingsContent(
+    state: SettingsUiState,
+    setup: SetupCardsUi,
+    actions: SettingsActions,
+    modifier: Modifier,
+) {
     Column(
         modifier
             .fillMaxSize()
-            .background(Cream)
+            .background(Surfaces.Settings.background)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(Dimens.ScreenPadding),

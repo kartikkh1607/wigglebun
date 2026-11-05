@@ -43,7 +43,6 @@ import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
-import com.kartikkhandelwal.wigglebun.ui.theme.CardEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
@@ -138,7 +137,6 @@ private fun AccessoryCard(item: AccessoryUi, pet: ActivePet, onClick: () -> Unit
     ChunkySurface(
         shape = WigglebunShapes.Card,
         faceColor = Card,
-        edgeColor = CardEdge,
         edgeHeight = C.CardEdge,
         onClick = onClick,
         onClickLabel = stringResource(R.string.collection_open_pet),

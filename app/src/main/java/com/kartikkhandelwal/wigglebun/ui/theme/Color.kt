@@ -5,12 +5,15 @@ import androidx.compose.ui.graphics.Color
 // Design tokens from CLAUDE.md §11. Screens must use these, never raw hex values.
 
 // Core
+/** The window, the splash and the first-launch loading box; each screen paints its own surface. */
 val Cream = Color(0xFFFFF4E8)
 val Card = Color(0xFFFFFFFF)
+/** The chunky edge on Cream (onboarding until its UI v2 restyle, inactive buttons). */
 val CardEdge = Color(0xFFEFE3D4)
 val Ink = Color(0xFF2B2A3A)
 val InkEdge = Color(0xFF14131F)
-val InkMuted = Color(0xFF6B6A7B)
+/** Secondary text: 7.2:1 on Card, at least 5.8:1 on every screen surface below (lowest: HomeWall). */
+val InkMuted = Color(0xFF56556A)
 val Track = Color(0xFFF1EBE3)
 val DoneGreen = Color(0xFF3BAA6E)
 val DoneGreenEdge = Color(0xFF2C8655)
@@ -19,6 +22,48 @@ val SunEdge = Color(0xFFD69E2A)
 val Coral = Color(0xFFE5603A)
 val Night = Color(0xFF2F2E45)
 val BreakSky = Color(0xFFEAF3FD)
+
+// Screen surfaces (design/ui_v2/README.md). Each tab has its own background; the chunky edge
+// under its cards is a darker shade of it (see Surfaces.kt).
+val HomeWall = Color(0xFFD6EBDA)
+val HomeWallLower = Color(0xFFC8E2CF)
+/** Under things on the wall: the top buttons, the speech bubble, a panel's top edge. */
+val HomeWallEdge = Color(0xFFBCDAC4)
+val HomeFloor = Color(0xFFF4E8D6)
+val HomeFloorSeam = Color(0xFFEADCC6)
+val HomeFloorEdge = Color(0xFFE3D3BC)
+val Rug = Color(0xFFCFE3FB)
+val RugEdge = Color(0xFFB2D0F2)
+val CollectionMint = Color(0xFFDDF1E6)
+val CollectionEdge = Color(0xFFBFE0CE)
+val SettingsLilac = Color(0xFFECE9F7)
+val SettingsEdge = Color(0xFFD6D1EC)
+/** The paywall's top and the Pet profile tab (#30 direction B). */
+val Sky = Color(0xFFE2EEFB)
+val SkyEdge = Color(0xFFC7DAF1)
+/** Onboarding's night room (WakeUp.dc.html in design/ui_v2). */
+val NightRoomWall = Color(0xFF2F3352)
+val NightRoomFloor = Color(0xFF2A2C45)
+
+// Tab bar (design/ui_v2 nav): the selected tab's pill, and the bar's top border on that tab
+val TabHomeTint = Color(0xFFFFE3D8)
+val TabCollectionTint = Color(0xFFD3F0E1)
+val TabPetTint = Color(0xFFFFF0CC)
+val TabSettingsTint = Color(0xFFE6DDFB)
+val TabHomeBorder = Color(0xFFEFE6DA)
+val TabCollectionBorder = Color(0xFFCFE8DA)
+/** Not in ui_v2 (no Pet profile mockup): between Sky and SkyEdge, as the others are. */
+val TabPetBorder = Color(0xFFD5E5F7)
+val TabSettingsBorder = Color(0xFFDDD8EF)
+
+// Shared pieces (design/ui_v2)
+/** "On" / "Added" / "With you": 5.3:1. */
+val StatusOnChip = Color(0xFFD3F0E1)
+val StatusOnText = Color(0xFF1F6B48)
+/** Between the rows of a grouped Settings card. */
+val GroupDivider = Color(0xFFF1EEF8)
+/** Onboarding steps still to come. */
+val StepDotIdle = Color(0xFFE3DCD2)
 
 // Onboarding sleep screen, on Night (WakeUp.dc.html)
 val NightStar = Color(0xFFB9B5D6)
@@ -73,7 +118,6 @@ val BreakWaterTint = Color(0xFFFCE1EC)
 // Mood chip backgrounds and timer bar colours
 val MoodHappyChip = Color(0xFFDDF3E9)
 val MoodTiredChip = Color(0xFFFFF0CC)
-val MoodStiffChip = Color(0xFFFDDCD2)
 val TimerHappy = Color(0xFF4DB88A)
 val TimerTired = Color(0xFFF2A93B)
 val TimerStiff = Color(0xFFE5603A)
@@ -83,12 +127,16 @@ val ButtonBorder = Color(0xFFE8E0D5)
 val ButtonEdge = Color(0xFFDDD3C6)
 val CheckIdle = Color(0xFFB5ADA3)
 val TopButtonEdge = Color(0xFFE8DCCD)
-val TabBarBorder = Color(0xFFF3E9DD)
-val TabActive = Color(0xFFFDE6CF)
 val SparkEdge = Color(0xFFE5A52A)
 
-// Home (Main.dc.html, FocusCard.dc.html)
-val PetShadow = Color(0xFFE6D9C8)
+// Home (design/ui_v2/Main.dc.html, FocusCard.dc.html)
+/** Behind a break card's spark reward. */
+val RewardChip = Color(0xFFFFF4D6)
+/** The streak's flame chip on the timer card: 7.8:1. */
+val FlameChip = Color(0xFFFFE9DF)
+val FlameChipText = Color(0xFF9A3D20)
+/** A streak-goal segment not reached yet. */
+val StreakSegmentIdle = Color(0xFFE9E1D6)
 /** Focused card overlay backdrop: rgba(33, 32, 48, 0.72). */
 val Scrim = Color(0xB8212030)
 val ActionEdge = Color(0xFFCFC6BA)

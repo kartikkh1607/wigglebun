@@ -16,6 +16,9 @@ Everything the app needs visually. Vectors are the source of truth; PNGs are exp
 | `launcher_monochrome.py` | Writes the themed-icon layer: the icon's silhouette with the face cut out (needs `shapely`) | `python design/launcher_monochrome.py` → `res/drawable/ic_launcher_monochrome.xml` |
 | `play_store_icon_512.png` / `.svg` | 512×512 Play Store listing icon | Play Console store listing |
 | `previews/*.png` | PNG renders of the SVGs above | Just for looking |
-| `mockups_source/*.dc.html` | HTML source of every mockup screen (Home tired/stiff, break card, break session, wake-up onboarding, paywall, collection, pet moods, tokens) | Layout reference — read as code |
+| `ui_v2/*.dc.html` | The UI v2 refresh: Home, Collection, Settings, Locked Home, onboarding (wake-up, name, hours, interval, stretch, celebrate, paywall); palette in `ui_v2/README.md` | Layout reference, read as code. Wins over `mockups_source` where they differ |
+| `ui_v2/previews/*.png` | Headless-browser renders of the ui_v2 screens at 2× (390×844 artboards). `paywall.png` shows `{{ … }}` where the mockup's runtime fills in the plans and button | Just for looking, and for PR comparisons |
+| `ui_v2/icons/*.svg` | Full-colour break and Settings icons | Converted to `res/drawable/ic_break_*.xml` and `ic_settings_*.xml` (drawn untinted) |
+| `mockups_source/*.dc.html` | HTML source of the first mockups (Home tired/stiff, break card, break session, wake-up onboarding, paywall, collection, pet moods, tokens) | Layout reference — read as code. Still the source for the focused card, `Pet`, `PetMoods` and `Tokens` |
 | `mockups/` | Put screenshots of the canvas here | Visual reference |
 | `reference/` | Original Gemini / AI Studio concept images | Inspiration only — do not ship these files |

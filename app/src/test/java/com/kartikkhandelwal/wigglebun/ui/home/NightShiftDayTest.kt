@@ -89,6 +89,7 @@ class NightShiftDayTest {
             breakRepository = app.breaks,
             walletRepository = app.wallet,
             petRepository = app.pets,
+            streakRepository = app.streaks,
             actions = BreakActions(app.sitRepository, app.breaks, app.clock),
             clock = app.clock,
         )

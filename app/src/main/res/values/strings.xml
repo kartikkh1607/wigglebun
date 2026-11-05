@@ -54,7 +54,8 @@
     <string name="action_skip">Skip</string>
 
     <!-- Home -->
-    <string name="home_time_since_break">Time since last break</string>
+    <!-- Under the minutes on the timer card: "32 min / since your last break" -->
+    <string name="home_since_last_break">since your last break</string>
     <plurals name="home_minutes">
         <item quantity="one">%d min</item>
         <item quantity="other">%d min</item>
@@ -62,11 +63,25 @@
     <!-- A pet name cut short so a sentence doesn't wrap, e.g. "Wigglebo…" -->
     <string name="pet_name_shortened">%1$s…</string>
 
-    <!-- Mood chip on the timer pill; %1$s is the pet's name -->
-    <string name="home_chip_great">%1$s feels great</string>
-    <string name="home_chip_tired">%1$s is getting tired</string>
-    <string name="home_chip_stiff">%1$s is stiff</string>
-    <string name="home_chip_walk">%1$s is out on a walk</string>
+    <!-- What the pet says in its speech bubble on Home, in its own voice -->
+    <string name="home_line_happy">Feeling bouncy!</string>
+    <string name="home_line_tired">Getting sleepy… stretch with me?</string>
+    <string name="home_line_stiff">So stiff… walk with me?</string>
+    <string name="home_line_walk">Ooh, a walk!</string>
+    <string name="home_line_celebrate">Ahh, much better!</string>
+    <!-- Timer card: today's progress toward the streak goal, e.g. "Streak goal ▬▬▭ 2 of 3" and "5 days" -->
+    <string name="home_streak_goal">Streak goal</string>
+    <string name="home_streak_progress">%1$d of %2$d</string>
+    <plurals name="home_streak_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <!-- TalkBack for the streak row: "Streak goal: 2 of 3 breaks today." then the streak if there is one -->
+    <string name="cd_home_streak_goal">Streak goal: %1$d of %2$d breaks today.</string>
+    <plurals name="cd_home_streak_days">
+        <item quantity="one">%d-day streak.</item>
+        <item quantity="other">%d-day streak.</item>
+    </plurals>
     <!-- Outside work hours (no timer, no guilt) -->
     <string name="home_asleep_title">%1$s is asleep</string>
     <!-- %1$s is a time like 9:00 -->
@@ -81,6 +96,12 @@
     <string name="home_breaks_title_last_shift">Last shift</string>
     <string name="home_breaks_done">%1$d of %2$d done</string>
     <string name="home_break_skipped">Skipped today</string>
+    <!-- A break card once done: the sparks it paid today, or just "Done" when it paid none -->
+    <string name="home_break_done">Done</string>
+    <plurals name="home_break_done_sparks">
+        <item quantity="one">Done · +%d spark</item>
+        <item quantity="other">Done · +%d sparks</item>
+    </plurals>
     <string name="home_reward">+%1$d</string>
 
     <!-- Focused break card -->
@@ -108,6 +129,7 @@
     <string name="cd_open_break">open break options</string>
     <string name="cd_snooze">Snooze 10 minutes</string>
     <string name="cd_close">Close</string>
+    <string name="cd_back">Back</string>
 
     <!-- Onboarding (WakeUp.dc.html) -->
     <string name="onboarding_continue">Continue</string>

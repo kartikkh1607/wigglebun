@@ -170,9 +170,9 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
    - First 1-minute stretch with the pet (a real Stand up break: it logs and earns its sparks) → celebrate → **paywall with free trial** (see 5.5). Until M10 the paywall is `ui/paywall/PaywallPlaceholderScreen.kt`, which offers nothing to buy.
    - Skip moves on one step and keeps that step's default, so it never bypasses the stretch and paywall. Interrupted onboarding restarts at the wake-up; answers already given stay.
 3. **Home** (tab 1)
-   - Top half: desk scene background `design/desk_scene.jpg` (convert to WebP, put in `res/drawable-nodpi`, crop to fill ~340 dp height) with the pet standing on the floor in the centre (pet = sitting meter, see 5.2). Menu button top-left, sparks counter pill top-right.
-   - Under it: pill showing "Time since last break: 32 min" + thin progress. The minutes take their own width and the mood chip ("Bun is getting tired") sits at the right edge in the rest of the row.
-   - "Breaks for today" list: cards with icon, title, reward, chunky check button.
+   - Top: the room (`ui/home/RoomScene.kt`, a Canvas drawn from `RoomPalette` tokens: walls, window, shelf, desk, plant, rug; groups anchored left/centre/right so it works from 360 to 430 dp, and below 390 dp the shelf plant slides left up to 20 dp so the speech bubble never covers it; `design/desk_scene.jpg` is history only). The pet (170 dp) stands on the rug (pet = sitting meter, see 5.2) with a `SpeechBubble` above it in its own voice, one line per mood (`PetLine`; none while asleep). Menu button top-left, sparks counter pill top-right.
+   - Under it, on the floor colour: the timer card, "32 min" + "since your last break" + a 12 dp bar in the mood colour, the "Take a 2-min break" button when stiff, and on work days a "Streak goal" row (3 segments for `DAILY_GOAL`, "2 of 3", a flame chip with the streak days, hidden at 0; from `StreakRepository`, shared with Pet profile).
+   - "Breaks for today" list: cards with icon tile, title, spark reward chip, chunky check button. A done card reads "Done · +5 sparks" with what the ledger actually paid today, just "Done" for a repeat.
    - Tapping a card opens a **focused card overlay** with three big actions: Skip · Done · Snooze.
 4. **Break session** – full-screen guided stretch with pet doing the move, step text, countdown ring, "Done" → celebrate + reward.
 5. **Collection** (tab 2) – grid of pet silhouettes; locked ones shown as grey silhouettes with a price; tap to preview.
@@ -242,22 +242,22 @@ App must work fully (timer + manual Done) if both are denied.
 
 ## 11. Design system
 
-Reference mockups: `design/mockups_source/*.dc.html` (HTML source of every mockup screen, 390×844 phone artboards; read them for exact layout, spacing, sizes and copy; they need a runtime to render, so read them as code) and any screenshots Kartik adds in `design/mockups/`. Match them. Full file map: `design/README.md`.
+Reference mockups: `design/ui_v2/*.dc.html` first (the UI v2 refresh: Home, Collection, Settings, Locked Home and the onboarding screens through the paywall; README there), then `design/mockups_source/*.dc.html` for what ui_v2 doesn't cover (the focused card, `Pet`, `PetMoods`, `Tokens`, the break session until its ui_v2 restyle). Both are HTML sources of 390×844 phone artboards: read them for exact layout, spacing, sizes and copy; they need a runtime to render, so read them as code. Also any screenshots Kartik adds in `design/mockups/`. Match them. Full file map: `design/README.md`.
 
 **Colours** (`ui/theme/Color.kt`)
 
 | Token | Hex | Use |
 |---|---|---|
-| `Cream` | `#FFF4E8` | app background |
+| `Cream` | `#FFF4E8` | window, splash, first-launch loading box; onboarding until its ui_v2 restyle |
 | `Card` | `#FFFFFF` | cards, tab bar |
-| `CardEdge` | `#EFE3D4` | chunky edge under cards |
+| `CardEdge` | `#EFE3D4` | chunky edge on Cream |
 | `Ink` | `#2B2A3A` | text, primary button |
 | `InkEdge` | `#14131F` | primary button edge |
-| `InkMuted` | `#6B6A7B` | secondary text (passes 4.5:1 on Cream and Card) |
+| `InkMuted` | `#56556A` | secondary text: 7.2:1 on Card, at least 5.8:1 on every surface below |
 | `Track` | `#F1EBE3` | progress track |
 | `DoneGreen` / edge | `#3BAA6E` / `#2C8655` | done buttons, checks |
 | `Sun` / edge | `#FFC857` / `#D69E2A` | highlight button, sparks icon |
-| `Coral` | `#E5603A` | over-interval state, active tab icon |
+| `Coral` | `#E5603A` | over-interval state |
 | `Night` | `#2F2E45` | onboarding sleep screen |
 | `BreakSky` | `#EAF3FD` | break session background |
 | `PetYellow` / edge | `#F5DC8B` / `#EBCB6A` | Bun body |
@@ -265,11 +265,27 @@ Reference mockups: `design/mockups_source/*.dc.html` (HTML source of every mocku
 | `PetPink` | `#F6A98A` | inner ears |
 | `PetBlush` | `#F7A58B` | cheeks |
 
-Break-type colours (icons, chips): Walk `#7DD3B0`, Neck `#7FB8F5`, Stand `#FFC857`, Eyes `#B9A3F0`, Wrist `#F68A6B`, Water `#F4A3C0`. Use their light tints for icon tiles: `#CDEFE0`, `#CFE3FB`, `#FFE3A3`, `#E6DDFB`, `#FDDCD2`, `#FCE1EC`.
+**Surfaces** (`ui/theme/Surfaces.kt`, from `design/ui_v2/README.md`). Each screen paints its own background and provides it as `LocalSurface` (`OnSurface(Surfaces.X) { … }`); `PillCard`, `ChunkySurface`, `SparksPill`, `TopIconButton`, `SkipPill`, `SheetPanel`, `GroupedCard` and `SpeechBubble` take its edge by default, so screens don't pass edge colours around.
+
+| Surface | Background / edge | Where |
+|---|---|---|
+| `Home` | `#F4E8D6` / `#E3D3BC` | Home's floor (timer card, break list); seams `#EADCC6` |
+| `HomeWall` | `#D6EBDA` / `#BCDAC4` | Home's room scene; lower wall `#C8E2CF`; rug `#CFE3FB` / `#B2D0F2` |
+| `Collection` | `#DDF1E6` / `#BFE0CE` | Collection |
+| `Settings` | `#ECE9F7` / `#D6D1EC` | Settings |
+| `Profile` | `#E2EEFB` / `#C7DAF1` | Pet profile (no ui_v2 mockup: #30 direction B's sky); the paywall's top |
+| `Session` | `#EAF3FD` / `#CBDDF1` | Break session |
+| — | `#2F3352` wall, `#2A2C45` floor | Onboarding's night room (`NightRoomWall`, `NightRoomFloor`) |
+
+**Tab bar** (design/ui_v2 nav): full-colour icons, never tinted (coral house, four-square grid, lilac gear `#B9A3F0`, `#9C82E6` when selected); the Pet tab shows a small still `PetView` of the active pet. The selected tab gets a 60×36 pill and the bar a 2 dp top border in that tab's colours: Home `#FFE3D8` / `#EFE6DA`, Collection `#D3F0E1` / `#CFE8DA`, Pet `#FFF0CC` / `#D5E5F7`, Settings `#E6DDFB` / `#DDD8EF`.
+
+**Shared pieces** (`ui/components`): `TopIconButton` (Back / Close / Menu), `SkipPill`, `SheetPanel`, `StepDots` (Ink, current step 28×8, steps to come `#E3DCD2`), `GroupedCard` + `SettingsRow` (divider `#F1EEF8`), `StatusChip` ("On" `#D3F0E1` / `#1F6B48`), `SpeechBubble`.
+
+Break-type colours (chips): Walk `#7DD3B0`, Neck `#7FB8F5`, Stand `#FFC857`, Eyes `#B9A3F0`, Wrist `#F68A6B`, Water `#F4A3C0`. Their light tints are the icon tiles: `#CDEFE0`, `#CFE3FB`, `#FFE3A3`, `#E6DDFB`, `#FDDCD2`, `#FCE1EC`. Break and Settings icons are the full-colour vectors from `design/ui_v2/icons` (`ic_break_*`, `ic_settings_*`), drawn untinted at about 3/4 of their tile (38 in 50).
 
 The weekly chart (Pet profile, "Last 7 days") uses category colours, not one per break type: Movement `#7DD3B0` (Stand up, Walk), Stretch `#7FB8F5` (Neck, Shoulders, Wrist), Eyes `#B9A3F0`, Water `#F4A3C0`; stacked Stretch, Movement, Eyes, Water from the bottom so Stretch blue and Eyes lilac never touch.
 
-Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer bar: happy `#4DB88A`, tired `#F2A93B`, stiff `#E5603A`.
+Home's streak flame chip `#FFE9DF` / text `#9A3D20`, spark reward chip `#FFF4D6`. Timer bar: happy `#4DB88A`, tired `#F2A93B`, stiff `#E5603A`.
 
 **Type** (Google Fonts, bundled in `res/font`, free OFL licence)
 - Fredoka SemiBold 600: display 32 sp, title 22 sp, button 18 sp
@@ -334,7 +350,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 | M11 | Polish, accessibility (TalkBack labels, contrast), privacy policy, store assets | Ready for closed testing |
 | M12 | Release candidate: the full phone checklist on a real phone and on an Android 8 emulator, license-tester purchase / restore / cancel / lapse, OEM battery check | Closed-test AAB uploaded |
 
-v1.0 build order (approved 2026-11-04): release foundations + cleanup → privacy policy + terms → M10a RevenueCat layer (only once the Play Console app and products exist) → M10b paywall → M10c gating → M10d trial-end reminder → M11 accessibility + large fonts → M11 store listing → M12.
+v1.0 build order (approved 2026-11-04): release foundations + cleanup → privacy policy + terms → UI v2 (`design/ui_v2`, one PR each: respect "Remove animations" → foundations (palette, surfaces, icons, tab bar, shared pieces) → Home → Collection → Settings → onboarding wake-up + name → onboarding hours + interval → break session + celebration) → M10a RevenueCat layer (only once the Play Console app and products exist) → M10b paywall (`design/ui_v2/Paywall.dc.html`) → M10c gating (Locked Home) → M10d trial-end reminder → M11 accessibility + large fonts → M11 store listing → M12.
 
 ---
 

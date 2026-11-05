@@ -24,11 +24,59 @@ object Dimens {
     val TabBarPaddingHorizontal = 8.dp
     val TabBarPaddingTop = 8.dp
     val TabBarPaddingBottom = 14.dp
-    val TabIndicatorWidth = 56.dp
-    val TabIndicatorHeight = 34.dp
-    val TabIcon = 22.dp
-    val TabPetIcon = 24.dp
-    val TabLabelGap = 4.dp
+    val TabIndicatorWidth = 60.dp
+    val TabIndicatorHeight = 36.dp
+    // design/ui_v2 nav: each icon at its drawn size; the pet is a small PetView.
+    val TabHomeIcon = 26.dp
+    val TabIcon = 24.dp
+    val TabPetIcon = 28.dp
+    val TabLabelGap = 3.dp
+
+    /** Pieces several design/ui_v2 screens share (ui/components). */
+    object Shared {
+        // Back / Close / Menu on a tinted background (Hours.dc.html)
+        val TopButtonSize = 44.dp
+        val TopButtonEdge = 3.dp
+        val TopButtonIcon = 20.dp
+
+        val SkipPaddingHorizontal = 14.dp
+        val SkipPaddingVertical = 7.dp
+        val SkipEdge = 3.dp
+
+        // Onboarding progress (StepDots)
+        val DotGap = 6.dp
+        val DotSize = 8.dp
+        val DotCurrentWidth = 28.dp
+
+        // White panel rising from the bottom (Name / Hours / Interval .dc.html)
+        val PanelEdge = 3.dp
+        val PanelPaddingTop = 22.dp
+        val PanelPaddingHorizontal = 24.dp
+        val PanelGap = 14.dp
+
+        // Grouped Settings card and its rows (Settings.dc.html)
+        val DividerThickness = 1.5.dp
+        val RowPaddingHorizontal = 16.dp
+        val RowPaddingVertical = 12.dp
+        val RowPaddingVerticalSingle = 10.dp
+        val RowMinHeight = 66.dp
+        val RowMinHeightSingle = 60.dp
+        val RowGap = 14.dp
+        val RowTextGap = 1.dp
+        val RowTile = 44.dp
+        val RowIcon = 32.dp
+        val StatusPaddingHorizontal = 12.dp
+        val StatusPaddingVertical = 4.dp
+
+        // Speech bubble (Main.dc.html)
+        val BubblePaddingHorizontal = 14.dp
+        val BubblePaddingVertical = 9.dp
+        val BubbleEdge = 3.dp
+        val BubbleTailWidth = 18.dp
+        val BubbleTailHeight = 10.dp
+        /** The tail tucks 1 dp under the bubble, so no seam shows between them. */
+        val BubbleTailOverlap = 1.dp
+    }
 
     /** Home-screen widget (Glance). No mockup: sized from the tokens above. Card radius is in widget_background.xml. */
     object Widget {
@@ -93,9 +141,6 @@ object Dimens {
         val CtaBottomShort = 16.dp
         val DotsBottom = 40.dp
         val DotsBottomShort = 16.dp
-        val DotGap = 8.dp
-        val DotSize = 8.dp
-        val DotActiveWidth = 22.dp
 
         // Naming (no mockup: sized from the wake-up screen and the card tokens)
         val NamePetSize = 170.dp
@@ -130,13 +175,13 @@ object Dimens {
         val ToggleTop = 10.dp
         val ToggleGap = 12.dp
         val ToggleTile = 40.dp
-        val ToggleIcon = 22.dp
+        val ToggleIcon = 30.dp
     }
 
     /** Setup cards in Settings and on Home (no mockup: sized from the card and icon-tile tokens). */
     object Setup {
         val IconTile = 44.dp
-        val Icon = 24.dp
+        val Icon = 32.dp
         val RowGap = 12.dp
         val ChipHorizontal = 12.dp
         val ChipVertical = 4.dp
@@ -148,14 +193,22 @@ object Dimens {
         val HomePromptTop = 12.dp
     }
 
-    /** Home screen, measured from design/mockups_source/Main.dc.html and FocusCard.dc.html. */
+    /** Home screen, measured from design/ui_v2/Main.dc.html (focused card: mockups_source/FocusCard.dc.html). */
     object Home {
+        /** The room below the status bar; it only grows when a large font makes the bubble taller. */
         val SceneHeight = 340.dp
-        val PetTop = 116.dp
-        val PetSize = 190.dp
-        val PetShadowTop = 284.dp
-        val PetShadowWidth = 120.dp
-        val PetShadowHeight = 16.dp
+        /** 170 dp wide at the viewBox's 200×210 proportions. */
+        val PetWidth = 170.dp
+        val PetHeight = 178.5.dp
+        /** From the pet's box to the scene's bottom: its feet stand on the rug. */
+        val PetAboveSceneBottom = 23.5.dp
+        /** The bubble's tail tip reaches this far into the pet's box (the space above its ears). */
+        val BubbleIntoPet = 17.dp
+        /** Mockup width at 100% font; wider (up to the screen's margins) at larger font sizes. */
+        val BubbleMaxWidth = 198.dp
+        val BubbleSideMargin = 24.dp
+        /** Least room between the top buttons and the bubble before the scene grows. */
+        val BubbleBelowTopBar = 12.dp
         val TopBarPadding = 16.dp
         val MenuButtonSize = 48.dp
         val MenuButtonRadius = 16.dp
@@ -167,29 +220,44 @@ object Dimens {
         val SparksGap = 6.dp
         val SparksIcon = 20.dp
 
-        val PillOverlap = 36.dp
+        // Timer card
         val PillPaddingHorizontal = 18.dp
-        val PillPaddingVertical = 16.dp
+        val PillPaddingTop = 16.dp
+        val PillPaddingBottom = 14.dp
         val PillGap = 10.dp
         val PillLabelGap = 2.dp
-        val ChipPaddingHorizontal = 12.dp
-        val ChipPaddingVertical = 6.dp
-        val ProgressHeight = 10.dp
+        val ProgressHeight = 12.dp
         val CtaTopGap = 4.dp
+        val DividerThickness = 1.5.dp
+        val StreakGap = 8.dp
+        val SegmentWidth = 26.dp
+        val SegmentHeight = 8.dp
+        val SegmentGap = 4.dp
+        val FlamePaddingStart = 7.dp
+        val FlamePaddingEnd = 10.dp
+        val FlamePaddingVertical = 5.dp
+        val FlameGap = 5.dp
+        val FlameIcon = 16.dp
 
         val HeaderPaddingHorizontal = 20.dp
         val HeaderPaddingTop = 20.dp
         val HeaderPaddingBottom = 10.dp
 
+        // Break cards
         val CardEdge = 3.dp
-        val CardPaddingStart = 14.dp
-        val CardPadding = 12.dp
+        val CardPaddingHorizontal = 12.dp
+        val CardPaddingVertical = 11.dp
         val CardGap = 12.dp
-        val CardTextGap = 2.dp
-        val IconTileSize = 48.dp
-        val BreakIcon = 26.dp
+        val CardTextGap = 1.dp
+        val IconTileSize = 50.dp
+        /** Full-colour break icons fill about 3/4 of their tile (design/ui_v2: 38 in 50). */
+        val BreakIcon = 38.dp
         val RewardGap = 3.dp
         val RewardIcon = 16.dp
+        val RewardChipPaddingStart = 7.dp
+        val RewardChipPaddingEnd = 9.dp
+        val RewardChipPaddingVertical = 4.dp
+        val RewardChipIcon = 15.dp
         val CheckWidth = 52.dp
         val CheckHeight = 48.dp
         val CheckEdge = 4.dp
@@ -205,7 +273,7 @@ object Dimens {
         val FocusRewardInset = 18.dp
         val FocusTileSize = 72.dp
         val FocusTileRadius = 24.dp
-        val FocusIcon = 38.dp
+        val FocusIcon = 54.dp
         val FocusChipPaddingHorizontal = 12.dp
         val FocusChipPaddingVertical = 4.dp
         /** Card bottom (≈ 482) to the Done face top (520) in FocusCard.dc.html. */

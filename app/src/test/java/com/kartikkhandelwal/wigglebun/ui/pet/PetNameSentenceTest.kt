@@ -35,7 +35,7 @@ class PetNameSentenceTest {
     private val template = "%1\$s is getting tired"
     private val shortened = "%1\$s…"
 
-    /** 150 dp at xxhdpi: about the Home chip's text width on a small phone. */
+    /** 150 dp at xxhdpi: a narrow card on a small phone. */
     private val width = 450
 
     private fun measurer(): TextMeasurer {
@@ -86,13 +86,13 @@ class PetNameSentenceTest {
     fun heightDoesNotDependOnTheName() {
         composeRule.setContent {
             Column {
-                PetNameSentence(R.string.home_chip_tired, "Bun", style = style, modifier = Modifier.width(150.dp).testTag("short"))
-                PetNameSentence(R.string.home_chip_tired, TestPetNames.WIDEST, style = style, modifier = Modifier.width(150.dp).testTag("long"))
+                PetNameSentence(R.string.home_asleep_title, "Bun", style = style, modifier = Modifier.width(150.dp).testTag("short"))
+                PetNameSentence(R.string.home_asleep_title, TestPetNames.WIDEST, style = style, modifier = Modifier.width(150.dp).testTag("long"))
             }
         }
         val short = composeRule.onNodeWithTag("short").fetchSemanticsNode().size.height
         val long = composeRule.onNodeWithTag("long").fetchSemanticsNode().size.height
         assertEquals(short, long)
-        composeRule.onNodeWithTag("long").assertTextEquals("${TestPetNames.WIDEST} is getting tired")
+        composeRule.onNodeWithTag("long").assertTextEquals("${TestPetNames.WIDEST} is asleep")
     }
 }

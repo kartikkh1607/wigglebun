@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.home
 
 import com.kartikkhandelwal.wigglebun.data.db.BreakLogEntity
+import com.kartikkhandelwal.wigglebun.data.repo.StreakSummary
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
@@ -12,12 +13,15 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.math.roundToInt
 
-/** Mood chip on the timer pill (copy and colours from Main.dc.html). */
-enum class MoodChip { GREAT, TIRED, STIFF, WALK }
+/**
+ * What the pet says in its speech bubble on Home (design/ui_v2/Main.dc.html), which also colours
+ * the timer bar. None while it sleeps: the z's say it.
+ */
+enum class PetLine { HAPPY, TIRED, STIFF, WALK, CELEBRATE }
 
 sealed interface PillState {
     /** In work hours: the timer. [progress] is the fraction of the interval, capped at 1. */
-    data class Sitting(val minutes: Int, val progress: Float, val chip: MoodChip) : PillState
+    data class Sitting(val minutes: Int, val progress: Float) : PillState
 
     /** Outside work hours: no timer, no guilt, just when work hours start next. */
     data class Asleep(val nextStart: LocalDateTime?) : PillState
@@ -27,6 +31,17 @@ data class BreakCardUi(
     val type: BreakType,
     val doneToday: Boolean,
     val skippedToday: Boolean,
+    /** What today's first Done of this type paid (from the ledger); 0 when nothing was paid. */
+    val sparksEarned: Int = 0,
+)
+
+/** The timer card's "Streak goal" row; only on work days (the goal means nothing on a day off). */
+data class StreakGoalUi(
+    /** Breaks toward today's goal, at most [goal]. */
+    val done: Int,
+    val goal: Int,
+    /** The streak so far; the flame chip is hidden at 0. */
+    val days: Int,
 )
 
 /** The focused card overlay (FocusCard.dc.html). */
@@ -42,6 +57,8 @@ data class HomeUiState(
     val pet: ActivePet,
     val energy: Float,
     val mood: Mood,
+    /** The speech bubble; null while asleep. */
+    val line: PetLine?,
     val pill: PillState,
     val showBreakCta: Boolean,
     val sparks: Int,
@@ -58,6 +75,7 @@ data class HomeUiState(
      * on until the next shift starts), so it isn't called "today" at 6 pm (CLAUDE.md §5.4).
      */
     val lastShift: Boolean = false,
+    val streakGoal: StreakGoalUi? = null,
 ) {
     val doneCount: Int get() = breaks.count { it.doneToday }
     val totalCount: Int get() = breaks.size
@@ -79,6 +97,9 @@ fun toHomeUiState(
     focused: BreakType?,
     zone: ZoneId,
     enabledTypes: List<BreakType> = BreakType.entries,
+    streak: StreakSummary? = null,
+    /** The types whose break reward was paid this break day (the ledger's break keys). */
+    paidToday: Set<BreakType> = emptySet(),
 ): HomeUiState {
     val done = logsToday.filter { it.outcome == BreakOutcome.DONE }.map { it.type }.toSet()
     val skipped = logsToday.filter { it.outcome == BreakOutcome.SKIPPED }.map { it.type }.toSet()
@@ -87,27 +108,33 @@ fun toHomeUiState(
     val pill = if (!status.isWorkTime) {
         PillState.Asleep(status.nextSessionStart?.atZone(zone)?.toLocalDateTime())
     } else {
-        PillState.Sitting(
-            minutes = status.sitMinutes,
-            progress = quantize(status.sitFraction.coerceIn(0f, 1f)),
-            chip = when {
-                status.isOnWalk -> MoodChip.WALK
-                status.mood == Mood.STIFF -> MoodChip.STIFF
-                status.mood == Mood.TIRED -> MoodChip.TIRED
-                else -> MoodChip.GREAT // HAPPY, CELEBRATE, STRETCH
-            },
-        )
+        PillState.Sitting(minutes = status.sitMinutes, progress = quantize(status.sitFraction.coerceIn(0f, 1f)))
     }
 
     return HomeUiState(
         pet = pet,
         energy = quantize(status.energy),
         mood = status.mood,
+        line = when {
+            !status.isWorkTime -> null
+            status.isOnWalk -> PetLine.WALK
+            status.mood == Mood.CELEBRATE -> PetLine.CELEBRATE
+            status.mood == Mood.STIFF -> PetLine.STIFF
+            status.mood == Mood.TIRED -> PetLine.TIRED
+            else -> PetLine.HAPPY // HAPPY, STRETCH
+        },
         pill = pill,
         // The button starts the 2-min walk, so it goes if the walk is switched off.
         showBreakCta = status.isWorkTime && status.mood == Mood.STIFF && !status.isOnWalk && BreakType.WALK in enabledTypes,
         sparks = sparks,
-        breaks = enabledTypes.map { BreakCardUi(it, doneToday = it in done, skippedToday = it in skipped && it !in done) },
+        breaks = enabledTypes.map {
+            BreakCardUi(
+                type = it,
+                doneToday = it in done,
+                skippedToday = it in skipped && it !in done,
+                sparksEarned = if (it in done && it in paidToday) it.defaultReward else 0,
+            )
+        },
         intervalMinutes = settings.interval,
         workStartMinute = settings.schedule.startMinute,
         workEndMinute = settings.schedule.endMinute,
@@ -117,6 +144,9 @@ fun toHomeUiState(
             FocusUi(it, doneToday = it in done, canSnooze = reminderDue && status.snoozesLeft > 0)
         },
         lastShift = settings.schedule.crossesMidnight && !status.isWorkTime,
+        streakGoal = streak?.takeIf { it.todayIsWorkDay }?.let {
+            StreakGoalUi(done = it.todayDone.coerceAtMost(it.goal), goal = it.goal, days = it.days)
+        },
     )
 }
 

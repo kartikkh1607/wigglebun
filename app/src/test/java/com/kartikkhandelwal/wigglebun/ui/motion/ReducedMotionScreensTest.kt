@@ -20,6 +20,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -117,6 +118,34 @@ class ReducedMotionScreensTest {
     @Test
     fun controlHomeCardsStaggerInWithAnimationsOn() = assertFalse(walkCardShowsAtOnce(reducedMotion = false))
 
+    // --- Home's top: room, pet, speech bubble and streak row are still --------------------
+
+    /**
+     * Home (Tired: a bubble and a streak chip) once everything has entered, and again half a
+     * breath later. The room scene, bubble and streak row have no motion of their own; this
+     * pins that nothing on the screen moves with animations removed.
+     */
+    private fun homeFrames(reducedMotion: Boolean): Pair<IntArray, IntArray> {
+        setContent(reducedMotion) { HomeScreen(HomePreviewStates.Tired) }
+        composeRule.onNodeWithText("Streak goal", useUnmergedTree = true).assertExists()
+        composeRule.mainClock.advanceTimeBy(ENTRANCE_DONE_MILLIS)
+        val first = composeRule.onRoot().pixels()
+        composeRule.mainClock.advanceTimeBy(HALF_BREATH_MILLIS)
+        return first to composeRule.onRoot().pixels()
+    }
+
+    @Test
+    fun homeHoldsStill() {
+        val (first, later) = homeFrames(reducedMotion = true)
+        assertTrue("something on Home moved", first.contentEquals(later))
+    }
+
+    @Test
+    fun controlHomeMovesWithAnimationsOn() {
+        val (first, later) = homeFrames(reducedMotion = false)
+        assertFalse("the live pet on Home should move", first.contentEquals(later))
+    }
+
     // --- Wake-up: the tap wakes the pet straight into its hello ---------------------------
 
     /** Taps the wake button and moves one frame on, far short of the 1.6 s stretch. */
@@ -180,6 +209,7 @@ class ReducedMotionScreensTest {
 
     private companion object {
         const val HALF_BREATH_MILLIS = 1_250L
+        const val ENTRANCE_DONE_MILLIS = 2_000L
         const val POSE_CYCLE_CHECK_MILLIS = 2_500L
         const val SETTLE_MILLIS = 100L
         const val MILLIS_PER_MINUTE = 60_000L
