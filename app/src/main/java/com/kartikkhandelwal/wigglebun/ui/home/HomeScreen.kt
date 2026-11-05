@@ -32,12 +32,16 @@ import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.repo.BreakActions
 import com.kartikkhandelwal.wigglebun.data.repo.BreakRepository
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
+import com.kartikkhandelwal.wigglebun.data.db.BreakLogEntity
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
+import com.kartikkhandelwal.wigglebun.data.repo.StreakRepository
+import com.kartikkhandelwal.wigglebun.data.repo.StreakSummary
 import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
 import com.kartikkhandelwal.wigglebun.data.time.AppClock
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
@@ -76,6 +80,7 @@ class HomeViewModel @Inject constructor(
     breakRepository: BreakRepository,
     walletRepository: WalletRepository,
     petRepository: PetRepository,
+    streakRepository: StreakRepository,
     private val actions: BreakActions,
     private val clock: AppClock,
 ) : ViewModel() {
@@ -84,15 +89,26 @@ class HomeViewModel @Inject constructor(
     private val status = sitRepository.status.filterNotNull()
 
     /**
-     * Today's BreakLog, re-queried when the break day changes: at midnight, or at the shift start
-     * when work hours cross midnight (see [BreakDays]), and when a change of hours moves it.
+     * The break day, changing at midnight, or at the shift start when work hours cross midnight
+     * (see [BreakDays]), and when a change of hours moves it.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val logsToday = combine(status, settingsRepository.dayBoundaryHistory) { st, history ->
+    private val breakDay = combine(status, settingsRepository.dayBoundaryHistory) { st, history ->
         history to BreakDays(history, clock.zone).dayOf(st.now)
-    }
-        .distinctUntilChanged()
-        .flatMapLatest { (history, day) -> breakRepository.observeDay(BreakDays(history, clock.zone).span(day)) }
+    }.distinctUntilChanged()
+
+    private data class Day(val logs: List<BreakLogEntity>, val paid: Set<BreakType>, val streak: StreakSummary)
+
+    /** Today's BreakLog, the types whose reward was paid today (the ledger), and the streak. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val today = combine(
+        breakDay.flatMapLatest { (history, day) -> breakRepository.observeDay(BreakDays(history, clock.zone).span(day)) },
+        breakDay.flatMapLatest { (_, day) ->
+            walletRepository.keysStartingWith(RewardRules.breakKeysOn(day))
+                .map { keys -> BreakType.entries.filter { RewardRules.breakKey(day, it) in keys }.toSet() }
+        },
+        streakRepository.summary,
+        ::Day,
+    )
 
     private data class Profile(val settings: SittingSettings, val pet: ActivePet, val sparks: Int, val breaks: List<BreakType>)
 
@@ -105,8 +121,8 @@ class HomeViewModel @Inject constructor(
     )
 
     /** Null until the saved state has loaded (no default pet flashing on a cold start). */
-    val state: StateFlow<HomeUiState?> = combine(status, profile, logsToday, focused) { st, (settings, pet, sparks, breaks), logs, focus ->
-        toHomeUiState(st, settings, pet, sparks, logs, focus, clock.zone, breaks)
+    val state: StateFlow<HomeUiState?> = combine(status, profile, today, focused) { st, (settings, pet, sparks, breaks), day, focus ->
+        toHomeUiState(st, settings, pet, sparks, day.logs, focus, clock.zone, breaks, streak = day.streak, paidToday = day.paid)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun openBreak(type: BreakType) {
@@ -213,8 +229,8 @@ fun HomeScreenRoute(
 }
 
 /**
- * Home (CLAUDE.md §6.3, design/mockups_source/Main.dc.html). One scrolling list: desk scene with
- * the timer pill overlapping it, "Breaks for today" header, break cards.
+ * Home (CLAUDE.md §6.3, design/ui_v2/Main.dc.html). One scrolling list: the room with the pet and
+ * its speech bubble, the timer card on the floor below it, "Breaks for today" header, break cards.
  */
 @Composable
 fun HomeScreen(
@@ -246,24 +262,25 @@ fun HomeScreen(
         ) {
             item(key = "top") {
                 Column {
-                    DeskScene(
+                    HomeScene(
                         energy = state.energy,
                         mood = state.mood,
                         pet = state.pet.spec,
                         petName = petName,
+                        line = state.line,
                         accessories = state.pet.wearing,
                         sparks = state.sparks,
                         onOpenMenu = onOpenMenu,
                     )
-                    TimerPill(
+                    TimerCard(
                         pill = state.pill,
+                        line = state.line,
                         petName = petName,
                         today = state.today,
                         showBreakCta = state.showBreakCta,
+                        streakGoal = state.streakGoal,
                         onTakeBreak = onTakeBreak,
-                        modifier = Modifier
-                            .padding(horizontal = Dimens.ScreenPadding)
-                            .overlapUp(H.PillOverlap),
+                        modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
                     )
                 }
             }
@@ -288,13 +305,6 @@ fun HomeScreen(
     }
 }
 
-/** Pulls the element up by [overlap] and gives the space back (timer pill over the scene). */
-private fun Modifier.overlapUp(overlap: Dp): Modifier = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints)
-    val shift = overlap.roundToPx()
-    layout(placeable.width, (placeable.height - shift).coerceAtLeast(0)) { placeable.place(0, -shift) }
-}
-
 /** Sample states for previews and screenshot tests. */
 internal object HomePreviewStates {
     private val today: LocalDate = LocalDate.of(2026, 10, 26) // Monday
@@ -303,42 +313,54 @@ internal object HomePreviewStates {
     private fun state(
         mood: Mood,
         energy: Float,
+        line: PetLine?,
         pill: PillState,
         cta: Boolean = false,
         done: Set<BreakType> = doneTwo,
         skipped: Set<BreakType> = emptySet(),
+        streakDays: Int = STREAK_DAYS,
     ) = HomeUiState(
         pet = ActivePet.Default,
         energy = energy,
         mood = mood,
+        line = line,
         pill = pill,
         showBreakCta = cta,
         sparks = 120,
-        breaks = BreakType.entries.map { BreakCardUi(it, doneToday = it in done, skippedToday = it in skipped) },
+        breaks = BreakType.entries.map {
+            BreakCardUi(it, doneToday = it in done, skippedToday = it in skipped, sparksEarned = if (it in done) it.defaultReward else 0)
+        },
         intervalMinutes = 45,
         workStartMinute = 9 * 60,
         workEndMinute = 18 * 60,
         reminderDue = false,
         today = today,
         focus = null,
+        streakGoal = StreakGoalUi(done = minOf(done.size, GOAL), goal = GOAL, days = streakDays),
     )
 
-    val Happy = state(Mood.HAPPY, 0.78f, PillState.Sitting(12, 12 / 45f, MoodChip.GREAT))
-    val Tired = state(Mood.TIRED, 0.41f, PillState.Sitting(32, 32 / 45f, MoodChip.TIRED))
-    val Stiff = state(Mood.STIFF, 0.15f, PillState.Sitting(52, 1f, MoodChip.STIFF), cta = true)
-    val OnWalk = state(Mood.HAPPY, 1f, PillState.Sitting(0, 0f, MoodChip.WALK))
+    private const val GOAL = 3
+    private const val STREAK_DAYS = 5
+
+    /** No streak yet: the flame chip is hidden. */
+    val Happy = state(Mood.HAPPY, 0.78f, PetLine.HAPPY, PillState.Sitting(12, 12 / 45f), streakDays = 0)
+    val Tired = state(Mood.TIRED, 0.41f, PetLine.TIRED, PillState.Sitting(32, 32 / 45f))
+    val Stiff = state(Mood.STIFF, 0.15f, PetLine.STIFF, PillState.Sitting(52, 1f), cta = true)
+    val OnWalk = state(Mood.HAPPY, 1f, PetLine.WALK, PillState.Sitting(0, 0f))
     val Asleep = state(
         Mood.SLEEPING,
         1f,
+        null,
         PillState.Asleep(LocalDateTime.of(2026, 10, 27, 9, 0)),
         skipped = setOf(BreakType.WATER),
     )
-    val AllDone = state(Mood.HAPPY, 0.9f, PillState.Sitting(5, 5 / 45f, MoodChip.GREAT), done = BreakType.entries.toSet())
+    val AllDone = state(Mood.HAPPY, 0.9f, PetLine.HAPPY, PillState.Sitting(5, 5 / 45f), done = BreakType.entries.toSet())
 
     /** 6 pm after a 22:00–06:00 shift: the list is last night's breaks, so it says "Last shift". */
     val AsleepAfterNightShift = state(
         Mood.SLEEPING,
         1f,
+        null,
         PillState.Asleep(LocalDateTime.of(2026, 10, 26, 22, 0)),
     ).copy(workStartMinute = 22 * 60, workEndMinute = 6 * 60, lastShift = true)
 
@@ -346,7 +368,8 @@ internal object HomePreviewStates {
     val Celebrate = state(
         Mood.CELEBRATE,
         1f,
-        PillState.Sitting(0, 0f, MoodChip.GREAT),
+        PetLine.CELEBRATE,
+        PillState.Sitting(0, 0f),
         done = doneTwo + BreakType.WALK,
     )
     val FocusDue = Stiff.copy(focus = FocusUi(BreakType.WALK, doneToday = false, canSnooze = true), reminderDue = true)

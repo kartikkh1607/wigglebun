@@ -6,12 +6,12 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,7 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -50,7 +51,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
@@ -61,12 +62,12 @@ import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
 import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
 import com.kartikkhandelwal.wigglebun.ui.components.SparksPill
+import com.kartikkhandelwal.wigglebun.ui.components.SpeechBubble
 import com.kartikkhandelwal.wigglebun.ui.iconRes
 import com.kartikkhandelwal.wigglebun.ui.labelRes
 import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpec
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
-import com.kartikkhandelwal.wigglebun.ui.pet.SleepZSide
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonBorder
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
@@ -74,16 +75,17 @@ import com.kartikkhandelwal.wigglebun.ui.theme.CheckIdle
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreen
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreenEdge
+import com.kartikkhandelwal.wigglebun.ui.theme.FlameChip
+import com.kartikkhandelwal.wigglebun.ui.theme.FlameChipText
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.MoodHappyChip
-import com.kartikkhandelwal.wigglebun.ui.theme.MoodStiffChip
-import com.kartikkhandelwal.wigglebun.ui.theme.MoodTiredChip
-import com.kartikkhandelwal.wigglebun.ui.theme.PetShadow
+import com.kartikkhandelwal.wigglebun.ui.theme.OnSurface
+import com.kartikkhandelwal.wigglebun.ui.theme.RewardChip
+import com.kartikkhandelwal.wigglebun.ui.theme.StreakSegmentIdle
+import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.TimerHappy
 import com.kartikkhandelwal.wigglebun.ui.theme.TimerStiff
 import com.kartikkhandelwal.wigglebun.ui.theme.TimerTired
-import com.kartikkhandelwal.wigglebun.ui.theme.TopButtonEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Track
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
@@ -103,61 +105,120 @@ private const val PROGRESS_TWEEN_MILLIS = 600
 
 private val H = Dimens.Home
 
-// ---------- Desk scene ----------
+// ---------- Room scene ----------
 
-/** Top of Home: desk scene with the active pet on the floor, menu button and sparks pill. */
+/**
+ * Top of Home (design/ui_v2/Main.dc.html): the room, the menu button and sparks pill on the wall,
+ * and the pet on the rug with what it says above its head ([line]; none while it sleeps). The
+ * scene is 340 dp below the status bar; at large font sizes it grows at the top, so the bubble
+ * never covers the buttons or the pet.
+ */
 @Composable
-fun DeskScene(
+fun HomeScene(
     energy: Float,
     mood: Mood,
     pet: PetSpec,
     petName: String,
+    line: PetLine?,
     sparks: Int,
     onOpenMenu: () -> Unit,
     modifier: Modifier = Modifier,
     accessories: List<AccessoryId> = emptyList(),
 ) {
-    // Edge-to-edge: the picture runs under the status bar; the mockup layout starts below it.
+    // Edge-to-edge: the wall runs under the status bar; the mockup layout starts below it.
     val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    Box(modifier.fillMaxWidth().height(H.SceneHeight + topInset)) {
-        Image(
-            painter = painterResource(R.drawable.desk_scene),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize(),
-        )
-        Box(Modifier.fillMaxWidth().padding(top = topInset).height(H.SceneHeight)) {
-            Canvas(
-                Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = H.PetShadowTop)
-                    .size(H.PetShadowWidth, H.PetShadowHeight),
-            ) { drawOval(PetShadow) }
+    OnSurface(Surfaces.HomeWall) {
+        Layout(
+            modifier = modifier.fillMaxWidth(),
+            content = {
+                RoomScene(topInset = topInset)
+                Row(Modifier.padding(horizontal = H.TopBarPadding), verticalAlignment = Alignment.CenterVertically) {
+                    MenuButton(onOpenMenu)
+                    Spacer(Modifier.weight(1f))
+                    SparksPill(sparks)
+                }
+                PetWithLine(energy, mood, pet, petName, line, accessories)
+            },
+        ) { measurables, constraints ->
+            val width = constraints.maxWidth
+            val top = topInset.roundToPx()
+            val bar = measurables[1].measure(Constraints.fixedWidth(width))
+            val petUnit = measurables[2].measure(Constraints(maxWidth = width))
+            val barBottom = H.TopBarPadding.roundToPx() + bar.height
+            val belowPet = H.PetAboveSceneBottom.roundToPx()
+            val scene = maxOf(H.SceneHeight.roundToPx(), barBottom + H.BubbleBelowTopBar.roundToPx() + petUnit.height + belowPet)
+            val height = top + scene
+            val room = measurables[0].measure(Constraints.fixed(width, height))
+            layout(width, height) {
+                room.place(0, 0)
+                petUnit.place((width - petUnit.width) / 2, height - belowPet - petUnit.height)
+                bar.place(0, top + H.TopBarPadding.roundToPx())
+            }
+        }
+    }
+}
+
+/**
+ * The pet with its speech bubble above its head, the tail pointing at it. TalkBack reads the two
+ * as one item ("Bun, energy draining from sitting. Getting sleepy… stretch with me?"): the bubble
+ * says what the old mood chip said.
+ */
+@Composable
+private fun PetWithLine(
+    energy: Float,
+    mood: Mood,
+    pet: PetSpec,
+    petName: String,
+    line: PetLine?,
+    accessories: List<AccessoryId>,
+) {
+    val fontScale = LocalDensity.current.fontScale
+    Layout(
+        modifier = Modifier.semantics(mergeDescendants = true) {},
+        content = {
             PetView(
                 energy = energy,
                 mood = mood,
                 spec = pet,
                 name = petName,
                 accessories = accessories,
-                // The scene's plant pot sits just right of Bun's head; float the z's left over plain wall.
-                sleepZSide = SleepZSide.LEFT,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = H.PetTop)
-                    .size(H.PetSize),
+                modifier = Modifier.size(H.PetWidth, H.PetHeight),
             )
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(H.TopBarPadding),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                MenuButton(onOpenMenu)
-                Spacer(Modifier.weight(1f))
-                // On the desk picture, not the floor: its own edge until the room scene (UI v2 Home).
-                SparksPill(sparks, edgeColor = TopButtonEdge)
-            }
+            if (line != null) SpeechBubble(stringResource(line.textRes))
+        },
+    ) { measurables, constraints ->
+        val petBox = measurables[0].measure(Constraints())
+        // The mockup's width at 100%; larger fonts may use more of the screen before wrapping.
+        val maxBubble = minOf(
+            (H.BubbleMaxWidth * fontScale.coerceAtLeast(1f)).roundToPx(),
+            constraints.maxWidth - 2 * H.BubbleSideMargin.roundToPx(),
+        )
+        val bubble = measurables.getOrNull(1)?.measure(Constraints(maxWidth = maxBubble.coerceAtLeast(0)))
+        val above = bubble?.let { (it.height - H.BubbleIntoPet.roundToPx()).coerceAtLeast(0) } ?: 0
+        val width = maxOf(petBox.width, bubble?.width ?: 0)
+        layout(width, above + petBox.height) {
+            petBox.place((width - petBox.width) / 2, above)
+            bubble?.place((width - bubble.width) / 2, 0)
         }
     }
 }
+
+private val PetLine.textRes: Int
+    get() = when (this) {
+        PetLine.HAPPY -> R.string.home_line_happy
+        PetLine.TIRED -> R.string.home_line_tired
+        PetLine.STIFF -> R.string.home_line_stiff
+        PetLine.WALK -> R.string.home_line_walk
+        PetLine.CELEBRATE -> R.string.home_line_celebrate
+    }
+
+/** The timer bar keeps the mood's colour (D1). */
+private val PetLine?.barColor: Color
+    get() = when (this) {
+        PetLine.TIRED -> TimerTired
+        PetLine.STIFF -> TimerStiff
+        else -> TimerHappy
+    }
 
 @Composable
 private fun MenuButton(onClick: () -> Unit) {
@@ -165,7 +226,6 @@ private fun MenuButton(onClick: () -> Unit) {
     ChunkySurface(
         shape = RoundedCornerShape(H.MenuButtonRadius),
         faceColor = Card,
-        edgeColor = TopButtonEdge,
         edgeHeight = H.TopButtonEdge,
         onClick = onClick,
         contentAlignment = Alignment.Center,
@@ -179,76 +239,112 @@ private fun MenuButton(onClick: () -> Unit) {
     }
 }
 
-// ---------- Timer pill ----------
+// ---------- Timer card ----------
 
+/**
+ * The card under the room (design/ui_v2/Main.dc.html): minutes since the last break and the
+ * timer bar in the mood's colour, or when work starts while asleep; then today's streak goal.
+ */
 @Composable
-fun TimerPill(
+fun TimerCard(
     pill: PillState,
+    line: PetLine?,
     petName: String,
     today: LocalDate,
     showBreakCta: Boolean,
+    streakGoal: StreakGoalUi?,
     onTakeBreak: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PillCard(
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = H.PillPaddingHorizontal, vertical = H.PillPaddingVertical),
+        contentPadding = PaddingValues(
+            start = H.PillPaddingHorizontal,
+            end = H.PillPaddingHorizontal,
+            top = H.PillPaddingTop,
+            bottom = H.PillPaddingBottom,
+        ),
     ) {
-        when (pill) {
-            is PillState.Sitting -> SittingContent(pill, petName, showBreakCta, onTakeBreak)
-            is PillState.Asleep -> AsleepContent(pill, petName, today)
+        Column(verticalArrangement = Arrangement.spacedBy(H.PillGap)) {
+            when (pill) {
+                is PillState.Sitting -> SittingContent(pill, line, showBreakCta, onTakeBreak)
+                is PillState.Asleep -> AsleepContent(pill, petName, today)
+            }
+            if (streakGoal != null) {
+                HorizontalDivider(thickness = H.DividerThickness, color = Track)
+                StreakGoalRow(streakGoal)
+            }
         }
     }
 }
 
 @Composable
-private fun SittingContent(pill: PillState.Sitting, petName: String, showBreakCta: Boolean, onTakeBreak: () -> Unit) {
-    val (chipBackground, barColor) = pill.chip.colors()
-    Column(verticalArrangement = Arrangement.spacedBy(H.PillGap)) {
-        // The label gets its own line so the chip never squeezes it (large fonts).
-        // TalkBack reads label, minutes and chip as one sentence.
-        Column(
-            modifier = Modifier.semantics(mergeDescendants = true) {},
-            verticalArrangement = Arrangement.spacedBy(H.PillLabelGap),
+private fun SittingContent(pill: PillState.Sitting, line: PetLine?, showBreakCta: Boolean, onTakeBreak: () -> Unit) {
+    // TalkBack reads "32 min, since your last break" as one item.
+    Column(Modifier.semantics(mergeDescendants = true) {}) {
+        Text(
+            pluralStringResource(R.plurals.home_minutes, pill.minutes, pill.minutes),
+            style = WigglebunTextStyles.TimerMinutes,
+            color = Ink,
+        )
+        Text(stringResource(R.string.home_since_last_break), style = MaterialTheme.typography.labelMedium, color = InkMuted)
+    }
+    ProgressBar(pill.progress, line.barColor)
+    if (showBreakCta) {
+        ChunkyButton(
+            text = stringResource(R.string.home_take_break),
+            onClick = onTakeBreak,
+            modifier = Modifier.fillMaxWidth().padding(top = H.CtaTopGap),
+            wrap = true,
+        )
+    }
+}
+
+/**
+ * "Streak goal ▬▬▭ 2 of 3" and the streak's flame chip (hidden at 0). One TalkBack item. At large
+ * font sizes the goal's parts wrap; the chip stays on the right.
+ */
+@Composable
+private fun StreakGoalRow(goal: StreakGoalUi) {
+    val description = buildString {
+        append(stringResource(R.string.cd_home_streak_goal, goal.done, goal.goal))
+        if (goal.days > 0) append(' ').append(pluralStringResource(R.plurals.cd_home_streak_days, goal.days, goal.days))
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(H.PillGap),
+    ) {
+        FlowRow(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(H.StreakGap),
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(stringResource(R.string.home_time_since_break), style = MaterialTheme.typography.labelMedium, color = InkMuted)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(H.CardGap),
-            ) {
-                // The minutes take only their own width, so the chip has room for a
-                // MAX_PET_NAME_LENGTH name at the default font size.
-                Text(
-                    pluralStringResource(R.plurals.home_minutes, pill.minutes, pill.minutes),
-                    style = MaterialTheme.typography.displayMedium,
-                    color = Ink,
-                )
-                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                    // A long name is shortened rather than wrapped, so the card keeps its height;
-                    // large fonts still wrap the words.
-                    PetNameSentence(
-                        template = pill.chip.textRes(),
-                        name = petName,
-                        style = WigglebunTextStyles.Chip,
-                        color = Ink,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
+            Text(stringResource(R.string.home_streak_goal), style = WigglebunTextStyles.StrongLabel, color = Ink)
+            Row(horizontalArrangement = Arrangement.spacedBy(H.SegmentGap)) {
+                repeat(goal.goal) { index ->
+                    Box(
+                        Modifier
+                            .size(H.SegmentWidth, H.SegmentHeight)
                             .clip(WigglebunShapes.Pill)
-                            .background(chipBackground)
-                            .padding(horizontal = H.ChipPaddingHorizontal, vertical = H.ChipPaddingVertical),
+                            .background(if (index < goal.done) DoneGreen else StreakSegmentIdle),
                     )
                 }
             }
+            Text(stringResource(R.string.home_streak_progress, goal.done, goal.goal), style = MaterialTheme.typography.labelMedium, color = InkMuted)
         }
-        ProgressBar(pill.progress, barColor)
-        if (showBreakCta) {
-            ChunkyButton(
-                text = stringResource(R.string.home_take_break),
-                onClick = onTakeBreak,
-                modifier = Modifier.fillMaxWidth().padding(top = H.CtaTopGap),
-                wrap = true,
-            )
+        if (goal.days > 0) {
+            Row(
+                modifier = Modifier
+                    .clip(WigglebunShapes.Pill)
+                    .background(FlameChip)
+                    .padding(start = H.FlamePaddingStart, end = H.FlamePaddingEnd, top = H.FlamePaddingVertical, bottom = H.FlamePaddingVertical),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(H.FlameGap),
+            ) {
+                Image(painterResource(R.drawable.ic_flame), contentDescription = null, modifier = Modifier.size(H.FlameIcon))
+                Text(pluralStringResource(R.plurals.home_streak_days, goal.days, goal.days), style = WigglebunTextStyles.Chip, color = FlameChipText)
+            }
         }
     }
 }
@@ -332,20 +428,6 @@ private const val NO_BREAK_SPACE = '\u00A0'
 /** Minutes after midnight (1440 = midnight) as a time. */
 internal fun minuteOfDay(minute: Int): LocalTime = LocalTime.of((minute / 60) % 24, minute % 60)
 
-private fun MoodChip.textRes(): Int = when (this) {
-    MoodChip.GREAT -> R.string.home_chip_great
-    MoodChip.TIRED -> R.string.home_chip_tired
-    MoodChip.STIFF -> R.string.home_chip_stiff
-    MoodChip.WALK -> R.string.home_chip_walk
-}
-
-/** Chip background and timer bar colour (Main.dc.html). */
-private fun MoodChip.colors(): Pair<Color, Color> = when (this) {
-    MoodChip.GREAT, MoodChip.WALK -> MoodHappyChip to TimerHappy
-    MoodChip.TIRED -> MoodTiredChip to TimerTired
-    MoodChip.STIFF -> MoodStiffChip to TimerStiff
-}
-
 // ---------- Breaks list ----------
 
 @Composable
@@ -385,7 +467,7 @@ fun BreakCard(
 ) {
     val title = stringResource(card.type.labelRes)
     ChunkySurface(
-        shape = WigglebunShapes.Card,
+        shape = WigglebunShapes.BreakCard,
         faceColor = Card,
         edgeHeight = H.CardEdge,
         onClick = onOpen,
@@ -393,26 +475,53 @@ fun BreakCard(
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(start = H.CardPaddingStart, top = H.CardPadding, end = H.CardPadding, bottom = H.CardPadding),
+            modifier = Modifier.padding(horizontal = H.CardPaddingHorizontal, vertical = H.CardPaddingVertical),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(H.CardGap),
         ) {
             BreakIconTile(card.type, H.IconTileSize, WigglebunShapes.IconTile, H.BreakIcon)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(H.CardTextGap)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = Ink)
-                Text(
-                    text = if (card.skippedToday) {
-                        stringResource(R.string.home_break_skipped)
-                    } else {
-                        pluralStringResource(R.plurals.home_minutes, card.type.durationMinutes, card.type.durationMinutes)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = InkMuted,
-                )
+                when {
+                    // What it paid today, in green; the reward chip goes (design/ui_v2/Main.dc.html).
+                    card.doneToday -> Text(
+                        text = if (card.sparksEarned > 0) {
+                            pluralStringResource(R.plurals.home_break_done_sparks, card.sparksEarned, card.sparksEarned)
+                        } else {
+                            stringResource(R.string.home_break_done)
+                        },
+                        style = WigglebunTextStyles.Count,
+                        color = DoneGreenEdge,
+                    )
+                    card.skippedToday -> Text(stringResource(R.string.home_break_skipped), style = MaterialTheme.typography.bodySmall, color = InkMuted)
+                    else -> Text(
+                        pluralStringResource(R.plurals.home_minutes, card.type.durationMinutes, card.type.durationMinutes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = InkMuted,
+                    )
+                }
             }
-            Reward(card.type.defaultReward)
+            if (!card.doneToday) SparkReward(card.type.defaultReward)
             CheckButton(done = card.doneToday, title = title, onClick = onCheck)
         }
+    }
+}
+
+/** A card's spark reward: star and number on a pale yellow pill, read as "5 sparks". */
+@Composable
+private fun SparkReward(sparks: Int) {
+    val description = pluralStringResource(R.plurals.cd_sparks, sparks, sparks)
+    Row(
+        modifier = Modifier
+            .clearAndSetSemantics { contentDescription = description }
+            .clip(WigglebunShapes.Pill)
+            .background(RewardChip)
+            .padding(start = H.RewardChipPaddingStart, end = H.RewardChipPaddingEnd, top = H.RewardChipPaddingVertical, bottom = H.RewardChipPaddingVertical),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(H.RewardGap),
+    ) {
+        SparkIcon(H.RewardChipIcon)
+        Text(sparks.toString(), style = WigglebunTextStyles.StrongLabel, color = Ink)
     }
 }
 
