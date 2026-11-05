@@ -38,14 +38,13 @@ import com.kartikkhandelwal.wigglebun.domain.model.MAX_PET_NAME_LENGTH
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
+import com.kartikkhandelwal.wigglebun.ui.components.StepDots
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
-import com.kartikkhandelwal.wigglebun.ui.theme.CheckIdle
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.Sun
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 
 private val S = Dimens.Onboarding
@@ -109,7 +108,7 @@ fun NamePetScreen(
             onClick = onContinue,
             modifier = Modifier.fillMaxWidth().padding(horizontal = S.NameButtonHorizontal, vertical = S.CtaBottomShort),
         )
-        StepDots(step = 2, active = Sun, inactive = CheckIdle)
+        StepDots(step = 2, count = ONBOARDING_STEPS)
         Spacer(Modifier.height(S.DotsBottomShort))
     }
 }

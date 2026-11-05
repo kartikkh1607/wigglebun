@@ -31,6 +31,7 @@ import com.kartikkhandelwal.wigglebun.ui.home.HomePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreen
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
+import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfilePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreen
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreenRoute
@@ -93,7 +94,7 @@ fun WigglebunNavHost(
                     items = TopLevelTab.entries.map {
                         // The pet tab is named after the pet that is with you (CLAUDE.md §6.6).
                         val label = if (it == TopLevelTab.Pet) petName else stringResource(it.label)
-                        TabBarItem(label, it.icon, it.tintIcon)
+                        TabBarItem(label, it.icon(activePet?.spec), it.style)
                     },
                     selectedIndex = currentTab.ordinal,
                     onSelect = { index -> openTab(TopLevelTab.entries[index]) },
@@ -104,6 +105,8 @@ fun WigglebunNavHost(
         NavHost(
             navController = navController,
             startDestination = HomeRoute,
+            enterTransition = navFadeIn,
+            exitTransition = navFadeOut,
             // Edge-to-edge: screens handle the status bar themselves (Home's scene runs under it).
             modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
         ) {

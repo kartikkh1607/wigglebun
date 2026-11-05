@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tab icon, ported from design/mockups_source/Main.dc.html. Tinted in code. -->
+<!-- Home tab (design/ui_v2 nav). Full colour: draw untinted. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:pathData="M4,11 L12,4 L20,11 V20 H14 V14 H10 V20 H4 Z"
-        android:strokeColor="#FF2B2A3A"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:strokeWidth="2.2" />
+        android:pathData="M3.5 11 L12 3.5 L20.5 11 V19.5 C20.5 20.6 19.6 21.5 18.5 21.5 H5.5 C4.4 21.5 3.5 20.6 3.5 19.5 Z"
+        android:fillColor="#FFF68A6B" />
+    <path
+        android:pathData="M9.5 21.5 V15.5 C9.5 14.7 10.2 14 11 14 H13 C13.8 14 14.5 14.7 14.5 15.5 V21.5 Z"
+        android:fillColor="#FFFFFFFF" />
 </vector>

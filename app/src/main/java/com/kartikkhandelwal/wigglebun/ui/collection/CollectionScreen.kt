@@ -50,8 +50,8 @@ import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
-import com.kartikkhandelwal.wigglebun.ui.theme.CardEdge
-import com.kartikkhandelwal.wigglebun.ui.theme.Cream
+import com.kartikkhandelwal.wigglebun.ui.theme.OnSurface
+import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
@@ -70,7 +70,7 @@ fun CollectionScreenRoute(modifier: Modifier = Modifier, viewModel: CollectionVi
     val state by viewModel.state.collectAsStateWithLifecycle()
     val loaded = state
     if (loaded == null) {
-        Box(modifier.fillMaxSize().background(Cream))
+        Box(modifier.fillMaxSize().background(Surfaces.Collection.background))
         return
     }
     CollectionScreen(
@@ -126,10 +126,21 @@ fun CollectionScreen(
     onSelectTab: (CollectionTab) -> Unit = {},
     onOpenAccessory: (AccessoryId) -> Unit = {},
 ) {
+    OnSurface(Surfaces.Collection) { CollectionContent(state, modifier, onOpenPet, onSelectTab, onOpenAccessory) }
+}
+
+@Composable
+private fun CollectionContent(
+    state: CollectionUiState,
+    modifier: Modifier,
+    onOpenPet: (PetId) -> Unit,
+    onSelectTab: (CollectionTab) -> Unit,
+    onOpenAccessory: (AccessoryId) -> Unit,
+) {
     Column(
         modifier
             .fillMaxSize()
-            .background(Cream)
+            .background(Surfaces.Collection.background)
             .verticalScroll(rememberScrollState())
             .statusBarsPadding(),
     ) {
@@ -250,7 +261,6 @@ private fun PetCard(pet: CollectionPetUi, chosenName: String?, onClick: () -> Un
         ChunkySurface(
             shape = WigglebunShapes.Card,
             faceColor = Card,
-            edgeColor = CardEdge,
             edgeHeight = C.CardEdge,
             onClick = onClick,
             onClickLabel = clickLabel,

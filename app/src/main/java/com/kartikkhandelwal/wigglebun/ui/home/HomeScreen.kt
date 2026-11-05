@@ -42,8 +42,9 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
-import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
+import com.kartikkhandelwal.wigglebun.ui.theme.OnSurface
+import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -182,7 +183,7 @@ fun HomeScreenRoute(
     val loaded = state
     if (loaded == null) {
         // Only the background until the real state arrives (a few ms from DataStore).
-        Box(modifier.fillMaxSize().background(Cream))
+        Box(modifier.fillMaxSize().background(Surfaces.Home.background))
         return
     }
     HomeScreen(
@@ -237,49 +238,52 @@ fun HomeScreen(
         }
     }
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize().background(Cream),
-        contentPadding = PaddingValues(bottom = H.ListBottomPadding),
-    ) {
-        item(key = "top") {
-            Column {
-                DeskScene(
-                    energy = state.energy,
-                    mood = state.mood,
-                    pet = state.pet.spec,
-                    petName = petName,
-                    accessories = state.pet.wearing,
-                    sparks = state.sparks,
-                    onOpenMenu = onOpenMenu,
-                )
-                TimerPill(
-                    pill = state.pill,
-                    petName = petName,
-                    today = state.today,
-                    showBreakCta = state.showBreakCta,
-                    onTakeBreak = onTakeBreak,
+    // The floor: the timer card, setup prompt and break cards sit on it (design/ui_v2/Main.dc.html).
+    OnSurface(Surfaces.Home) {
+        LazyColumn(
+            modifier = modifier.fillMaxSize().background(Surfaces.Home.background),
+            contentPadding = PaddingValues(bottom = H.ListBottomPadding),
+        ) {
+            item(key = "top") {
+                Column {
+                    DeskScene(
+                        energy = state.energy,
+                        mood = state.mood,
+                        pet = state.pet.spec,
+                        petName = petName,
+                        accessories = state.pet.wearing,
+                        sparks = state.sparks,
+                        onOpenMenu = onOpenMenu,
+                    )
+                    TimerPill(
+                        pill = state.pill,
+                        petName = petName,
+                        today = state.today,
+                        showBreakCta = state.showBreakCta,
+                        onTakeBreak = onTakeBreak,
+                        modifier = Modifier
+                            .padding(horizontal = Dimens.ScreenPadding)
+                            .overlapUp(H.PillOverlap),
+                    )
+                }
+            }
+            item(key = "setup") { setupPrompt() }
+            item(key = "header") { BreaksHeader(state.doneCount, state.totalCount, lastShift = state.lastShift) }
+            itemsIndexed(state.breaks, key = { _, card -> card.type }) { index, card ->
+                BreakCard(
+                    card = card,
+                    onOpen = { onOpenBreak(card.type) },
+                    onCheck = { onCheck(card.type) },
                     modifier = Modifier
                         .padding(horizontal = Dimens.ScreenPadding)
-                        .overlapUp(H.PillOverlap),
+                        // Mockup gap is 10 dp with the 3 dp edge drawn inside it.
+                        .padding(bottom = Dimens.ListGap - H.CardEdge)
+                        .staggerIn(index, enabled = !entered),
                 )
             }
-        }
-        item(key = "setup") { setupPrompt() }
-        item(key = "header") { BreaksHeader(state.doneCount, state.totalCount, lastShift = state.lastShift) }
-        itemsIndexed(state.breaks, key = { _, card -> card.type }) { index, card ->
-            BreakCard(
-                card = card,
-                onOpen = { onOpenBreak(card.type) },
-                onCheck = { onCheck(card.type) },
-                modifier = Modifier
-                    .padding(horizontal = Dimens.ScreenPadding)
-                    // Mockup gap is 10 dp with the 3 dp edge drawn inside it.
-                    .padding(bottom = Dimens.ListGap - H.CardEdge)
-                    .staggerIn(index, enabled = !entered),
-            )
-        }
-        item(key = "debug") {
-            Box(Modifier.fillMaxWidth().padding(top = Dimens.ListGap), contentAlignment = Alignment.Center) { debugEntry() }
+            item(key = "debug") {
+                Box(Modifier.fillMaxWidth().padding(top = Dimens.ListGap), contentAlignment = Alignment.Center) { debugEntry() }
+            }
         }
     }
 }

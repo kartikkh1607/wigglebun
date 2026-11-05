@@ -108,6 +108,7 @@
     <string name="cd_open_break">open break options</string>
     <string name="cd_snooze">Snooze 10 minutes</string>
     <string name="cd_close">Close</string>
+    <string name="cd_back">Back</string>
 
     <!-- Onboarding (WakeUp.dc.html) -->
     <string name="onboarding_continue">Continue</string>

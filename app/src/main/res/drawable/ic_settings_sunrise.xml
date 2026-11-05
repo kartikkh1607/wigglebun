@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From design/ui_v2/icons/settings_sunrise.svg. Full colour: draw untinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M24 7.5 V12.5 M10 14 L13.4 17.4 M38 14 L34.6 17.4 M4.5 27.5 H9 M43.5 27.5 H39"
+        android:strokeColor="#FFD08A24"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M11.5 34 A12.5 12.5 0 0 1 36.5 34 Z"
+        android:fillColor="#FFE9A93A" />
+    <path
+        android:pathData="M11.5 32 A12.5 12.5 0 0 1 36.5 32 Z"
+        android:fillColor="#FFFFC857" />
+    <path
+        android:pathData="M17 26.5 C18.3 24.2 20.4 22.6 23 22"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeAlpha="0.65"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M7.5,34 H40.5 A2.5,2.5 0 0,1 43,36.5 V36.5 A2.5,2.5 0 0,1 40.5,39 H7.5 A2.5,2.5 0 0,1 5,36.5 V36.5 A2.5,2.5 0 0,1 7.5,34 Z"
+        android:fillColor="#FF2B2A3A" />
+</vector>

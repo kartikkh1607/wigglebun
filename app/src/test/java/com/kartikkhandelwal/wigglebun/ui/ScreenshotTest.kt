@@ -15,9 +15,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonPreview
+import com.kartikkhandelwal.wigglebun.ui.components.GroupedCardPreview
 import com.kartikkhandelwal.wigglebun.ui.components.PillCardPreview
+import com.kartikkhandelwal.wigglebun.ui.components.SheetPanelPreview
+import com.kartikkhandelwal.wigglebun.ui.components.SpeechBubblePreview
+import com.kartikkhandelwal.wigglebun.ui.components.TopButtonsPreview
 import com.kartikkhandelwal.wigglebun.ui.components.WigglebunTabBarPreview
 import com.kartikkhandelwal.wigglebun.ui.navigation.WigglebunNavHostPreview
+import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
@@ -65,6 +70,39 @@ class ScreenshotTest {
     fun tabBar() {
         composeRule.setContent { WigglebunTabBarPreview() }
         composeRule.onRoot().captureRoboImage()
+    }
+
+    /** The Pet tab's icon is the pet that is with you (D9), here Pip. */
+    @Test
+    fun tabBarWithPip() {
+        composeRule.setContent { WigglebunTabBarPreview(PetSpecs.Pip) }
+        composeRule.onRoot().captureRoboImage("components_tab_bar_pip.png")
+    }
+
+    // Shared pieces for the design/ui_v2 screens (ui/components).
+
+    @Test
+    fun topButtons() {
+        composeRule.setContent { TopButtonsPreview() }
+        composeRule.onRoot().captureRoboImage("components_top_buttons.png")
+    }
+
+    @Test
+    fun sheetPanel() {
+        composeRule.setContent { SheetPanelPreview() }
+        composeRule.onRoot().captureRoboImage("components_sheet_panel.png")
+    }
+
+    @Test
+    fun groupedCards() {
+        composeRule.setContent { GroupedCardPreview() }
+        composeRule.onRoot().captureRoboImage("components_grouped_cards.png")
+    }
+
+    @Test
+    fun speechBubbles() {
+        composeRule.setContent { SpeechBubblePreview() }
+        composeRule.onRoot().captureRoboImage("components_speech_bubbles.png")
     }
 
     @Test

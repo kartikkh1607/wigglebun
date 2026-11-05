@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From design/ui_v2/icons/settings_shield.svg. Full colour: draw untinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M24 7 L39 12.5 V24 C39 34.5 32.5 42 24 45.5 C15.5 42 9 34.5 9 24 V12.5 Z"
+        android:fillColor="#FF5BBE96" />
+    <path
+        android:pathData="M24 5 L39 10.5 V22 C39 32.5 32.5 40 24 43.5 C15.5 40 9 32.5 9 22 V10.5 Z"
+        android:fillColor="#FF7DD3B0" />
+    <path
+        android:pathData="M14 15 C16.5 13.4 19.3 12.3 22 11.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeAlpha="0.65"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M17 24 L22 29 L31 19"
+        android:strokeColor="#FF2B2A3A"
+        android:strokeWidth="3.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

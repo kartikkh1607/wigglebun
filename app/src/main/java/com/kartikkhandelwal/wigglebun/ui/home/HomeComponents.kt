@@ -70,7 +70,6 @@ import com.kartikkhandelwal.wigglebun.ui.pet.SleepZSide
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonBorder
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
-import com.kartikkhandelwal.wigglebun.ui.theme.CardEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.CheckIdle
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreen
@@ -153,7 +152,8 @@ fun DeskScene(
             ) {
                 MenuButton(onOpenMenu)
                 Spacer(Modifier.weight(1f))
-                SparksPill(sparks)
+                // On the desk picture, not the floor: its own edge until the room scene (UI v2 Home).
+                SparksPill(sparks, edgeColor = TopButtonEdge)
             }
         }
     }
@@ -387,7 +387,6 @@ fun BreakCard(
     ChunkySurface(
         shape = WigglebunShapes.Card,
         faceColor = Card,
-        edgeColor = CardEdge,
         edgeHeight = H.CardEdge,
         onClick = onOpen,
         onClickLabel = stringResource(R.string.cd_open_break),
@@ -417,13 +416,14 @@ fun BreakCard(
     }
 }
 
+/** The break's full-colour icon (design/ui_v2/icons) on its light tint. */
 @Composable
 internal fun BreakIconTile(type: BreakType, size: Dp, shape: Shape, iconSize: Dp) {
     Box(
         modifier = Modifier.size(size).clip(shape).background(type.tint),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(painterResource(type.iconRes), contentDescription = null, tint = Ink, modifier = Modifier.size(iconSize))
+        Image(painterResource(type.iconRes), contentDescription = null, modifier = Modifier.size(iconSize))
     }
 }
 
