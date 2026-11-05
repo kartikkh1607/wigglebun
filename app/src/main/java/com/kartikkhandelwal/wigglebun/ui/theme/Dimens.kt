@@ -58,6 +58,8 @@ object Dimens {
         // Grouped Settings card and its rows (Settings.dc.html)
         val DividerThickness = 1.5.dp
         val RowPaddingHorizontal = 16.dp
+        /** Above a row's button or value when a very large font moves it under the text. */
+        val RowStackedGap = 6.dp
         val RowPaddingVertical = 12.dp
         val RowPaddingVerticalSingle = 10.dp
         val RowMinHeight = 66.dp
@@ -169,14 +171,41 @@ object Dimens {
         val StretchButtonBottom = 24.dp
     }
 
-    /** The Settings tab (no mockup: sized from the card and icon-tile tokens). */
+    /** The Settings tab, measured from design/ui_v2/Settings.dc.html. */
     object Settings {
-        val SectionTop = 14.dp
+        /** Title, section headings and the about lines sit 4 dp in from the cards. */
+        val TextInset = 4.dp
+        val TitleBottom = 14.dp
+        val SectionTop = 20.dp
+        val SectionBottom = 10.dp
         val AboutVertical = 12.dp
-        val ToggleTop = 10.dp
-        val ToggleGap = 12.dp
-        val ToggleTile = 40.dp
-        val ToggleIcon = 30.dp
+        /** Save work hours and its reason, under the card. */
+        val HoursSaveTop = 10.dp
+
+        // "Bun & you" card
+        val HeaderEdge = 4.dp
+        val HeaderPaddingStart = 12.dp
+        val HeaderPaddingEnd = 16.dp
+        val HeaderPaddingVertical = 12.dp
+        val HeaderGap = 12.dp
+        val HeaderTextGap = 2.dp
+        val HeaderTile = 56.dp
+        val HeaderTileRadius = 18.dp
+        val HeaderPetWidth = 46.dp
+        val HeaderPetHeight = 48.dp
+
+        // Day circles row
+        val DaysPaddingHorizontal = 16.dp
+        /** 14 dp around the 40 dp circles in the mockup; the 48 dp touch cells take 4 of it. */
+        val DaysPaddingVertical = 10.dp
+
+        // Small Ink "Turn on" / "Add" button on a setup row
+        val ActionPaddingHorizontal = 14.dp
+        val ActionPaddingVertical = 7.dp
+        val ActionRadius = 12.dp
+        val ActionEdge = 3.dp
+
+        val HintPaddingTop = 12.dp
     }
 
     /** Setup cards in Settings and on Home (no mockup: sized from the card and icon-tile tokens). */

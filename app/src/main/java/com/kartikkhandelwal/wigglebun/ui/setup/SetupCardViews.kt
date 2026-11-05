@@ -27,6 +27,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import com.kartikkhandelwal.wigglebun.R
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
+import com.kartikkhandelwal.wigglebun.ui.components.SettingsRow
+import com.kartikkhandelwal.wigglebun.ui.components.StatusChip
+import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
+import com.kartikkhandelwal.wigglebun.ui.theme.Card
+import com.kartikkhandelwal.wigglebun.ui.theme.InkEdge
+import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
@@ -45,6 +54,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Track
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 
 private val S = Dimens.Setup
+private val D = Dimens.Settings
 
 @get:StringRes
 private val SetupCard.title: Int
@@ -54,14 +64,22 @@ private val SetupCard.title: Int
         SetupCard.WIDGET -> R.string.setup_widget_title
     }
 
-/** Once it's on there's nothing left to enable: just its name, and the chip says the state. */
+/** A row's name in Settings: short, whatever the state (the button or chip on the right says it). */
 @get:StringRes
-private val SetupCardUi.rowTitle: Int
-    get() = when {
-        status != SetupStatus.ON -> card.title
-        card == SetupCard.NOTIFICATIONS -> R.string.setup_notifications_title_on
-        card == SetupCard.MOVEMENT -> R.string.setup_movement_title_on
-        else -> R.string.setup_widget_title_on
+private val SetupCard.shortTitle: Int
+    get() = when (this) {
+        SetupCard.NOTIFICATIONS -> R.string.setup_notifications_title_on
+        SetupCard.MOVEMENT -> R.string.setup_movement_title_on
+        SetupCard.WIDGET -> R.string.setup_widget_title_on
+    }
+
+/** Under the name in Settings (design/ui_v2/Settings.dc.html); %1$s is the pet's name where there is one. */
+@get:StringRes
+private val SetupCard.settingsWhy: Int
+    get() = when (this) {
+        SetupCard.NOTIFICATIONS -> R.string.settings_notifications_why
+        SetupCard.MOVEMENT -> R.string.settings_movement_why
+        SetupCard.WIDGET -> R.string.settings_widget_why
     }
 
 /** The "why" from CLAUDE.md §10, one line on the card. */
@@ -100,44 +118,60 @@ private fun IconTile(card: SetupCard) {
     }
 }
 
-/** One row in Settings. A card that's already on has nothing to do, so it can't be tapped. */
+/**
+ * One row of Settings' "Your setup" card: the name, why under it, and on the right a small
+ * "Turn on" ("Add" for the widget) while it's off, or an "On" / "Added" chip. Refused in the
+ * phone's settings, the line under the name says so and "Turn on" leads there (through the
+ * explanation sheet, as every row does). Once on there's nothing to do, so it can't be tapped.
+ */
 @Composable
-fun SetupCardRow(ui: SetupCardUi, onOpen: () -> Unit, modifier: Modifier = Modifier) {
-    PillCard(modifier = modifier.fillMaxWidth(), onClick = if (ui.status == SetupStatus.ON) null else onOpen) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(S.RowGap)) {
-            IconTile(ui.card)
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(ui.rowTitle), style = MaterialTheme.typography.titleMedium, color = Ink)
-                Text(
-                    stringResource(if (ui.status == SetupStatus.BLOCKED) R.string.setup_blocked else ui.card.why),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = InkMuted,
-                )
+fun SetupSettingsRow(ui: SetupCardUi, petName: String, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val isOn = ui.status == SetupStatus.ON
+    val isWidget = ui.card == SetupCard.WIDGET
+    val action = stringResource(if (isWidget) R.string.setup_add else R.string.setup_turn_on)
+    SettingsRow(
+        icon = ui.card.icon,
+        tile = ui.card.tile,
+        title = stringResource(ui.card.shortTitle),
+        modifier = modifier,
+        onClick = if (isOn) null else onOpen,
+        onClickLabel = action,
+        subtitleContent = {
+            if (ui.status == SetupStatus.BLOCKED) {
+                Text(stringResource(R.string.setup_blocked))
+            } else {
+                PetNameSentence(ui.card.settingsWhy, petName)
             }
-            StatusChip(ui)
+        },
+    ) {
+        if (isOn) {
+            StatusChip(stringResource(if (isWidget) R.string.setup_status_added else R.string.setup_status_on))
+        } else {
+            RowActionButton(action)
         }
     }
 }
 
+/**
+ * The small Ink button on a row ("Turn on"). The whole row is the touch target and TalkBack's
+ * action, so this only shows what a tap does.
+ */
 @Composable
-private fun StatusChip(ui: SetupCardUi) {
-    val (label, background, content) = when (ui.status) {
-        SetupStatus.ON -> Triple(
-            if (ui.card == SetupCard.WIDGET) R.string.setup_status_added else R.string.setup_status_on,
-            MoodHappyChip,
-            MovementChipText,
+private fun RowActionButton(text: String) {
+    ChunkySurface(
+        shape = RoundedCornerShape(D.ActionRadius),
+        faceColor = Ink,
+        edgeColor = InkEdge,
+        edgeHeight = D.ActionEdge,
+        modifier = Modifier.clearAndSetSemantics {},
+    ) {
+        Text(
+            text,
+            style = WigglebunTextStyles.Status,
+            color = Card,
+            modifier = Modifier.padding(horizontal = D.ActionPaddingHorizontal, vertical = D.ActionPaddingVertical),
         )
-        SetupStatus.OFF, SetupStatus.BLOCKED, SetupStatus.MANUAL -> Triple(R.string.setup_status_off, Track, InkMuted)
     }
-    Text(
-        stringResource(label),
-        style = MaterialTheme.typography.labelMedium,
-        color = content,
-        modifier = Modifier
-            .clip(WigglebunShapes.Pill)
-            .background(background)
-            .padding(horizontal = S.ChipHorizontal, vertical = S.ChipVertical),
-    )
 }
 
 /** Home offers one card at a time. Tapping it explains first, the same as in Settings. */

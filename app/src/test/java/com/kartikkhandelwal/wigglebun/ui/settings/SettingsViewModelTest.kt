@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.data.repo.TestDataLayer
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.ui.onboarding.WorkHoursProblem
@@ -38,7 +39,7 @@ import java.time.DayOfWeek
 class SettingsViewModelTest {
 
     private val app = TestDataLayer(ApplicationProvider.getApplicationContext())
-    private val viewModel = SettingsViewModel(app.settings, app.widgetUpdates)
+    private val viewModel = SettingsViewModel(app.settings, app.widgetUpdates, app.pets, app.streaks)
 
     init {
         // WhileSubscribed: keep it hot, as the screen does.
@@ -71,6 +72,17 @@ class SettingsViewModelTest {
     fun startsWithWhatsStored() = runBlocking {
         waitUntil { it.hours.toSchedule() == WorkSchedule.Default && it.intervalMinutes == 45 && it.enabledBreaks == BreakType.entries }
         assertFalse(viewModel.state.value!!.hoursChanged)
+    }
+
+    /** The "Bun & you" card: the pet's name and the streak and breaks so far, from the shared repositories. */
+    @Test
+    fun theHeaderCardFollowsThePetAndItsBreaks() = runBlocking {
+        app.alwaysWorkHours()
+        waitUntil { it.pet.id == PetId.BUN && it.totalBreaks == 0 && it.streakDays == 0 }
+        app.settings.setPetName("Mochi")
+        app.recordBreakDone(BreakType.WALK)
+        app.recordBreakDone(BreakType.WALK)
+        waitUntil { it.pet.customName == "Mochi" && it.totalBreaks == 2 }
     }
 
     @Test

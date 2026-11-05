@@ -167,6 +167,28 @@
     <string name="paywall_placeholder_body">Plans and the free trial will show here.</string>
 
     <!-- Settings (CLAUDE.md §6.7) -->
+    <!-- "Bun & you" card at the top of Settings (design/ui_v2/Settings.dc.html). %1$s is the pet's name. -->
+    <string name="settings_pet_and_you">%1$s &amp; you</string>
+    <!-- "5-day streak · 42 breaks so far": the two parts joined -->
+    <string name="settings_pet_summary">%1$s · %2$s</string>
+    <plurals name="settings_streak_days">
+        <item quantity="one">%d-day streak</item>
+        <item quantity="other">%d-day streak</item>
+    </plurals>
+    <plurals name="settings_breaks_so_far">
+        <item quantity="one">%d break so far</item>
+        <item quantity="other">%d breaks so far</item>
+    </plurals>
+    <string name="settings_no_breaks_yet">No breaks yet</string>
+    <!-- TalkBack action on the card: it opens the Pet tab -->
+    <string name="settings_open_profile">open profile</string>
+    <string name="settings_your_setup">Your setup</string>
+    <!-- Under each setup row's name. %1$s is the pet's name. -->
+    <string name="settings_notifications_why">So %1$s can remind you</string>
+    <string name="settings_movement_why">Walking resets the timer</string>
+    <string name="settings_widget_why">%1$s on your home screen</string>
+    <!-- Small button on the Widget row while it isn't added -->
+    <string name="setup_add">Add</string>
     <string name="settings_work_hours">Work hours</string>
     <string name="settings_save_hours">Save work hours</string>
     <string name="settings_breaks">Breaks</string>

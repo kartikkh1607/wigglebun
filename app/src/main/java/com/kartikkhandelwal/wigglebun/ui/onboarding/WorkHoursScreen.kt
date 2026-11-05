@@ -33,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -207,9 +208,15 @@ internal fun OnboardingQuestion(
 }
 
 @Composable
-internal fun DayChips(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit) {
+internal fun DayChips(
+    selected: Set<DayOfWeek>,
+    onToggle: (DayOfWeek) -> Unit,
+    modifier: Modifier = Modifier,
+    /** An unticked day's circle: Track on onboarding's panel, the grouped card's divider lilac in Settings. */
+    offColor: Color = Track,
+) {
     val locale: Locale = LocalConfiguration.current.locales[0]
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         DayOfWeek.entries.forEach { day ->
             val isOn = day in selected
             val fullName = day.getDisplayName(TextStyle.FULL, locale)
@@ -226,7 +233,7 @@ internal fun DayChips(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit) {
                     Modifier
                         .defaultMinSize(minWidth = S.DayChip, minHeight = S.DayChip)
                         .clip(CircleShape)
-                        .background(if (isOn) Ink else Track),
+                        .background(if (isOn) Ink else offColor),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(

@@ -8,6 +8,8 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.kartikkhandelwal.wigglebun.ui.pet.TestPetNames
+import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,6 +44,29 @@ class SettingsScreenshotTest {
     /** No work days: Save is off at once and the reason shows above it. */
     @Test
     fun hoursNoDays() = capture("settings_hours_no_days") { SettingsHoursNoDaysPreview() }
+
+    /** Next to design/ui_v2/Settings.dc.html. */
+    @Config(qualifiers = "w390dp-h844dp-xxhdpi")
+    @Test
+    fun mockup() = capture("settings_mockup") { SettingsMockupPreview() }
+
+    /** The widest 12-letter name: only the name shortens, the "& you" card keeps its height. */
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    @Test
+    fun widestNameSmallPhone() = capture("settings_widest_name_small_phone") {
+        WigglebunTheme {
+            SettingsScreen(SettingsPreviewStates.named(TestPetNames.WIDEST), SettingsPreviewStates.Mockup, SettingsActions())
+        }
+    }
+
+    /** 200% font on a small phone: rows wrap, the buttons and chips stay whole. */
+    @Config(qualifiers = "w360dp-h1500dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun smallPhoneFont2() = capture("settings_small_phone_font_2_0") {
+        WigglebunTheme {
+            SettingsScreen(SettingsPreviewStates.named(TestPetNames.LONG), SettingsPreviewStates.Mockup, SettingsActions())
+        }
+    }
 
     @Config(qualifiers = "w390dp-h844dp-xxhdpi")
     @Test

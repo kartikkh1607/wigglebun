@@ -14,13 +14,17 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -91,8 +95,11 @@ fun SettingsRow(
     subtitle: String? = null,
     onClick: (() -> Unit)? = null,
     onClickLabel: String? = null,
+    /** In place of [subtitle], for a line that needs more than plain text (one with the pet's name: `PetNameSentence`). */
+    subtitleContent: (@Composable () -> Unit)? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
+    val hasSubtitle = subtitle != null || subtitleContent != null
     val action = if (onClick != null) {
         Modifier.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
     } else {
@@ -102,10 +109,10 @@ fun SettingsRow(
         modifier = modifier
             .fillMaxWidth()
             .then(action)
-            .heightIn(min = if (subtitle != null) S.RowMinHeight else S.RowMinHeightSingle)
+            .heightIn(min = if (hasSubtitle) S.RowMinHeight else S.RowMinHeightSingle)
             .padding(
                 horizontal = S.RowPaddingHorizontal,
-                vertical = if (subtitle != null) S.RowPaddingVertical else S.RowPaddingVerticalSingle,
+                vertical = if (hasSubtitle) S.RowPaddingVertical else S.RowPaddingVerticalSingle,
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(S.RowGap),
@@ -113,13 +120,26 @@ fun SettingsRow(
         Box(Modifier.size(S.RowTile).clip(WigglebunShapes.RowTile).background(tile), contentAlignment = Alignment.Center) {
             Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(S.RowIcon))
         }
+        // At very large font sizes a button beside the text would squeeze the title until words
+        // break mid-word, so whatever goes on the right moves under the text instead.
+        val stacked = LocalDensity.current.fontScale >= STACK_TRAILING_FONT_SCALE
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(S.RowTextGap)) {
             Text(title, style = MaterialTheme.typography.titleMedium, color = Ink)
-            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = InkMuted)
+            if (subtitleContent != null) {
+                CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall, LocalContentColor provides InkMuted) {
+                    subtitleContent()
+                }
+            } else if (subtitle != null) {
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = InkMuted)
+            }
+            if (stacked) Row(Modifier.padding(top = S.RowStackedGap), content = trailing)
         }
-        trailing()
+        if (!stacked) trailing()
     }
 }
+
+/** From this font scale (the widget's large-font threshold too) a row's trailing part goes under its text. */
+private const val STACK_TRAILING_FONT_SCALE = 1.6f
 
 /** A small state pill, green for "On" / "Added" (Settings.dc.html). */
 @Composable

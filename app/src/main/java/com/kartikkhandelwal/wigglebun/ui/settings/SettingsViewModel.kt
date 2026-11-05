@@ -3,6 +3,9 @@ package com.kartikkhandelwal.wigglebun.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
+import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
+import com.kartikkhandelwal.wigglebun.data.repo.StreakRepository
+import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.ui.onboarding.WorkHoursDraft
 import com.kartikkhandelwal.wigglebun.ui.onboarding.WorkHoursProblem
@@ -27,6 +30,11 @@ data class SettingsUiState(
     val hoursProblem: WorkHoursProblem?,
     val intervalMinutes: Int,
     val enabledBreaks: List<BreakType>,
+    /** The pet with you, for the "Bun & you" card. */
+    val pet: ActivePet = ActivePet.Default,
+    /** Work days in a row that met the goal, and every break so far ("5-day streak · 42 breaks so far"). */
+    val streakDays: Int = 0,
+    val totalBreaks: Int = 0,
 ) {
     /** Save is off while no work day is ticked. */
     val canSaveHours: Boolean get() = hours.canSave
@@ -41,6 +49,8 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val widget: WidgetRefresher,
+    petRepository: PetRepository,
+    streakRepository: StreakRepository,
 ) : ViewModel() {
 
     /** Null while there's no edit, so the screen follows what's stored. */
@@ -51,12 +61,22 @@ class SettingsViewModel @Inject constructor(
     val state: StateFlow<SettingsUiState?> = combine(
         settings.settings,
         settings.enabledBreaks,
-        hoursEdit,
-        hoursProblem,
-    ) { stored, breaks, edit, problem ->
+        combine(hoursEdit, hoursProblem, ::Pair),
+        petRepository.activePet,
+        streakRepository.summary,
+    ) { stored, breaks, (edit, problem), pet, streak ->
         val saved = WorkHoursDraft.of(stored.schedule)
         val hours = edit ?: saved
-        SettingsUiState(hours, hoursChanged = hours != saved, hours.shownProblem(problem), stored.interval, breaks)
+        SettingsUiState(
+            hours,
+            hoursChanged = hours != saved,
+            hours.shownProblem(problem),
+            stored.interval,
+            breaks,
+            pet,
+            streakDays = streak.days,
+            totalBreaks = streak.totalBreaks,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
     fun onToggleDay(day: DayOfWeek) = editHours { it.toggled(day) }
