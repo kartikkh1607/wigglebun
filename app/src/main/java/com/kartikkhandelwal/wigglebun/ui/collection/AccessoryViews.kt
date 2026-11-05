@@ -1,6 +1,18 @@
 package com.kartikkhandelwal.wigglebun.ui.collection
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.unit.dp
+import com.kartikkhandelwal.wigglebun.ui.theme.CollectionSwitchEdge
+import com.kartikkhandelwal.wigglebun.ui.theme.CollectionSwitchText
+import com.kartikkhandelwal.wigglebun.ui.theme.CollectionSwitchTrack
+import com.kartikkhandelwal.wigglebun.ui.theme.StatusOnChip
+import com.kartikkhandelwal.wigglebun.ui.theme.StatusOnText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,9 +58,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.MoodHappyChip
 import com.kartikkhandelwal.wigglebun.ui.theme.MoodTiredChip
-import com.kartikkhandelwal.wigglebun.ui.theme.MovementChipText
 import com.kartikkhandelwal.wigglebun.ui.theme.Track
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
@@ -73,14 +83,19 @@ private val AccessoryId.blurbRes: Int
         AccessoryId.BEANIE -> R.string.accessory_blurb_beanie
     }
 
-/** Pets | Accessories: a fully rounded segmented pill (CLAUDE.md §11). */
+/**
+ * Pets | Accessories (design/ui_v2/Collection.dc.html): a mint track with the selected half white
+ * on a 2 dp edge. Grows with the font size instead of cutting the labels.
+ */
 @Composable
 internal fun CollectionTabs(selected: CollectionTab, onSelect: (CollectionTab) -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier
             .fillMaxWidth()
+            .heightIn(min = C.TabsHeight)
+            .height(IntrinsicSize.Min)
             .clip(WigglebunShapes.Pill)
-            .background(Track)
+            .background(CollectionSwitchTrack)
             .padding(C.TabsInnerPadding)
             .selectableGroup(),
     ) {
@@ -89,22 +104,33 @@ internal fun CollectionTabs(selected: CollectionTab, onSelect: (CollectionTab) -
             Box(
                 Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clip(WigglebunShapes.Pill)
-                    .background(if (isSelected) Card else Track)
+                    .then(if (isSelected) Modifier.drawBehind { drawSelectedTab() } else Modifier)
                     .selectable(selected = isSelected, role = Role.Tab, onClick = { onSelect(tab) })
-                    .padding(vertical = C.TabPaddingVertical),
+                    .padding(bottom = if (isSelected) C.TabSelectedEdge else 0.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     stringResource(if (tab == CollectionTab.PETS) R.string.collection_tab_pets else R.string.collection_tab_accessories),
-                    style = WigglebunTextStyles.Chip,
-                    color = if (isSelected) Ink else InkMuted,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (isSelected) Ink else CollectionSwitchText,
+                    textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
         }
     }
+}
+
+/** The selected half: its edge, then the white face above it (box-shadow 0 2px 0 in the mockup). */
+private fun DrawScope.drawSelectedTab() {
+    val edge = C.TabSelectedEdge.toPx()
+    val faceHeight = size.height - edge
+    val radius = CornerRadius(faceHeight / 2)
+    drawRoundRect(CollectionSwitchEdge, topLeft = Offset(0f, edge), size = Size(size.width, faceHeight), cornerRadius = radius)
+    drawRoundRect(Card, size = Size(size.width, faceHeight), cornerRadius = radius)
 }
 
 /** Every accessory, tried on by the pet that is with you, two per row. */
@@ -145,10 +171,11 @@ private fun AccessoryCard(item: AccessoryUi, pet: ActivePet, onClick: () -> Unit
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = C.CardMinHeight)
                 .padding(start = C.CardPaddingHorizontal, end = C.CardPaddingHorizontal, top = C.CardPaddingTop, bottom = C.CardPaddingBottom)
                 .clearAndSetSemantics { contentDescription = description },
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(C.CardGap),
+            verticalArrangement = Arrangement.spacedBy(C.CardGap, Alignment.Bottom),
         ) {
             PetView(
                 energy = 1f,
@@ -158,7 +185,7 @@ private fun AccessoryCard(item: AccessoryUi, pet: ActivePet, onClick: () -> Unit
                 animated = false,
                 // Only this card's item, so each card shows its own; the sheet tries it on with the outfit.
                 accessories = listOf(item.id),
-                modifier = Modifier.size(C.PetSize),
+                modifier = Modifier.size(C.PetWidth, C.PetHeight),
             )
             // Up to two lines at large font sizes; the row's cards keep one height (IntrinsicSize.Max).
             Text(name, style = WigglebunTextStyles.PetCardName, color = Ink, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -170,7 +197,7 @@ private fun AccessoryCard(item: AccessoryUi, pet: ActivePet, onClick: () -> Unit
 @Composable
 private fun AccessoryPill(item: AccessoryUi) {
     val (background, textColor) = when (item.status) {
-        AccessoryStatus.WORN -> MoodHappyChip to MovementChipText
+        AccessoryStatus.WORN -> StatusOnChip to StatusOnText
         AccessoryStatus.OWNED -> Track to Ink
         AccessoryStatus.LOCKED -> MoodTiredChip to Ink
     }

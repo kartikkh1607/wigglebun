@@ -118,11 +118,20 @@ object WigglebunTextStyles {
     /** Session button labels shrink to at most this (from 18) rather than being cut off. */
     val SessionButtonMinFontSize = 13.sp
 
-    /** Collection / Pet profile screen title (Collection.dc.html: Fredoka 30). */
+    /** Pet profile screen title (design/mockups_source/Collection.dc.html: Fredoka 30); ui_v2 tabs use [TabScreenTitle]. */
     val ScreenTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 30.sp, lineHeight = 36.sp)
 
-    /** Pet name on a Collection card (Fredoka 19). */
-    val PetCardName = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, lineHeight = 24.sp)
+    /** Pet name on a Collection card (design/ui_v2/Collection.dc.html: Fredoka 20). */
+    val PetCardName = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 25.sp)
+
+    /** A ui_v2 tab's title, "Collection" (design/ui_v2: Fredoka 34). */
+    val TabScreenTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 40.sp)
+
+    /** A small card's title, "Pip is almost yours" (design/ui_v2: Nunito 16, 800). */
+    val SmallCardTitle = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, lineHeight = 21.sp)
+
+    /** A quiet line under a progress bar, "About 3 more days of breaks" (design/ui_v2: Nunito 13, 600). */
+    val Hint = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 17.sp)
 
     /** Big numbers on the Pet profile cards ("3 days", "128"). */
     val StatNumber = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 34.sp)

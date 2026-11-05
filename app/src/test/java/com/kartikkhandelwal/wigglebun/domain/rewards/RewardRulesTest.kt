@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.domain.rewards
 
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
@@ -72,5 +73,14 @@ class RewardRulesTest {
         assertEquals(emptyList<Milestone>(), RewardRules.milestonesReached(2))
         assertEquals(listOf(3, 7), RewardRules.milestonesReached(13).map { it.days })
         assertEquals(listOf(3, 7, 14, 30), RewardRules.milestonesReached(45).map { it.days })
+    }
+
+    @Test
+    fun breakKeysNameTheirDay() {
+        val day = LocalDate.of(2026, 10, 28)
+        assertEquals(day, RewardRules.dayOfBreakKey(RewardRules.breakKey(day, BreakType.WALK)))
+        assertEquals(null, RewardRules.dayOfBreakKey("milestone:7"))
+        assertEquals(null, RewardRules.dayOfBreakKey("unlock:pip"))
+        assertEquals(null, RewardRules.dayOfBreakKey("break:not-a-date:WALK"))
     }
 }

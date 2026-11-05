@@ -47,6 +47,11 @@ class CollectionScreenshotTest {
 
     private fun sheet(state: CollectionUiState): @Composable () -> Unit = { CollectionWithSheetPreview(state) }
 
+    /** design/ui_v2/Collection.dc.html: "Pip is almost yours, 30 / 75". */
+    @Test fun mockup() = capture("mockup", grid(states.Mockup))
+
+    @Test fun saving() = capture("saving", grid(states.Saving))
+
     @Test fun onlyBun() = capture("only_bun", grid(states.OnlyBun))
 
     @Test fun oneAffordable() = capture("one_affordable", grid(states.OneAffordable))
@@ -102,6 +107,17 @@ class CollectionScreenshotTest {
     @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 1.3f)
     fun smallPhoneFontScale130Sheet() = capture("small_font_sheet", sheet(states.sheet(states.OneAffordable, PetId.NIMBUS)))
 
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 2f)
+    fun smallPhoneFontScale200() = capture("small_font_2_0", grid(states.Mockup))
+
+    /** Bun with the widest allowed name, with you: one line on its card, the frame and glow around it. */
+    @Test
+    fun longName() = capture(
+        "long_name",
+        grid(toCollectionUiState(setOf(PetId.BUN, PetId.PIP), ActivePet(PetId.BUN, chosenName = TestPetNames.WIDEST), sparks = 120, selection = null)),
+    )
+
     /**
      * Bun named with the widest allowed name, owned but not with you: the card name and sheet title
      * stay on one line, "Choose …" shortens only the name.
@@ -141,4 +157,8 @@ class CollectionScreenshotTest {
     @Test
     @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 1.3f)
     fun accessoriesSmallPhoneFontScale130() = capture("accessories_small_font", grid(states.Accessories))
+
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi", fontScale = 2f)
+    fun accessoriesSmallPhoneFontScale200() = capture("accessories_small_font_2_0", grid(states.Accessories))
 }

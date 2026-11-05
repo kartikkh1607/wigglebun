@@ -5,6 +5,8 @@ import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.Outfit
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
+import com.kartikkhandelwal.wigglebun.domain.rewards.SparksPace
+import java.time.LocalDate
 
 /** Where a pet stands in the collection. */
 enum class PetStatus { ACTIVE, OWNED, LOCKED }
@@ -19,6 +21,30 @@ data class CollectionPetUi(
 ) {
     /** For display: the user's name for Bun (M9), every other pet's own name, and its outfit. */
     fun asActivePet(chosenName: String?) = ActivePet(id, chosenName, wearing)
+}
+
+/**
+ * The "next pet" card above the grid (design/ui_v2/Collection.dc.html): the cheapest pet not yet
+ * adopted and how far the sparks are toward it.
+ */
+data class NextPetUi(
+    val id: PetId,
+    val price: Int,
+    /** Sparks toward it, at most [price]. */
+    val saved: Int,
+    /** Days of breaks still needed at the user's own pace ([SparksPace]); 0 once affordable. */
+    val daysLeft: Int,
+) {
+    val affordable: Boolean get() = saved >= price
+
+    /** One day or less to go: "About a day of breaks to go" rather than "About 1 more day" (D4). */
+    val aboutADay: Boolean get() = !affordable && daysLeft <= 1
+
+    /** 0..1 for the progress bar. */
+    val progress: Float get() = if (price == 0) 1f else saved.toFloat() / price
+
+    /** Under a quarter of the price the card says "Saving up for Pip", from there "Pip is almost yours" (the mockup's 30 / 75). */
+    val almostThere: Boolean get() = saved * 4 >= price
 }
 
 /** The sheet's steps: the pet's details, "Adopt Pip?" and the welcome celebration. */
@@ -57,6 +83,8 @@ data class CollectionUiState(
     val activePet: ActivePet = ActivePet.Default,
     val accessories: List<AccessoryUi> = emptyList(),
     val accessorySheet: AccessorySheetUi? = null,
+    /** Null once every pet is adopted. */
+    val nextPet: NextPetUi? = null,
 )
 
 /** Which pet's sheet is open, and at which step. */
@@ -73,6 +101,10 @@ fun toCollectionUiState(
     outfits: Map<PetId, Outfit> = emptyMap(),
     tab: CollectionTab = CollectionTab.PETS,
     accessorySelection: AccessorySelection? = null,
+    /** Break rewards per break day, for the next pet's days estimate ([SparksPace]). */
+    breakRewardsByDay: Map<LocalDate, Int> = emptyMap(),
+    /** Today's break day: it isn't over, so it doesn't count toward the pace. */
+    today: LocalDate = LocalDate.MAX,
 ): CollectionUiState {
     val pets = PetId.entries.sortedBy(PetPrices::of).map { id ->
         val status = when {
@@ -94,5 +126,9 @@ fun toCollectionUiState(
     }
     val accessories = accessoryList(ownedAccessories, active)
     val accessorySheet = accessorySelection?.let { accessorySheet(accessories, active, sparks, it, busy) }
-    return CollectionUiState(sparks, pets, active.chosenName, sheet, tab, active, accessories, accessorySheet)
+    val nextPet = pets.firstOrNull { it.status == PetStatus.LOCKED }?.let { pet ->
+        val daysLeft = SparksPace.daysToEarn(pet.price - sparks, SparksPace.perDay(breakRewardsByDay, today))
+        NextPetUi(pet.id, pet.price, saved = sparks.coerceIn(0, pet.price), daysLeft = daysLeft)
+    }
+    return CollectionUiState(sparks, pets, active.chosenName, sheet, tab, active, accessories, accessorySheet, nextPet)
 }

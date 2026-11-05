@@ -45,6 +45,10 @@ interface SparkLedgerDao {
     @Query("SELECT `key` FROM spark_ledger WHERE `key` LIKE :prefix || '%'")
     fun observeKeysStartingWith(prefix: String): Flow<List<String>>
 
+    /** Every row whose key starts with [prefix] (e.g. the break rewards, for Collection's days estimate). */
+    @Query("SELECT * FROM spark_ledger WHERE `key` LIKE :prefix || '%'")
+    fun observeEntriesStartingWith(prefix: String): Flow<List<SparkLedgerEntity>>
+
     @Query("SELECT * FROM spark_ledger ORDER BY id")
     suspend fun all(): List<SparkLedgerEntity>
 

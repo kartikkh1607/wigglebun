@@ -54,6 +54,16 @@ object RewardRules {
     /** What every [breakKey] of [date] starts with. */
     fun breakKeysOn(date: LocalDate): String = "break:$date:"
 
+    /** What every [breakKey] starts with. */
+    const val BREAK_KEY_PREFIX = "break:"
+
+    /** The break day a [breakKey] was paid for; null for any other key. */
+    fun dayOfBreakKey(key: String): LocalDate? {
+        if (!key.startsWith(BREAK_KEY_PREFIX)) return null
+        val date = key.removePrefix(BREAK_KEY_PREFIX).substringBefore(':')
+        return runCatching { LocalDate.parse(date) }.getOrNull()
+    }
+
     /** A milestone pays once per lifetime. */
     fun milestoneKey(days: Int): String = "milestone:$days"
 

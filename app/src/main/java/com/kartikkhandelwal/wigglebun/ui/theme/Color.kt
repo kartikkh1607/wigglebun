@@ -137,6 +137,20 @@ val FlameChip = Color(0xFFFFE9DF)
 val FlameChipText = Color(0xFF9A3D20)
 /** A streak-goal segment not reached yet. */
 val StreakSegmentIdle = Color(0xFFE9E1D6)
+// Collection (design/ui_v2/Collection.dc.html)
+/** The soft circles and dots behind the header. */
+val CollectionDecor = Color(0xFFD1ECDD)
+val CollectionDecorDot = CollectionEdge
+/** Pets | Accessories switch: the track, the selected half's edge, an unselected label (5.4:1). */
+val CollectionSwitchTrack = Color(0xFFC3E3D2)
+val CollectionSwitchEdge = Color(0xFFA9D3BD)
+val CollectionSwitchText = Color(0xFF2E5E48)
+/** "Next pet" card: the pet's tile and the progress bar's track. */
+val NextPetTile = Color(0xFFE6F6EE)
+val NextPetTrack = Color(0xFFE6F1EA)
+/** The warm glow behind the pet that is with you. */
+val ActivePetHalo = Color(0xFFFFF6DA)
+
 /** Focused card overlay backdrop: rgba(33, 32, 48, 0.72). */
 val Scrim = Color(0xB8212030)
 val ActionEdge = Color(0xFFCFC6BA)
