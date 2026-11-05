@@ -281,7 +281,7 @@ Mood chip backgrounds: happy `#DDF3E9`, tired `#FFF0CC`, stiff `#FDDCD2`. Timer 
 
 **Chunky buttons / cards:** solid offset "edge" below (cards 3–4 dp `CardEdge`, buttons 4–5 dp in the darker shade). On press: translateY by the edge height and remove the edge (80 ms), release springs back.
 
-**Motion:** no linear easing; pop-ins with slight overshoot; Home list items stagger in (40 ms apart); energy changes tween ≥ 600 ms.
+**Motion:** no linear easing; pop-ins with slight overshoot; Home list items stagger in (40 ms apart); energy changes tween ≥ 600 ms. With the phone's "Remove animations" on (animator duration scale 0, `LocalReducedMotion` in `ui/motion/ReducedMotion.kt`), the app's own motion stops too: the pet holds its still pose (no frame loop), Home cards show at once, the wake-up tap skips the stretch and each break step holds its first pose. Compose's springs and tweens already follow the scale; timings that aren't motion (the celebration's 3 s) stay. New motion that runs on its own loop or delay reads `animationsEnabled()`.
 
 **Pet names in text:** a name never changes a card's height. A sentence with the name in it ("Bun is getting tired", "Choose Bun") uses `PetNameSentence`, which shortens only the name with "…" when it would add a line ("Wigglebo… is getting tired"); the words around it still wrap at large font sizes, and TalkBack reads the whole name. A name shown alone (titles, collection cards, tab label) uses `maxLines = 1` with `TextOverflow.Ellipsis`. Screenshot tests use `TestPetNames.LONG` / `WIDEST` (12 letters).
 

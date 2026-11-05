@@ -18,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -40,6 +39,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.sitting.BreakDays
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
+import com.kartikkhandelwal.wigglebun.ui.motion.animationsEnabled
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
@@ -225,7 +225,7 @@ fun HomeScreen(
     onTakeBreak: () -> Unit = {},
     debugEntry: @Composable () -> Unit = {},
     setupPrompt: @Composable () -> Unit = {},
-    animateEntrance: Boolean = !LocalInspectionMode.current,
+    animateEntrance: Boolean = animationsEnabled(),
 ) {
     val petName = state.pet.displayName()
     // Cards stagger in once per visit, not every time they scroll back into view.

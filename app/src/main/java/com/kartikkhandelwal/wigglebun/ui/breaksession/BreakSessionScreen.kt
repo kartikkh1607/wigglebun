@@ -40,6 +40,7 @@ import com.kartikkhandelwal.wigglebun.domain.rewards.Milestone
 import com.kartikkhandelwal.wigglebun.domain.rewards.Streak
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
 import com.kartikkhandelwal.wigglebun.ui.labelRes
+import com.kartikkhandelwal.wigglebun.ui.motion.LocalReducedMotion
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
@@ -179,7 +180,8 @@ private fun SessionContent(
                             mood = state.mood,
                             spec = pet.spec,
                             name = petName,
-                            pose = state.pose,
+                            // With animations removed each step holds one pose instead of cycling.
+                            pose = if (LocalReducedMotion.current) state.stillPose else state.pose,
                             accessories = pet.wearing,
                             modifier = Modifier.size(ring * PET_IN_RING),
                         )
