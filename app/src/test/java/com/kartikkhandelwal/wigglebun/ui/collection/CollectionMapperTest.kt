@@ -65,17 +65,32 @@ class CollectionMapperTest {
         assertFalse(next.aboutADay)
     }
 
+    /** Install day: the first stretch paid 5 today. Pip shows about 5 days (fallback), not 14 (5 a day). */
+    @Test
+    fun installDayShowsAboutFiveDaysToPip() {
+        val installDay = LocalDate.of(2026, 10, 26)
+        val next = toCollectionUiState(
+            setOf(PetId.BUN), ActivePet(PetId.BUN, null), sparks = 5, selection = null,
+            breakRewardsByDay = mapOf(installDay to 5), today = installDay,
+        ).nextPet!!
+        assertEquals(5, next.daysLeft)
+    }
+
     @Test
     fun theDaysEstimateFollowsTheUsersRecentBreakDays() {
         val monday = LocalDate.of(2026, 10, 26)
         // 40 sparks on each of the last three break days: Pip's missing 45 is 2 days, not 3.
         val heavy = (0L until 3L).associate { monday.plusDays(it) to 40 }
-        val next = toCollectionUiState(setOf(PetId.BUN), ActivePet(PetId.BUN, null), sparks = 30, selection = null, breakRewardsByDay = heavy).nextPet!!
+        val thursday = monday.plusDays(3)
+        fun pace(sparks: Int) = toCollectionUiState(
+            setOf(PetId.BUN), ActivePet(PetId.BUN, null), sparks, selection = null, breakRewardsByDay = heavy, today = thursday,
+        ).nextPet!!
+        val next = pace(30)
         assertEquals(2, next.daysLeft)
         assertFalse(next.aboutADay)
 
         // 40 missing at 40 a day: one day, so the card says "About a day".
-        val close = toCollectionUiState(setOf(PetId.BUN), ActivePet(PetId.BUN, null), sparks = 35, selection = null, breakRewardsByDay = heavy).nextPet!!
+        val close = pace(35)
         assertEquals(1, close.daysLeft)
         assertTrue(close.aboutADay)
         // Once affordable it says "Tap to meet", not "About a day".

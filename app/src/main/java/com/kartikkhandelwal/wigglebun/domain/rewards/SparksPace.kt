@@ -6,8 +6,9 @@ import java.time.LocalDate
 /**
  * How many days of breaks the next pet is away (Collection's "About 3 more days of breaks"; UI v2
  * decision D4): the sparks still missing ÷ the user's own pace, the average sparks a day over the
- * last [RECENT_DAYS] break days that had a break. Days without a break don't count, so a weekend
- * or a holiday doesn't slow the estimate. A new user, with no break day yet, gets [NEW_USER_PACE].
+ * last [RECENT_DAYS] finished days that had a break. Days without a break don't count, so a weekend
+ * or a holiday doesn't slow the estimate, and neither does today until it is over. A new user,
+ * with no finished break day yet, gets [NEW_USER_PACE].
  *
  * The pace counts break rewards only (ledger keys `break:<day>:<type>`). Streak bonuses are
  * one-offs, and one landing in the window would promise the next pet far too soon.
@@ -19,11 +20,16 @@ object SparksPace {
     val NEW_USER_PACE: Int = RewardRules.DAILY_GOAL.count * BreakType.entries.minOf { it.defaultReward }
 
     /**
-     * Sparks a day, as a fraction, over the [RECENT_DAYS] most recent days in [earnedByDay]
-     * (break day → break rewards paid that day); [NEW_USER_PACE] when it is empty.
+     * Sparks a day, as a fraction, over the [RECENT_DAYS] most recent finished days in [earnedByDay]
+     * (break day → break rewards paid that day); [NEW_USER_PACE] when there is none.
+     *
+     * Only days before [today] (today's break day) count: a day in progress would drag the pace
+     * down. On install day the first stretch pays 5, which would make it 5 a day and Pip "about 14
+     * more days"; the fallback keeps it at about 5.
      */
-    fun perDay(earnedByDay: Map<LocalDate, Int>): Double {
-        val recent = earnedByDay.filterValues { it > 0 }.toSortedMap().values.toList().takeLast(RECENT_DAYS)
+    fun perDay(earnedByDay: Map<LocalDate, Int>, today: LocalDate): Double {
+        val recent = earnedByDay.filter { (day, sparks) -> day < today && sparks > 0 }
+            .toSortedMap().values.toList().takeLast(RECENT_DAYS)
         return if (recent.isEmpty()) NEW_USER_PACE.toDouble() else recent.sum().toDouble() / recent.size
     }
 

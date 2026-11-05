@@ -103,6 +103,8 @@ fun toCollectionUiState(
     accessorySelection: AccessorySelection? = null,
     /** Break rewards per break day, for the next pet's days estimate ([SparksPace]). */
     breakRewardsByDay: Map<LocalDate, Int> = emptyMap(),
+    /** Today's break day: it isn't over, so it doesn't count toward the pace. */
+    today: LocalDate = LocalDate.MAX,
 ): CollectionUiState {
     val pets = PetId.entries.sortedBy(PetPrices::of).map { id ->
         val status = when {
@@ -125,7 +127,7 @@ fun toCollectionUiState(
     val accessories = accessoryList(ownedAccessories, active)
     val accessorySheet = accessorySelection?.let { accessorySheet(accessories, active, sparks, it, busy) }
     val nextPet = pets.firstOrNull { it.status == PetStatus.LOCKED }?.let { pet ->
-        val daysLeft = SparksPace.daysToEarn(pet.price - sparks, SparksPace.perDay(breakRewardsByDay))
+        val daysLeft = SparksPace.daysToEarn(pet.price - sparks, SparksPace.perDay(breakRewardsByDay, today))
         NextPetUi(pet.id, pet.price, saved = sparks.coerceIn(0, pet.price), daysLeft = daysLeft)
     }
     return CollectionUiState(sparks, pets, active.chosenName, sheet, tab, active, accessories, accessorySheet, nextPet)
