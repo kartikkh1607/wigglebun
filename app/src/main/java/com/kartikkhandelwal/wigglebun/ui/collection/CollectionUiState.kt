@@ -5,6 +5,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.Outfit
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
 
 /** Where a pet stands in the collection. */
 enum class PetStatus { ACTIVE, OWNED, LOCKED }
@@ -19,6 +20,27 @@ data class CollectionPetUi(
 ) {
     /** For display: the user's name for Bun (M9), every other pet's own name, and its outfit. */
     fun asActivePet(chosenName: String?) = ActivePet(id, chosenName, wearing)
+}
+
+/**
+ * The "next pet" card above the grid (design/ui_v2/Collection.dc.html): the cheapest pet not yet
+ * adopted and how far the sparks are toward it.
+ */
+data class NextPetUi(
+    val id: PetId,
+    val price: Int,
+    /** Sparks toward it, at most [price]. */
+    val saved: Int,
+    /** Goal days of breaks still needed ([RewardRules.goalDaysToEarn]); 0 once affordable. */
+    val daysLeft: Int,
+) {
+    val affordable: Boolean get() = saved >= price
+
+    /** 0..1 for the progress bar. */
+    val progress: Float get() = if (price == 0) 1f else saved.toFloat() / price
+
+    /** Under a quarter of the price the card says "Saving up for Pip", from there "Pip is almost yours" (the mockup's 30 / 75). */
+    val almostThere: Boolean get() = saved * 4 >= price
 }
 
 /** The sheet's steps: the pet's details, "Adopt Pip?" and the welcome celebration. */
@@ -57,6 +79,8 @@ data class CollectionUiState(
     val activePet: ActivePet = ActivePet.Default,
     val accessories: List<AccessoryUi> = emptyList(),
     val accessorySheet: AccessorySheetUi? = null,
+    /** Null once every pet is adopted. */
+    val nextPet: NextPetUi? = null,
 )
 
 /** Which pet's sheet is open, and at which step. */
@@ -94,5 +118,8 @@ fun toCollectionUiState(
     }
     val accessories = accessoryList(ownedAccessories, active)
     val accessorySheet = accessorySelection?.let { accessorySheet(accessories, active, sparks, it, busy) }
-    return CollectionUiState(sparks, pets, active.chosenName, sheet, tab, active, accessories, accessorySheet)
+    val nextPet = pets.firstOrNull { it.status == PetStatus.LOCKED }?.let { pet ->
+        NextPetUi(pet.id, pet.price, saved = sparks.coerceIn(0, pet.price), daysLeft = RewardRules.goalDaysToEarn(pet.price - sparks))
+    }
+    return CollectionUiState(sparks, pets, active.chosenName, sheet, tab, active, accessories, accessorySheet, nextPet)
 }

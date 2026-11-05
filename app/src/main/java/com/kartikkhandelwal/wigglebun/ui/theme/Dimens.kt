@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.theme
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -339,24 +340,64 @@ object Dimens {
     }
 
     /** Collection tab, measured from design/mockups_source/Collection.dc.html. */
+    // design/ui_v2/Collection.dc.html (390-wide artboard)
     object Collection {
         val HeaderPaddingTop = 22.dp
-        val HeaderPaddingHorizontal = 20.dp
-        val HeaderPaddingBottom = 4.dp
-        val SubtitlePaddingBottom = 16.dp
+        val HeaderPaddingStart = 20.dp
+        val HeaderPaddingEnd = 16.dp
+        val HeaderPaddingBottom = 8.dp
+        val SubtitlePaddingHorizontal = 20.dp
+        val SubtitlePaddingBottom = 18.dp
         val GridGap = 12.dp
+        val CardMinHeight = 206.dp
         val CardPaddingTop = 10.dp
         val CardPaddingHorizontal = 10.dp
         val CardPaddingBottom = 14.dp
         val CardGap = 6.dp
         val CardEdge = 4.dp
         val ActiveBorder = 3.dp
-        val PetSize = 112.dp
+        val PetWidth = 112.dp
+        val PetHeight = 118.dp
         val PillPaddingHorizontal = 12.dp
         val PillPaddingVertical = 4.dp
         val PillIcon = 14.dp
         val PillIconGap = 4.dp
         val ListBottomPadding = 24.dp
+
+        // The glow behind the pet that is with you: 120×84, round top, at the card's top 14.
+        val HaloWidth = 120.dp
+        val HaloHeight = 84.dp
+        val HaloTopRadius = 60.dp
+        val HaloBottomRadius = 18.dp
+        /** From the pet's top (the card centres it 13 dp down) to the glow's. */
+        val HaloTopInPet = 1.dp
+
+        // Circles and dots behind the header, in artboard units; x from the left or right edge.
+        val DecorLargeRadius = 70.dp
+        val DecorLargeFromRight = 38.dp
+        val DecorLargeY = 128.dp
+        val DecorSmallRadius = 44.dp
+        val DecorSmallX = 26.dp
+        val DecorSmallY = 40.dp
+        /** Artboard (300, 30) and (318, 52) measured from the right, (90, 150) from the left. */
+        val DecorDots = listOf(
+            DecorDot(x = 90.dp, y = 30.dp, radius = 4.dp, fromRight = true),
+            DecorDot(x = 72.dp, y = 52.dp, radius = 3.dp, fromRight = true),
+            DecorDot(x = 90.dp, y = 150.dp, radius = 3.5.dp, fromRight = false),
+        )
+
+        // "Next pet" card
+        val NextCardRadius = 22.dp
+        val NextCardPaddingHorizontal = 14.dp
+        val NextCardPaddingVertical = 12.dp
+        val NextCardGap = 12.dp
+        val NextCardTextGap = 6.dp
+        val NextCardPaddingBottom = 20.dp
+        val NextTile = 56.dp
+        val NextTileRadius = 18.dp
+        val NextTilePetWidth = 44.dp
+        val NextTilePetHeight = 46.dp
+        val NextBar = 10.dp
 
         // Pet sheet (no mockup: sheet radius from CLAUDE.md §11, buttons as elsewhere)
         val SheetPaddingHorizontal = 24.dp
@@ -368,10 +409,11 @@ object Dimens {
         val SheetButtonIcon = 20.dp
         val SheetButtonIconGap = 6.dp
 
-        // Pets | Accessories switch (segmented pill, CLAUDE.md §11 pills fully rounded)
-        val TabsPaddingBottom = 14.dp
+        // Pets | Accessories switch: 46 dp track, the selected half white on a 2 dp edge
+        val TabsPaddingBottom = 16.dp
+        val TabsHeight = 46.dp
         val TabsInnerPadding = 4.dp
-        val TabPaddingVertical = 8.dp
+        val TabSelectedEdge = 2.dp
     }
 
     /** Pet profile tab (no mockup: Home's card style, CLAUDE.md §6.6). */
@@ -407,3 +449,6 @@ object Dimens {
         val ListBottomPadding = 24.dp
     }
 }
+
+/** A dot behind a header, [x] from the left edge or, with [fromRight], from the right one. */
+data class DecorDot(val x: Dp, val y: Dp, val radius: Dp, val fromRight: Boolean)

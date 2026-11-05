@@ -1,8 +1,20 @@
 package com.kartikkhandelwal.wigglebun.ui.collection
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import com.kartikkhandelwal.wigglebun.ui.theme.ActivePetHalo
+import com.kartikkhandelwal.wigglebun.ui.theme.CollectionDecor
+import com.kartikkhandelwal.wigglebun.ui.theme.CollectionDecorDot
+import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreen
+import com.kartikkhandelwal.wigglebun.ui.theme.NextPetTile
+import com.kartikkhandelwal.wigglebun.ui.theme.NextPetTrack
+import com.kartikkhandelwal.wigglebun.ui.theme.StatusOnChip
+import com.kartikkhandelwal.wigglebun.ui.theme.StatusOnText
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -55,7 +66,6 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.MoodHappyChip
 import com.kartikkhandelwal.wigglebun.ui.theme.MoodTiredChip
 import com.kartikkhandelwal.wigglebun.ui.theme.MovementChipText
 import com.kartikkhandelwal.wigglebun.ui.theme.Track
@@ -114,9 +124,9 @@ fun CollectionScreenRoute(modifier: Modifier = Modifier, viewModel: CollectionVi
 }
 
 /**
- * Collection tab (CLAUDE.md §6.5, design/mockups_source/Collection.dc.html): header with the
- * sparks pill, a Pets | Accessories switch, then a two-column grid of pets or accessories.
- * Tapping one opens its sheet.
+ * Collection tab (CLAUDE.md §6.5, design/ui_v2/Collection.dc.html): header with the sparks pill
+ * over soft circles, a Pets | Accessories switch, on Pets the "next pet" card, then a two-column
+ * grid of pets or accessories. Tapping one opens its sheet.
  */
 @Composable
 fun CollectionScreen(
@@ -142,17 +152,19 @@ private fun CollectionContent(
             .fillMaxSize()
             .background(Surfaces.Collection.background)
             .verticalScroll(rememberScrollState())
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            // After the scroll and the status bar: the circles scroll away with the header.
+            .drawBehind { drawHeaderDecor() },
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = C.HeaderPaddingHorizontal, end = C.HeaderPaddingHorizontal, top = C.HeaderPaddingTop, bottom = C.HeaderPaddingBottom),
+                .padding(start = C.HeaderPaddingStart, end = C.HeaderPaddingEnd, top = C.HeaderPaddingTop, bottom = C.HeaderPaddingBottom),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 stringResource(R.string.tab_collection),
-                style = WigglebunTextStyles.ScreenTitle,
+                style = WigglebunTextStyles.TabScreenTitle,
                 color = Ink,
                 modifier = Modifier.weight(1f).semantics { heading() },
             )
@@ -162,7 +174,7 @@ private fun CollectionContent(
             stringResource(if (state.tab == CollectionTab.PETS) R.string.collection_subtitle else R.string.collection_accessories_subtitle),
             style = WigglebunTextStyles.FocusSub,
             color = InkMuted,
-            modifier = Modifier.padding(start = C.HeaderPaddingHorizontal, end = C.HeaderPaddingHorizontal, bottom = C.SubtitlePaddingBottom),
+            modifier = Modifier.padding(start = C.SubtitlePaddingHorizontal, end = C.SubtitlePaddingHorizontal, bottom = C.SubtitlePaddingBottom),
         )
         CollectionTabs(
             selected = state.tab,
@@ -173,6 +185,14 @@ private fun CollectionContent(
             AccessoryGrid(state.accessories, state.activePet, onOpenAccessory)
             Spacer(Modifier.height(C.ListBottomPadding))
             return@Column
+        }
+        state.nextPet?.let { next ->
+            NextPetCard(
+                next = next,
+                pet = ActivePet(next.id, state.chosenName),
+                onClick = { onOpenPet(next.id) },
+                modifier = Modifier.padding(start = Dimens.ScreenPadding, end = Dimens.ScreenPadding, bottom = C.NextCardPaddingBottom),
+            )
         }
         Column(
             modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
@@ -197,9 +217,104 @@ private fun CollectionContent(
     }
 }
 
+/** The mockup's two soft circles and three dots: the big circle hangs off the right edge. */
+private fun DrawScope.drawHeaderDecor() {
+    drawCircle(CollectionDecor, C.DecorLargeRadius.toPx(), Offset(size.width - C.DecorLargeFromRight.toPx(), C.DecorLargeY.toPx()))
+    drawCircle(CollectionDecor, C.DecorSmallRadius.toPx(), Offset(C.DecorSmallX.toPx(), C.DecorSmallY.toPx()))
+    C.DecorDots.forEach { dot ->
+        val x = if (dot.fromRight) size.width - dot.x.toPx() else dot.x.toPx()
+        drawCircle(CollectionDecorDot, dot.radius.toPx(), Offset(x, dot.y.toPx()))
+    }
+}
+
 /**
- * One pet: in colour when owned (the active one framed in Ink, as in the mockup), a grey
- * silhouette with its price when locked. Pets stand still here; the sheet animates them.
+ * "Pip is almost yours · 30 / 75 · About 3 more days of breaks": the cheapest pet not yet
+ * adopted, in colour on a mint tile, and a bar of the sparks saved toward it. Opens its sheet.
+ */
+@Composable
+private fun NextPetCard(next: NextPetUi, pet: ActivePet, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val name = pet.displayName()
+    val title = stringResource(
+        when {
+            next.affordable -> R.string.next_pet_ready
+            next.almostThere -> R.string.next_pet_almost
+            else -> R.string.next_pet_saving
+        },
+        name,
+    )
+    val hint = if (next.affordable) {
+        stringResource(R.string.next_pet_tap, name)
+    } else {
+        pluralStringResource(R.plurals.next_pet_days, next.daysLeft, next.daysLeft)
+    }
+    val description = listOf(title, pluralStringResource(R.plurals.next_pet_count_cd, next.price, next.saved, next.price), hint)
+        .joinToString(". ")
+    ChunkySurface(
+        shape = RoundedCornerShape(C.NextCardRadius),
+        faceColor = Card,
+        edgeHeight = C.CardEdge,
+        onClick = onClick,
+        onClickLabel = stringResource(R.string.collection_open_pet),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = C.NextCardPaddingHorizontal, vertical = C.NextCardPaddingVertical)
+                .clearAndSetSemantics { contentDescription = description },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(C.NextCardGap),
+        ) {
+            Box(
+                Modifier
+                    .size(C.NextTile)
+                    .clip(RoundedCornerShape(C.NextTileRadius))
+                    .background(NextPetTile),
+                contentAlignment = Alignment.Center,
+            ) {
+                PetView(
+                    energy = 1f,
+                    mood = Mood.HAPPY,
+                    spec = pet.spec,
+                    name = name,
+                    animated = false,
+                    modifier = Modifier.size(C.NextTilePetWidth, C.NextTilePetHeight),
+                )
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(C.NextCardTextGap)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(C.NextCardTextGap)) {
+                    Text(title, style = WigglebunTextStyles.SmallCardTitle, color = Ink, modifier = Modifier.weight(1f))
+                    Text(
+                        stringResource(R.string.next_pet_count, next.saved, next.price),
+                        style = WigglebunTextStyles.StrongLabel,
+                        color = MovementChipText,
+                        maxLines = 1,
+                    )
+                }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(C.NextBar)
+                        .clip(WigglebunShapes.Pill)
+                        .background(NextPetTrack),
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth(next.progress)
+                            .height(C.NextBar)
+                            .clip(WigglebunShapes.Pill)
+                            .background(DoneGreen),
+                    )
+                }
+                Text(hint, style = WigglebunTextStyles.Hint, color = InkMuted)
+            }
+        }
+    }
+}
+
+/**
+ * One pet: in colour when owned, a grey silhouette with its price when locked. The one with you
+ * is framed in Ink with a warm glow behind it. Pets stand still here; the sheet animates them.
  */
 @Composable
 private fun PetCard(pet: CollectionPetUi, chosenName: String?, onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -210,29 +325,48 @@ private fun PetCard(pet: CollectionPetUi, chosenName: String?, onClick: () -> Un
         PetStatus.OWNED -> stringResource(R.string.collection_cd_owned, name)
         PetStatus.LOCKED -> pluralStringResource(R.plurals.collection_cd_locked, pet.price, name, pet.price)
     }
-    val clickLabel = stringResource(R.string.collection_open_pet)
-    val content: @Composable () -> Unit = {
+    ChunkySurface(
+        shape = WigglebunShapes.Card,
+        faceColor = Card,
+        edgeHeight = C.CardEdge,
+        border = if (pet.status == PetStatus.ACTIVE) BorderStroke(C.ActiveBorder, Ink) else null,
+        onClick = onClick,
+        onClickLabel = stringResource(R.string.collection_open_pet),
+        modifier = modifier,
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = C.CardMinHeight)
                 .padding(start = C.CardPaddingHorizontal, end = C.CardPaddingHorizontal, top = C.CardPaddingTop, bottom = C.CardPaddingBottom)
                 // One TalkBack stop per card: "Pip, adopt for 75 sparks".
                 .clearAndSetSemantics { contentDescription = description },
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(C.CardGap),
+            verticalArrangement = Arrangement.spacedBy(C.CardGap, Alignment.Bottom),
         ) {
-            if (pet.status == PetStatus.LOCKED) {
-                LockedPetView(active.spec, description = name, modifier = Modifier.size(C.PetSize))
-            } else {
-                PetView(
-                    energy = 1f,
-                    mood = Mood.HAPPY,
-                    spec = active.spec,
-                    name = name,
-                    animated = false,
-                    accessories = active.wearing,
-                    modifier = Modifier.size(C.PetSize),
-                )
+            Box(contentAlignment = Alignment.TopCenter) {
+                if (pet.status == PetStatus.ACTIVE) {
+                    Box(
+                        Modifier
+                            .padding(top = C.HaloTopInPet)
+                            .size(C.HaloWidth, C.HaloHeight)
+                            .clip(RoundedCornerShape(C.HaloTopRadius, C.HaloTopRadius, C.HaloBottomRadius, C.HaloBottomRadius))
+                            .background(ActivePetHalo),
+                    )
+                }
+                if (pet.status == PetStatus.LOCKED) {
+                    LockedPetView(active.spec, description = name, modifier = Modifier.size(C.PetWidth, C.PetHeight))
+                } else {
+                    PetView(
+                        energy = 1f,
+                        mood = Mood.HAPPY,
+                        spec = active.spec,
+                        name = name,
+                        animated = false,
+                        accessories = active.wearing,
+                        modifier = Modifier.size(C.PetWidth, C.PetHeight),
+                    )
+                }
             }
             // One line, so a long name never makes this row of cards taller.
             Text(
@@ -246,33 +380,12 @@ private fun PetCard(pet: CollectionPetUi, chosenName: String?, onClick: () -> Un
             StatusPill(pet)
         }
     }
-    if (pet.status == PetStatus.ACTIVE) {
-        // Collection.dc.html: the pet that is with you has a 3 dp Ink frame and no edge. The bottom
-        // padding keeps its face level with the chunky cards beside it.
-        Box(
-            modifier
-                .padding(bottom = C.CardEdge)
-                .clip(WigglebunShapes.Card)
-                .background(Card)
-                .border(C.ActiveBorder, Ink, WigglebunShapes.Card)
-                .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick),
-        ) { content() }
-    } else {
-        ChunkySurface(
-            shape = WigglebunShapes.Card,
-            faceColor = Card,
-            edgeHeight = C.CardEdge,
-            onClick = onClick,
-            onClickLabel = clickLabel,
-            modifier = modifier,
-        ) { content() }
-    }
 }
 
 @Composable
 private fun StatusPill(pet: CollectionPetUi) {
     val (background, textColor) = when (pet.status) {
-        PetStatus.ACTIVE -> MoodHappyChip to MovementChipText
+        PetStatus.ACTIVE -> StatusOnChip to StatusOnText
         PetStatus.OWNED -> Track to Ink
         PetStatus.LOCKED -> MoodTiredChip to Ink
     }
@@ -298,6 +411,12 @@ private fun StatusPill(pet: CollectionPetUi) {
 internal object CollectionPreviewStates {
     /** Fresh install: only Bun, 40 sparks (nothing affordable yet). */
     val OnlyBun = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 40, selection = null)
+
+    /** design/ui_v2/Collection.dc.html: 30 sparks toward Pip, about 3 more days. */
+    val Mockup = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 30, selection = null)
+
+    /** Just started saving: "Saving up for Pip". */
+    val Saving = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 10, selection = null)
 
     /** 100 sparks: Pip (75) is affordable, Toast and Nimbus are not. */
     val OneAffordable = toCollectionUiState(setOf(PetId.BUN), ActivePet.Default, sparks = 100, selection = null)
@@ -326,6 +445,12 @@ internal object CollectionPreviewStates {
             sparks = state.sparks,
             selection = SheetSelection(pet, step),
         )
+}
+
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun CollectionMockupPreview() {
+    WigglebunTheme { CollectionScreen(CollectionPreviewStates.Mockup) }
 }
 
 @Preview(widthDp = 390, heightDp = 844)

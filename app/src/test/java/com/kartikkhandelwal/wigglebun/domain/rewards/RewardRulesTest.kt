@@ -73,4 +73,17 @@ class RewardRulesTest {
         assertEquals(listOf(3, 7), RewardRules.milestonesReached(13).map { it.days })
         assertEquals(listOf(3, 7, 14, 30), RewardRules.milestonesReached(45).map { it.days })
     }
+
+    @Test
+    fun goalDaysCountWhatAGoalDayEarns() {
+        // 3 breaks at 5 sparks: the Collection mockup's "30 / 75, about 3 more days".
+        assertEquals(15, RewardRules.GOAL_DAY_SPARKS)
+        assertEquals(3, RewardRules.goalDaysToEarn(75 - 30))
+        assertEquals(1, RewardRules.goalDaysToEarn(1))
+        assertEquals(1, RewardRules.goalDaysToEarn(15))
+        assertEquals(2, RewardRules.goalDaysToEarn(16))
+        assertEquals(20, RewardRules.goalDaysToEarn(300))
+        assertEquals(0, RewardRules.goalDaysToEarn(0))
+        assertEquals(0, RewardRules.goalDaysToEarn(-10))
+    }
 }
