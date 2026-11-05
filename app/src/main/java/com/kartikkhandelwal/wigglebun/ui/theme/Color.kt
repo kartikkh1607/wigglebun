@@ -62,6 +62,11 @@ val StatusOnChip = Color(0xFFD3F0E1)
 val StatusOnText = Color(0xFF1F6B48)
 /** Between the rows of a grouped Settings card. */
 val GroupDivider = Color(0xFFF1EEF8)
+/** Settings' "Bun & you" card on [Night] (design/ui_v2/Settings.dc.html): edge, pet tile, sub line (9.6:1). */
+val NightEdge = Color(0xFF1E1D30)
+val NightTile = Color(0xFF45445F)
+val NightSubtle = Color(0xFFD9D7EC)
+
 /** Onboarding steps still to come. */
 val StepDotIdle = Color(0xFFE3DCD2)
 

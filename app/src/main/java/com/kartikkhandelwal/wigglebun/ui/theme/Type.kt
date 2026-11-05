@@ -127,6 +127,12 @@ object WigglebunTextStyles {
     /** A ui_v2 tab's title, "Collection" (design/ui_v2: Fredoka 34). */
     val TabScreenTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 40.sp)
 
+    /** Settings' "Bun & you" (design/ui_v2/Settings.dc.html: Fredoka 20). */
+    val HeaderCardTitle = PetCardName
+
+    /** The line under it, "5-day streak · 42 breaks so far" (Nunito 14, 700). */
+    val HeaderCardSub = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 14.sp, lineHeight = 19.sp)
+
     /** A small card's title, "Pip is almost yours" (design/ui_v2: Nunito 16, 800). */
     val SmallCardTitle = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, lineHeight = 21.sp)
 

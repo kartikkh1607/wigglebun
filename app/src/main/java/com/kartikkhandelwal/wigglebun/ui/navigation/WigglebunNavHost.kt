@@ -51,7 +51,8 @@ fun WigglebunNavHost(
     homeContent: @Composable (HomeNavigation) -> Unit = { HomeScreenRoute(it) },
     collectionContent: @Composable () -> Unit = { CollectionScreenRoute() },
     petContent: @Composable () -> Unit = { PetProfileScreenRoute() },
-    settingsContent: @Composable () -> Unit = { SettingsScreenRoute() },
+    /** Gets what opens the Pet tab (Settings' "Bun & you" card). */
+    settingsContent: @Composable (onOpenPet: () -> Unit) -> Unit = { SettingsScreenRoute(onOpenPet = it) },
     /** Names the pet tab; null (still loading) leaves the label blank rather than show the wrong pet. */
     activePet: ActivePet? = ActivePet.Default,
     /** A break to open straight away (from the widget); [onStartBreakHandled] clears it. */
@@ -122,7 +123,7 @@ fun WigglebunNavHost(
             }
             composable<CollectionRoute> { collectionContent() }
             composable<PetRoute> { petContent() }
-            composable<SettingsRoute> { settingsContent() }
+            composable<SettingsRoute> { settingsContent { openTab(TopLevelTab.Pet) } }
             composable<BreakSessionRoute> { BreakSessionScreenRoute(onExit = { navController.popBackStack() }) }
             debugDestinations(navController)
         }
