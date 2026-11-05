@@ -359,6 +359,9 @@ Home's streak flame chip `#FFE9DF` / text `#9A3D20`, spark reward chip `#FFF4D6`
 
 v1.0 build order (approved 2026-11-04): release foundations + cleanup → privacy policy + terms → UI v2 (`design/ui_v2`, one PR each: respect "Remove animations" → foundations (palette, surfaces, icons, tab bar, shared pieces) → Home → Collection → Settings → onboarding wake-up + name → onboarding hours + interval → break session + celebration) → M10a RevenueCat layer (only once the Play Console app and products exist) → M10b paywall (`design/ui_v2/Paywall.dc.html`) → M10c gating (Locked Home) → M10d trial-end reminder → M11 accessibility + large fonts → M11 store listing → M12.
 
+**M11 accessibility list (found while reviewing, fix in M11):**
+- Settings, Work hours: at 200% font on a small phone (360 dp) the day circles (M T W T F S S) touch each other and their 48 dp tap targets may overlap. Needs a layout that keeps the circles apart (smaller circles, or wrapping to two rows), with a 200% / 360 dp screenshot. The same `DayChips` is on onboarding's Hours screen.
+
 ---
 
 ## 15. Open decisions (ask Kartik)
