@@ -19,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import java.time.Instant
+import java.time.LocalDate
 
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class)
@@ -49,6 +50,18 @@ class WalletRepositoryTest {
         wallet.award("break:2026-10-27:NECK", 5, SparkReason.BREAK, at)
         wallet.award("streak:3:2026-10-23", 20, SparkReason.STREAK, at)
         assertEquals(35, wallet.balance.first())
+    }
+
+    /** Collection's days estimate reads the break rewards per day; bonuses and spending stay out. */
+    @Test
+    fun breakRewardsAreSummedPerBreakDay() = runBlocking {
+        wallet.award("break:2026-10-26:WALK", 10, SparkReason.BREAK, at)
+        wallet.award("break:2026-10-26:NECK", 5, SparkReason.BREAK, at)
+        wallet.award("break:2026-10-27:EYES", 5, SparkReason.BREAK, at)
+        wallet.award("milestone:3", 20, SparkReason.STREAK, at)
+        wallet.spend("unlock:pip", 10, SparkReason.UNLOCK, at)
+        val monday = LocalDate.of(2026, 10, 26)
+        assertEquals(mapOf(monday to 15, monday.plusDays(1) to 5), wallet.breakRewardsByDay.first())
     }
 
     // ---- Spending (M8: adopting a pet) ----

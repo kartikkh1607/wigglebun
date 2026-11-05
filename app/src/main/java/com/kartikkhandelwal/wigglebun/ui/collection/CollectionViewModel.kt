@@ -36,9 +36,10 @@ class CollectionViewModel @Inject constructor(
         combine(petRepository.owned, petRepository.ownedAccessories, petRepository.outfits, ::Triple),
         petRepository.activePet,
         walletRepository.balance,
+        walletRepository.breakRewardsByDay,
         ui,
-    ) { (owned, ownedAccessories, outfits), active, sparks, ui ->
-        toCollectionUiState(owned, active, sparks, ui.sheet, ui.busy, ownedAccessories, outfits, ui.tab, ui.accessory)
+    ) { (owned, ownedAccessories, outfits), active, sparks, paceDays, ui ->
+        toCollectionUiState(owned, active, sparks, ui.sheet, ui.busy, ownedAccessories, outfits, ui.tab, ui.accessory, paceDays)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun selectTab(selected: CollectionTab) {

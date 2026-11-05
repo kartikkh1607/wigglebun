@@ -292,18 +292,19 @@
     <string name="widget_mood_sleeping">sleeping</string>
 
     <!-- Collection tab (Collection.dc.html) -->
-    <string name="collection_subtitle">Every break earns sparks. Save up to adopt new friends.</string>
+    <string name="collection_subtitle">Earn sparks from breaks to adopt new friends.</string>
     <!-- "Next pet" card above the grid (design/ui_v2/Collection.dc.html). %1$s is the pet's name. -->
     <string name="next_pet_saving">Saving up for %1$s</string>
     <string name="next_pet_almost">%1$s is almost yours</string>
     <string name="next_pet_ready">You can adopt %1$s!</string>
     <!-- Sparks saved / price, "30 / 75" -->
     <string name="next_pet_count">%1$d / %2$d</string>
-    <!-- Counted in days that just meet the streak goal (RewardRules.GOAL_DAY_SPARKS) -->
+    <!-- Days at the user's own pace (domain/rewards/SparksPace.kt); 2 or more. One day or less: next_pet_about_a_day -->
     <plurals name="next_pet_days">
         <item quantity="one">About %d more day of breaks</item>
         <item quantity="other">About %d more days of breaks</item>
     </plurals>
+    <string name="next_pet_about_a_day">About a day of breaks to go</string>
     <string name="next_pet_tap">Tap to meet %1$s</string>
     <!-- TalkBack: "30 of 75 sparks saved" -->
     <plurals name="next_pet_count_cd">

@@ -8,6 +8,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
 
 class CollectionMapperTest {
 
@@ -54,6 +55,31 @@ class CollectionMapperTest {
         // A pricier pet adopted first doesn't skip a cheaper one.
         assertEquals(PetId.PIP, state(setOf(PetId.BUN, PetId.NIMBUS), PetId.BUN, 0).nextPet?.id)
         assertNull(state(PetId.entries.toSet(), PetId.BUN, 500).nextPet)
+    }
+
+    @Test
+    fun aNewUsersDaysEstimateUsesFifteenADay() {
+        // No break day yet: 45 sparks still missing at 15 a day.
+        val next = state(setOf(PetId.BUN), PetId.BUN, 30).nextPet!!
+        assertEquals(3, next.daysLeft)
+        assertFalse(next.aboutADay)
+    }
+
+    @Test
+    fun theDaysEstimateFollowsTheUsersRecentBreakDays() {
+        val monday = LocalDate.of(2026, 10, 26)
+        // 40 sparks on each of the last three break days: Pip's missing 45 is 2 days, not 3.
+        val heavy = (0L until 3L).associate { monday.plusDays(it) to 40 }
+        val next = toCollectionUiState(setOf(PetId.BUN), ActivePet(PetId.BUN, null), sparks = 30, selection = null, breakRewardsByDay = heavy).nextPet!!
+        assertEquals(2, next.daysLeft)
+        assertFalse(next.aboutADay)
+
+        // 40 missing at 40 a day: one day, so the card says "About a day".
+        val close = toCollectionUiState(setOf(PetId.BUN), ActivePet(PetId.BUN, null), sparks = 35, selection = null, breakRewardsByDay = heavy).nextPet!!
+        assertEquals(1, close.daysLeft)
+        assertTrue(close.aboutADay)
+        // Once affordable it says "Tap to meet", not "About a day".
+        assertFalse(state(setOf(PetId.BUN), PetId.BUN, 75).nextPet!!.aboutADay)
     }
 
     @Test

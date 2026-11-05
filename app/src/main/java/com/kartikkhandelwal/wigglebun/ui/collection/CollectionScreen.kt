@@ -243,10 +243,10 @@ private fun NextPetCard(next: NextPetUi, pet: ActivePet, onClick: () -> Unit, mo
         },
         name,
     )
-    val hint = if (next.affordable) {
-        stringResource(R.string.next_pet_tap, name)
-    } else {
-        pluralStringResource(R.plurals.next_pet_days, next.daysLeft, next.daysLeft)
+    val hint = when {
+        next.affordable -> stringResource(R.string.next_pet_tap, name)
+        next.aboutADay -> stringResource(R.string.next_pet_about_a_day)
+        else -> pluralStringResource(R.plurals.next_pet_days, next.daysLeft, next.daysLeft)
     }
     val description = listOf(title, pluralStringResource(R.plurals.next_pet_count_cd, next.price, next.saved, next.price), hint)
         .joinToString(". ")

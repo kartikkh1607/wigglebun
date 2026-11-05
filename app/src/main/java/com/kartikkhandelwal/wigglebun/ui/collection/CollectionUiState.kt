@@ -5,7 +5,8 @@ import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.Outfit
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
-import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
+import com.kartikkhandelwal.wigglebun.domain.rewards.SparksPace
+import java.time.LocalDate
 
 /** Where a pet stands in the collection. */
 enum class PetStatus { ACTIVE, OWNED, LOCKED }
@@ -31,10 +32,13 @@ data class NextPetUi(
     val price: Int,
     /** Sparks toward it, at most [price]. */
     val saved: Int,
-    /** Goal days of breaks still needed ([RewardRules.goalDaysToEarn]); 0 once affordable. */
+    /** Days of breaks still needed at the user's own pace ([SparksPace]); 0 once affordable. */
     val daysLeft: Int,
 ) {
     val affordable: Boolean get() = saved >= price
+
+    /** One day or less to go: "About a day of breaks to go" rather than "About 1 more day" (D4). */
+    val aboutADay: Boolean get() = !affordable && daysLeft <= 1
 
     /** 0..1 for the progress bar. */
     val progress: Float get() = if (price == 0) 1f else saved.toFloat() / price
@@ -97,6 +101,8 @@ fun toCollectionUiState(
     outfits: Map<PetId, Outfit> = emptyMap(),
     tab: CollectionTab = CollectionTab.PETS,
     accessorySelection: AccessorySelection? = null,
+    /** Break rewards per break day, for the next pet's days estimate ([SparksPace]). */
+    breakRewardsByDay: Map<LocalDate, Int> = emptyMap(),
 ): CollectionUiState {
     val pets = PetId.entries.sortedBy(PetPrices::of).map { id ->
         val status = when {
@@ -119,7 +125,8 @@ fun toCollectionUiState(
     val accessories = accessoryList(ownedAccessories, active)
     val accessorySheet = accessorySelection?.let { accessorySheet(accessories, active, sparks, it, busy) }
     val nextPet = pets.firstOrNull { it.status == PetStatus.LOCKED }?.let { pet ->
-        NextPetUi(pet.id, pet.price, saved = sparks.coerceIn(0, pet.price), daysLeft = RewardRules.goalDaysToEarn(pet.price - sparks))
+        val daysLeft = SparksPace.daysToEarn(pet.price - sparks, SparksPace.perDay(breakRewardsByDay))
+        NextPetUi(pet.id, pet.price, saved = sparks.coerceIn(0, pet.price), daysLeft = daysLeft)
     }
     return CollectionUiState(sparks, pets, active.chosenName, sheet, tab, active, accessories, accessorySheet, nextPet)
 }

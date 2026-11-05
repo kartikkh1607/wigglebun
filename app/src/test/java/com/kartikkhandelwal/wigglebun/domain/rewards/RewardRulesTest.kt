@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.domain.rewards
 
+import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
@@ -75,15 +76,11 @@ class RewardRulesTest {
     }
 
     @Test
-    fun goalDaysCountWhatAGoalDayEarns() {
-        // 3 breaks at 5 sparks: the Collection mockup's "30 / 75, about 3 more days".
-        assertEquals(15, RewardRules.GOAL_DAY_SPARKS)
-        assertEquals(3, RewardRules.goalDaysToEarn(75 - 30))
-        assertEquals(1, RewardRules.goalDaysToEarn(1))
-        assertEquals(1, RewardRules.goalDaysToEarn(15))
-        assertEquals(2, RewardRules.goalDaysToEarn(16))
-        assertEquals(20, RewardRules.goalDaysToEarn(300))
-        assertEquals(0, RewardRules.goalDaysToEarn(0))
-        assertEquals(0, RewardRules.goalDaysToEarn(-10))
+    fun breakKeysNameTheirDay() {
+        val day = LocalDate.of(2026, 10, 28)
+        assertEquals(day, RewardRules.dayOfBreakKey(RewardRules.breakKey(day, BreakType.WALK)))
+        assertEquals(null, RewardRules.dayOfBreakKey("milestone:7"))
+        assertEquals(null, RewardRules.dayOfBreakKey("unlock:pip"))
+        assertEquals(null, RewardRules.dayOfBreakKey("break:not-a-date:WALK"))
     }
 }

@@ -32,16 +32,6 @@ object RewardRules {
     const val REPEAT_EVERY_DAYS = 30
     const val REPEAT_BONUS = 250
 
-    /**
-     * What a work day that just meets [DAILY_GOAL] with the cheapest breaks pays, before any streak
-     * bonus (15 sparks: the "Light" user in EconomyTest). Collection's "about 3 more days of breaks"
-     * counts in these days, so the estimate never promises more than a goal day earns.
-     */
-    val GOAL_DAY_SPARKS: Int = DAILY_GOAL.count * BreakType.entries.minOf { it.defaultReward }
-
-    /** Goal days ([GOAL_DAY_SPARKS] each) to earn [sparks] more, rounded up; 0 when nothing is missing. */
-    fun goalDaysToEarn(sparks: Int): Int = if (sparks <= 0) 0 else (sparks + GOAL_DAY_SPARKS - 1) / GOAL_DAY_SPARKS
-
     fun milestonesReached(streakDays: Int): List<Milestone> = MILESTONES.filter { it.days <= streakDays }
 
     /**
@@ -63,6 +53,16 @@ object RewardRules {
 
     /** What every [breakKey] of [date] starts with. */
     fun breakKeysOn(date: LocalDate): String = "break:$date:"
+
+    /** What every [breakKey] starts with. */
+    const val BREAK_KEY_PREFIX = "break:"
+
+    /** The break day a [breakKey] was paid for; null for any other key. */
+    fun dayOfBreakKey(key: String): LocalDate? {
+        if (!key.startsWith(BREAK_KEY_PREFIX)) return null
+        val date = key.removePrefix(BREAK_KEY_PREFIX).substringBefore(':')
+        return runCatching { LocalDate.parse(date) }.getOrNull()
+    }
 
     /** A milestone pays once per lifetime. */
     fun milestoneKey(days: Int): String = "milestone:$days"

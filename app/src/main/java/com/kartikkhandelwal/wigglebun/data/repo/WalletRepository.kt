@@ -4,9 +4,13 @@ import com.kartikkhandelwal.wigglebun.data.db.SparkLedgerDao
 import com.kartikkhandelwal.wigglebun.data.db.SparkLedgerEntity
 import com.kartikkhandelwal.wigglebun.data.db.SpendOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
+import com.kartikkhandelwal.wigglebun.domain.rewards.RewardRules
+import com.kartikkhandelwal.wigglebun.domain.rewards.SparksPace
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import java.time.Instant
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,6 +35,11 @@ class WalletRepository @Inject constructor(
         require(amount > 0) { "amount $amount" }
         return dao.spend(SparkLedgerEntity(amount = -amount, reason = reason, key = key, createdAt = at.toEpochMilli()))
     }
+
+    /** Break rewards paid per break day (see [SparksPace.earnedByDay]); repeats paid nothing, so they add nothing. */
+    val breakRewardsByDay: Flow<Map<LocalDate, Int>> = dao.observeEntriesStartingWith(RewardRules.BREAK_KEY_PREFIX)
+        .map { rows -> SparksPace.earnedByDay(rows.map { it.key to it.amount }) }
+        .distinctUntilChanged()
 
     /** Every paid key starting with [prefix] (the unlock rows of adopted pets). */
     fun keysStartingWith(prefix: String): Flow<List<String>> = dao.observeKeysStartingWith(prefix)
