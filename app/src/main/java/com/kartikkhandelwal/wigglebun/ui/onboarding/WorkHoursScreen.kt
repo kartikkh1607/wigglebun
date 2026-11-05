@@ -121,7 +121,7 @@ fun WorkHoursScreen(
     OnboardingQuestion(
         title = stringResource(R.string.hours_title),
         body = stringResource(R.string.hours_body),
-        step = 3,
+        step = 2,
         onContinue = onContinue,
         onSkip = onSkip,
         modifier = modifier,

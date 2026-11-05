@@ -96,14 +96,14 @@ class OnboardingFlowTest {
         composeRule.onNodeWithText("Tap to wake them up").assertIsDisplayed()
 
         tap("Tap to wake them up")
-        composeRule.onNodeWithText("Hi!\nThat was some nap!").assertIsDisplayed()
-
-        tap("Nice to meet you")
+        // The stretch plays out, then the pet says hello on the naming screen.
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.onNodeWithText("Hi! That was some nap!").assertIsDisplayed()
         composeRule.onNodeWithText("What will you call me?").assertIsDisplayed()
 
         composeRule.onNode(hasSetTextAction()).performTextInput("Biscuit")
         composeRule.onNodeWithText("7/12").assertIsDisplayed()
-        tap("Continue")
+        tap("Nice to meet you!")
 
         composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
         tap("Continue")

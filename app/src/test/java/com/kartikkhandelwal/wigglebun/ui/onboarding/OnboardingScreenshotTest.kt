@@ -47,18 +47,33 @@ class OnboardingScreenshotTest {
     @Test
     fun wakeUpStretching() = capture("onboarding_wake_stretching") { WakeUpStretchingPreview() }
 
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     @Test
-    fun wakeUpAwake() = capture("onboarding_wake_awake") { WakeUpAwakePreview() }
+    fun wakeUpSmallPhone() = capture("onboarding_wake_small_phone") { WakeUpSmallPhonePreview() }
 
-    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
     @Test
-    fun wakeUpSmallPhoneLargeFont() = capture("onboarding_wake_small_font") { WakeUpSmallLargeFontPreview() }
+    fun wakeUpSmallPhoneHugeFont() = capture("onboarding_wake_small_font") { WakeUpSmallHugeFontPreview() }
 
     @Test
     fun nameEmpty() = capture("onboarding_name_empty") { NamePetEmptyPreview() }
 
     @Test
+    fun nameMockup() = capture("onboarding_name_mockup") { NamePetMockupPreview() }
+
+    @Test
     fun nameTyped() = capture("onboarding_name_typed") { NamePetTypedPreview() }
+
+    @Test
+    fun nameLong() = capture("onboarding_name_long") { NamePetLongNamePreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Test
+    fun nameSmallPhoneLargeFont() = capture("onboarding_name_small_font") { NamePetSmallLargeFontPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun nameSmallPhoneHugeFont() = capture("onboarding_name_small_font_2_0") { NamePetSmallHugeFontPreview() }
 
     @Test
     fun workHours() = capture("onboarding_hours") { WorkHoursPreview() }

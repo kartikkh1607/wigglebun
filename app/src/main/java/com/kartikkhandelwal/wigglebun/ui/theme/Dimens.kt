@@ -106,53 +106,81 @@ object Dimens {
         val ButtonTextSize = 14.sp
     }
 
-    /** Onboarding, measured from design/mockups_source/WakeUp.dc.html (390 x 844). */
+    /** Onboarding, measured from design/ui_v2 (WakeUp.dc.html, Name.dc.html: 390 x 844). */
     object Onboarding {
-        /** Below this height the mockup's big gaps give way, so the button and dots stay on screen. */
-        val TallScreen = 780.dp
         val SkipRowTop = 22.dp
         val SkipRowHorizontal = 24.dp
         val SkipPaddingVertical = 10.dp
         val SkipPaddingHorizontal = 4.dp
         val SkipMinSize = 48.dp
-        val TitleTop = 70.dp
-        val TitleTopShort = 12.dp
-        val TitleSize = 34.sp
         val TextHorizontal = 32.dp
         val TextGap = 10.dp
-        val BodySize = 17.sp
-        val BodyLineHeight = 25.sp
-        val RingTop = 60.dp
-        val RingTopShort = 20.dp
-        val RingBox = 240.dp
-        /** Share of the screen height the ring may use on a short screen. */
-        const val RingBoxShortFraction = 0.3f
-        val RingStroke = 3.dp
-        val RingDash = 9.dp
-        /** Pet and dashed ring, as fractions of [RingBox]. */
-        const val PetInRing = 210f / 240f
-        const val DashedRingInBox = 236f / 240f
-        /** The floor ellipse under the pet, as fractions of [RingBox]. */
-        const val FloorCentreY = 283f / 240f
-        const val FloorRadiusX = 150f / 240f
-        const val FloorRadiusY = 26f / 240f
-        val CtaMinWidth = 280.dp
-        val CtaMinHeight = 61.dp
-        val CtaIcon = 22.dp
-        val CtaIconGap = 10.dp
-        val CtaBottom = 107.dp
         val CtaBottomShort = 16.dp
-        val DotsBottom = 40.dp
         val DotsBottomShort = 16.dp
 
-        // Naming (no mockup: sized from the wake-up screen and the card tokens)
+        // Wake-up: the artboard's positions, which a short phone or a big font squeezes
+        const val WakeMinSqueeze = 0.4f
+        /** The title and body at normal font size, with a margin: what the scene must leave room for. */
+        val WakeTextHeight = 140.dp
+        /** Space above and below the button on a short phone. */
+        val WakeCtaPaddingShort = 16.dp
+        val WakeBlobTop = 318.dp
+        val WakeBlobLeft = 105.dp
+        val WakeBlobWidth = 180.dp
+        val WakeBlobHeight = 153.dp
+        val WakeZLeft = 270.dp
+        val WakeZTop = 300.dp
+        val WakeZSize = 30.sp
+        val WakeZSmallSize = 22.sp
+        val WakeZSmallOffsetX = 3.dp
+        val WakeZSmallOffsetY = (-20).dp
+        val WakeTitleTop = 556.dp
+        val WakeTextGap = 12.dp
+        val WakeTextHorizontal = 28.dp
+        val WakeTitleSize = 32.sp
+        val WakeBodySize = 16.sp
+        val WakeBodyLineHeight = 23.sp
+        val WakeCtaHorizontal = 24.dp
+        val WakeCtaBottom = 44.dp
+        val WakeCtaHeight = 58.dp
+        val WakeCtaIcon = 22.dp
+        val WakeCtaIconGap = 10.dp
+
+        // Naming: the day room on top, the white panel from 380 down
+        val NameRoomHeight = 340.dp
+        val NamePanelTop = 380.dp
+        /** Above 115% the room shrinks and the button moves into the panel; from 160% the bubble keeps one line. */
+        const val NameLargeFontScale = 1.15f
+        const val NameHugeFontScale = 1.6f
+        const val NameMinRoomScale = 0.5f
         val NamePetSize = 170.dp
-        val NamePetTop = 8.dp
-        val NameTextTop = 16.dp
-        val NameFieldTop = 24.dp
-        val NameFieldHorizontal = 24.dp
-        val NameFieldPadding = 16.dp
+        val NameBubbleTop = 62.dp
+        /** When the room shrinks the bubble would reach up under the Skip pill, so it starts below it. */
+        val NameBubbleTopBelowSkip = 78.dp
+        val NameBubbleWidth = 250.dp
+        val NameBubbleTitleSize = 16.sp
+        /** Between the bubble's tail and the pet's ears. */
+        val NameBubbleToPet = 7.dp
+        /** The pet's feet stand this far above the room's bottom edge, on the rug. */
+        val NamePetFloorGap = 23.dp
+        val NameTextGap = 6.dp
         val NameCounterGap = 10.dp
+        val NameTitleSize = 29.sp
+        val NameFieldHeight = 58.dp
+        val NameFieldBorder = 2.5.dp
+        val NameFieldEdge = 4.dp
+        val NameFieldPaddingHorizontal = 16.dp
+        val NameFieldGap = 6.dp
+        val NameChipGap = 8.dp
+        val NameChipPaddingHorizontal = 14.dp
+        val NameChipPaddingVertical = 8.dp
+        val NameCtaHorizontal = 24.dp
+        val NameCtaTop = 12.dp
+        val NameCtaBottom = 32.dp
+
+        // Interval and first stretch still use the earlier layout (no ui_v2 restyle yet)
+        val NameTextTop = 16.dp
+        val NameFieldHorizontal = 24.dp
         val NameButtonHorizontal = 24.dp
 
         // Work hours and interval (no mockup)

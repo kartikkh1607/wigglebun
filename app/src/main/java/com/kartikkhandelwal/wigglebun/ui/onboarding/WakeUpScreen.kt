@@ -1,10 +1,5 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,15 +7,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -31,271 +31,264 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
-import com.kartikkhandelwal.wigglebun.ui.components.StepDots
 import com.kartikkhandelwal.wigglebun.ui.motion.LocalReducedMotion
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.Poses
-import com.kartikkhandelwal.wigglebun.ui.theme.CardEdge
-import com.kartikkhandelwal.wigglebun.ui.theme.CheckIdle
-import com.kartikkhandelwal.wigglebun.ui.theme.Cream
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyes
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
-import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.Night
 import com.kartikkhandelwal.wigglebun.ui.theme.NightBody
-import com.kartikkhandelwal.wigglebun.ui.theme.NightFloor
-import com.kartikkhandelwal.wigglebun.ui.theme.NightLine
 import com.kartikkhandelwal.wigglebun.ui.theme.NightLink
-import com.kartikkhandelwal.wigglebun.ui.theme.NightMoon
-import com.kartikkhandelwal.wigglebun.ui.theme.NightStar
-import com.kartikkhandelwal.wigglebun.ui.theme.Sun
+import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomFloor
+import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomStar
+import com.kartikkhandelwal.wigglebun.ui.theme.PetBlush
+import com.kartikkhandelwal.wigglebun.ui.theme.PetPink
+import com.kartikkhandelwal.wigglebun.ui.theme.PetYellow
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 private val S = Dimens.Onboarding
 
-/** Night turns to day as the pet wakes. */
-private const val DAYBREAK_MILLIS = 800
-
-/** How long the pet holds its big morning stretch before settling. */
+/** How long the pet holds its big morning stretch before the naming screen takes over. */
 private const val STRETCH_MILLIS = 1_600L
 
-/** The mockup's artboard, which the moon and stars are positioned in. */
-private const val ARTBOARD_WIDTH = 390f
+/** The sleeping blob's own drawing space (the mockup's viewBox is 200 x 170). */
+private const val BLOB_VIEW_WIDTH = 200f
 
-/** x, y, radius. As in WakeUp.dc.html, moved clear of the text. */
-private val Stars = listOf(
-    Triple(60f, 96f, 2f),
-    Triple(210f, 62f, 2.5f),
-    Triple(26f, 190f, 1.8f),
-    Triple(366f, 236f, 1.6f),
-    Triple(44f, 306f, 2f),
-)
-
-/** The mockup's moon, 32 units higher so it clears the title. */
-private const val MOON_PATH = "M300 118 A34 34 0 1 1 330 78 A26 26 0 1 0 300 118 Z"
+/** Height of [SkipRow] at normal font size: the Skip link's top gap plus its touch target. */
+private val SkipRowHeight = S.SkipRowTop + S.SkipMinSize
 
 enum class WakePhase {
     ASLEEP,
 
-    /** Just tapped: the big stretch. */
+    /** Just tapped: the big stretch, then the naming screen. */
     STRETCHING,
-
-    /** Settled, and has said hello. */
-    AWAKE,
 }
 
+/**
+ * The wake-up (design/ui_v2/WakeUp.dc.html). A tap starts the stretch; when it ends [onContinue]
+ * opens the naming screen, where the pet says hello. With animations removed there is nothing to
+ * watch, so the tap goes straight on. Nothing is kept: coming back from the next screen finds the
+ * pet asleep again.
+ */
 @Composable
-fun WakeUpScreenRoute(petName: String, onContinue: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
-    // The phase is only this screen's animation, and Back from naming should find the pet awake.
-    var phase by rememberSaveable { mutableStateOf(WakePhase.ASLEEP) }
+fun WakeUpScreenRoute(onContinue: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
+    var phase by remember { mutableStateOf(WakePhase.ASLEEP) }
+    val next by rememberUpdatedState(onContinue)
     LaunchedEffect(phase) {
         if (phase == WakePhase.STRETCHING) {
-            delay(STRETCH_MILLIS)
-            phase = WakePhase.AWAKE
+            delay(STRETCH_MILLIS.milliseconds)
+            next()
         }
     }
-    // The stretch is only something to watch, so with animations removed the pet wakes straight up.
     val reducedMotion = LocalReducedMotion.current
     WakeUpScreen(
         phase = phase,
-        petName = petName,
-        onWake = { phase = if (reducedMotion) WakePhase.AWAKE else WakePhase.STRETCHING },
-        onContinue = onContinue,
+        onWake = { if (reducedMotion) onContinue() else phase = WakePhase.STRETCHING },
         onSkip = onSkip,
         modifier = modifier,
     )
 }
 
-/** The first thing a new user sees (CLAUDE.md §6.2, design/mockups_source/WakeUp.dc.html). */
+/** The first thing a new user sees (CLAUDE.md §6.2). */
 @Composable
-fun WakeUpScreen(
-    phase: WakePhase,
-    petName: String,
-    onWake: () -> Unit,
-    onContinue: () -> Unit,
-    onSkip: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
     val asleep = phase == WakePhase.ASLEEP
-    StatusBarIcons(dark = asleep)
-    val background by animatedColor(asleep, Night, Cream)
-    val nightAlpha by animateFloatAsState(if (asleep) 1f else 0f, tween(DAYBREAK_MILLIS, easing = FastOutSlowInEasing), label = "nightAlpha")
-    val moonPath = remember { PathParser().parsePathString(MOON_PATH).toPath() }
-
-    BoxWithConstraints(modifier.fillMaxSize().background(background)) {
-        val tall = maxHeight >= S.TallScreen
-        val ringBox = if (tall) S.RingBox else minOf(S.RingBox, maxHeight * S.RingBoxShortFraction)
-        // On a short screen the text moves up to where the sky is, so there's no room for it.
-        if (tall && nightAlpha > 0f) {
-            Canvas(Modifier.fillMaxSize()) {
-                scale(size.width / ARTBOARD_WIDTH, pivot = Offset.Zero) {
-                    Stars.forEach { (x, y, r) -> drawCircle(NightStar, r, Offset(x, y), alpha = nightAlpha) }
-                    drawPath(moonPath, NightMoon, alpha = nightAlpha)
-                }
-            }
-        }
-        Column(Modifier.fillMaxSize().systemBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
-            SkipRow(color = animatedColor(asleep, NightLink, Ink).value, onSkip = onSkip)
+    // The room is dark, and the app forces dark status-bar icons otherwise.
+    StatusBarIcons(dark = true)
+    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    BoxWithConstraints(modifier.fillMaxSize().background(NightRoomFloor)) {
+        // The mockup is 844 tall below the status bar; a shorter phone squeezes its positions.
+        // The title, the line under it and the button must be whole on screen, so the scene gets what
+        // they leave: everything above the title (556 units) and the button's bottom gap (44) scale
+        // with it. A bigger font means more text, hence a smaller scene.
+        val textHeight = S.WakeTextHeight * LocalDensity.current.fontScale
+        val room = maxHeight - statusTop - textHeight - S.WakeCtaHeight - S.WakeCtaPaddingShort
+        val k = (room / (S.WakeTitleTop + S.WakeCtaBottom)).coerceIn(S.WakeMinSqueeze, 1f)
+        NightRoomScene(Modifier.fillMaxSize(), squeeze = k, topInset = statusTop)
+        Column(
+            Modifier.fillMaxSize().padding(top = statusTop).navigationBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            SkipRow(color = NightLink, onSkip = onSkip)
             // Everything above the button scrolls if a large font needs it; Skip and the button stay.
             Column(
                 Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(Modifier.height(if (tall) S.TitleTop else S.TitleTopShort))
-                WakeText(phase)
-                Spacer(Modifier.height(if (tall) S.RingTop else S.RingTopShort))
-                PetRing(phase, petName, ringBox, nightAlpha, onWake)
+                Spacer(Modifier.height((S.WakeBlobTop * k - SkipRowHeight).coerceAtLeast(S.TextGap)))
+                Sleeper(asleep, k, onWake)
+                Spacer(Modifier.height((S.WakeTitleTop - S.WakeBlobTop - S.WakeBlobHeight) * k))
+                WakeText()
             }
-            WakeButton(asleep, onWake, onContinue)
-            Spacer(Modifier.height(if (tall) S.CtaBottom else S.CtaBottomShort))
-            StepDots(step = 1, count = ONBOARDING_STEPS, active = Sun, inactive = animatedColor(asleep, NightLine, CheckIdle).value)
-            Spacer(Modifier.height(if (tall) S.DotsBottom else S.DotsBottomShort))
-        }
-    }
-}
-
-@Composable
-private fun animatedColor(asleep: Boolean, night: Color, day: Color) =
-    animateColorAsState(if (asleep) night else day, tween(DAYBREAK_MILLIS, easing = FastOutSlowInEasing), label = "dayColor")
-
-@Composable
-private fun WakeText(phase: WakePhase) {
-    val titleStyle = MaterialTheme.typography.displayMedium.copy(fontSize = S.TitleSize)
-    val bodyStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = S.BodySize, lineHeight = S.BodyLineHeight)
-    Crossfade(phase == WakePhase.ASLEEP, label = "wakeText") { asleep ->
-        Column(
-            Modifier.fillMaxWidth().padding(horizontal = S.TextHorizontal),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(S.TextGap),
-        ) {
-            if (asleep) {
-                Text(
-                    stringResource(R.string.wake_title),
-                    style = titleStyle,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(stringResource(R.string.wake_body), style = bodyStyle, color = NightBody, textAlign = TextAlign.Center)
-            } else {
-                // Two lines, like the sleeping title, so the pet doesn't jump when it wakes. No name
-                // here: the next screen is where the user chooses it.
-                Text(
-                    stringResource(R.string.intro_title),
-                    style = titleStyle,
-                    color = Ink,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(stringResource(R.string.intro_body), style = bodyStyle, color = InkMuted, textAlign = TextAlign.Center)
-            }
-        }
-    }
-}
-
-@Composable
-private fun PetRing(phase: WakePhase, petName: String, box: Dp, nightAlpha: Float, onWake: () -> Unit) {
-    val floor by animatedColor(phase == WakePhase.ASLEEP, NightFloor, CardEdge)
-    val tapToWake = stringResource(R.string.wake_cta)
-    Box(
-        Modifier
-            .size(box)
-            .drawBehind {
-                drawOval(
-                    color = floor,
-                    topLeft = Offset(
-                        center.x - size.width * S.FloorRadiusX,
-                        size.height * (S.FloorCentreY - S.FloorRadiusY),
-                    ),
-                    size = Size(size.width * S.FloorRadiusX * 2, size.height * S.FloorRadiusY * 2),
-                )
-            }
-            .then(if (phase == WakePhase.ASLEEP) Modifier.clickable(onClickLabel = tapToWake, onClick = onWake) else Modifier),
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(Modifier.size(box * S.DashedRingInBox)) {
-            val dash = S.RingDash.toPx()
-            drawCircle(
-                color = NightLine,
-                alpha = nightAlpha,
-                style = Stroke(width = S.RingStroke.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, dash))),
+            WakeButton(
+                asleep,
+                onWake,
+                Modifier.padding(start = S.WakeCtaHorizontal, end = S.WakeCtaHorizontal, top = S.WakeCtaPaddingShort, bottom = S.WakeCtaBottom * k),
             )
         }
-        PetView(
-            energy = 1f,
-            mood = when (phase) {
-                WakePhase.ASLEEP -> Mood.SLEEPING
-                WakePhase.STRETCHING -> Mood.STRETCH
-                WakePhase.AWAKE -> Mood.HAPPY
-            },
-            spec = PetSpecs.Bun,
-            name = petName,
-            pose = if (phase == WakePhase.STRETCHING) Poses.ReachUp else null,
-            modifier = Modifier.size(box * S.PetInRing),
+    }
+}
+
+@Composable
+private fun WakeText() {
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = S.WakeTextHorizontal),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(S.WakeTextGap),
+    ) {
+        Text(
+            stringResource(R.string.wake_title),
+            style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeTitleSize),
+            color = NightRoomStar,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            stringResource(R.string.wake_body),
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = S.WakeBodySize, lineHeight = S.WakeBodyLineHeight),
+            color = NightBody,
+            textAlign = TextAlign.Center,
         )
     }
 }
 
+/** The pet curled up as a round blob with its "z z"; a tap wakes it. Once awake it stretches. */
 @Composable
-private fun WakeButton(asleep: Boolean, onWake: () -> Unit, onContinue: () -> Unit) {
-    ChunkyButton(
-        onClick = if (asleep) onWake else onContinue,
-        style = if (asleep) ChunkyButtonStyle.Highlight else ChunkyButtonStyle.Primary,
-        modifier = Modifier.padding(horizontal = S.TextHorizontal).widthIn(min = S.CtaMinWidth).heightIn(min = S.CtaMinHeight),
+private fun Sleeper(asleep: Boolean, k: Float, onWake: () -> Unit) {
+    val tapToWake = stringResource(R.string.wake_cta)
+    val description = stringResource(R.string.wake_blob_description)
+    Box(
+        Modifier
+            .size(S.WakeBlobWidth * k, S.WakeBlobHeight * k)
+            .then(
+                if (asleep) {
+                    Modifier.clickable(onClickLabel = tapToWake, onClick = onWake).semantics { contentDescription = description }
+                } else {
+                    Modifier
+                },
+            ),
+        contentAlignment = Alignment.BottomCenter,
     ) {
         if (asleep) {
-            Icon(painterResource(R.drawable.ic_tap), contentDescription = null, modifier = Modifier.size(S.CtaIcon))
-            Spacer(Modifier.size(S.CtaIconGap))
+            SleepingBlob(Modifier.fillMaxSize())
+            // The sleeper's "z z": a big one and a smaller one a little higher (decoration, not read out).
+            Row(
+                Modifier
+                    .align(Alignment.TopStart)
+                    .offset((S.WakeZLeft - S.WakeBlobLeft) * k, (S.WakeZTop - S.WakeBlobTop) * k)
+                    .clearAndSetSemantics {},
+            ) {
+                val z = stringResource(R.string.wake_z)
+                Text(z, style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeZSize), color = BreakEyes)
+                Text(
+                    z,
+                    style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeZSmallSize),
+                    color = BreakEyes,
+                    modifier = Modifier.offset(S.WakeZSmallOffsetX, S.WakeZSmallOffsetY),
+                )
+            }
+        } else {
+            // A full pet is taller than the blob, so it stands on the blob's floor line.
+            PetView(
+                energy = 1f,
+                mood = Mood.STRETCH,
+                spec = PetSpecs.Bun,
+                name = stringResource(PetSpecs.Bun.defaultName),
+                pose = Poses.ReachUp,
+                modifier = Modifier.wrapContentSize(Alignment.BottomCenter, unbounded = true).size(S.WakeBlobWidth * k),
+            )
         }
-        Text(stringResource(if (asleep) R.string.wake_cta else R.string.intro_cta), textAlign = TextAlign.Center)
+    }
+}
+
+/** Port of the mockup's sleeping blob (viewBox 200 x 170), in pet-body colours. */
+@Composable
+private fun SleepingBlob(modifier: Modifier = Modifier) {
+    val smile = remember { PathParser().parsePathString("M98 116 Q100 118 102 116").toPath() }
+    val eyes = remember { PathParser().parsePathString("M78 104 Q84 110 90 104 M110 104 Q116 110 122 104").toPath() }
+    Canvas(modifier.clearAndSetSemantics {}) {
+        scale(size.width / BLOB_VIEW_WIDTH, pivot = Offset.Zero) {
+            fun oval(c: Color, cx: Float, cy: Float, rx: Float, ry: Float) =
+                drawOval(c, Offset(cx - rx, cy - ry), Size(rx * 2, ry * 2))
+            oval(PetYellow, 100f, 112f, 72f, 50f)
+            drawCircle(PetYellow, 16f, Offset(58f, 72f))
+            drawCircle(PetYellow, 16f, Offset(142f, 72f))
+            oval(PetYellow, 54f, 150f, 14f, 9f)
+            oval(PetYellow, 146f, 150f, 14f, 9f)
+            oval(PetYellow, 100f, 72f, 56f, 20f)
+            drawCircle(PetPink, 8f, Offset(58f, 73f))
+            drawCircle(PetPink, 8f, Offset(142f, 73f))
+            drawPath(eyes, Ink, style = Stroke(width = 3.6f, cap = StrokeCap.Round))
+            oval(PetBlush, 70f, 116f, 9f, 5.5f)
+            oval(PetBlush, 130f, 116f, 9f, 5.5f)
+            drawPath(smile, Ink, style = Stroke(width = 3f, cap = StrokeCap.Round))
+        }
+    }
+}
+
+@Composable
+private fun WakeButton(asleep: Boolean, onWake: () -> Unit, modifier: Modifier = Modifier) {
+    // Hidden, not gone, while the pet stretches: nothing moves and nothing can be tapped twice.
+    ChunkyButton(
+        onClick = onWake,
+        enabled = asleep,
+        style = ChunkyButtonStyle.Highlight,
+        modifier = modifier.fillMaxWidth().heightIn(min = S.WakeCtaHeight).alpha(if (asleep) 1f else 0f),
+    ) {
+        Icon(painterResource(R.drawable.ic_tap), contentDescription = null, modifier = Modifier.size(S.WakeCtaIcon))
+        Spacer(Modifier.size(S.WakeCtaIconGap))
+        Text(stringResource(R.string.wake_cta), textAlign = TextAlign.Center)
     }
 }
 
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WakeUpAsleepPreview() {
-    WigglebunTheme { WakeUpScreen(WakePhase.ASLEEP, "Bun", {}, {}, {}) }
+    WigglebunTheme { WakeUpScreen(WakePhase.ASLEEP, {}, {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WakeUpStretchingPreview() {
-    WigglebunTheme { WakeUpScreen(WakePhase.STRETCHING, "Bun", {}, {}, {}) }
+    WigglebunTheme { WakeUpScreen(WakePhase.STRETCHING, {}, {}) }
 }
 
-@Preview(widthDp = 390, heightDp = 844)
+@Preview(widthDp = 360, heightDp = 640)
 @Composable
-internal fun WakeUpAwakePreview() {
-    WigglebunTheme { WakeUpScreen(WakePhase.AWAKE, "Bun", {}, {}, {}) }
+internal fun WakeUpSmallPhonePreview() {
+    WigglebunTheme { WakeUpScreen(WakePhase.ASLEEP, {}, {}) }
 }
 
-@Preview(widthDp = 360, heightDp = 640, fontScale = 1.3f)
+@Preview(widthDp = 360, heightDp = 640, fontScale = 2f)
 @Composable
-internal fun WakeUpSmallLargeFontPreview() {
-    WigglebunTheme { WakeUpScreen(WakePhase.ASLEEP, "Bun", {}, {}, {}) }
+internal fun WakeUpSmallHugeFontPreview() {
+    WigglebunTheme { WakeUpScreen(WakePhase.ASLEEP, {}, {}) }
 }

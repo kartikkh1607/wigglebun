@@ -199,7 +199,7 @@ fun OnboardingFlow(
     NavHost(navController = navController, startDestination = WakeUpRoute, enterTransition = navFadeIn, exitTransition = navFadeOut) {
         composable<WakeUpRoute> {
             val next = dropUnlessResumed { navController.navigate(NamePetRoute) { launchSingleTop = true } }
-            WakeUpScreenRoute(petName = petName, onContinue = next, onSkip = next)
+            WakeUpScreenRoute(onContinue = next, onSkip = next)
         }
         composable<NamePetRoute> {
             val next = dropUnlessResumed { navController.navigate(WorkHoursRoute) { launchSingleTop = true } }

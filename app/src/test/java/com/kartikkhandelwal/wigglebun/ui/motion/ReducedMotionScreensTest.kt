@@ -38,6 +38,7 @@ import com.kartikkhandelwal.wigglebun.ui.onboarding.WakeUpScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -146,11 +147,14 @@ class ReducedMotionScreensTest {
         assertFalse("the live pet on Home should move", first.contentEquals(later))
     }
 
-    // --- Wake-up: the tap wakes the pet straight into its hello ---------------------------
+    // --- Wake-up: with animations removed the tap goes straight on --------------------------
+
+    private var continued = 0
 
     /** Taps the wake button and moves one frame on, far short of the 1.6 s stretch. */
     private fun tapToWake(reducedMotion: Boolean) {
-        setContent(reducedMotion) { WakeUpScreenRoute(petName = "Bun", onContinue = {}, onSkip = {}) }
+        continued = 0
+        setContent(reducedMotion) { WakeUpScreenRoute(onContinue = { continued++ }, onSkip = {}) }
         composeRule.onNodeWithText("Tap to wake them up").performClick()
         composeRule.mainClock.advanceTimeByFrame()
     }
@@ -159,16 +163,19 @@ class ReducedMotionScreensTest {
         composeRule.onAllNodesWithContentDescription(description).fetchSemanticsNodes().isNotEmpty()
 
     @Test
-    fun theTapWakesThePetAtOnce() {
+    fun theTapSkipsTheStretch() {
         tapToWake(reducedMotion = true)
-        assertTrue(petShows(AWAKE))
+        assertEquals(1, continued)
+        assertFalse(petShows(STRETCHING))
     }
 
     @Test
     fun controlThePetStretchesFirstWithAnimationsOn() {
         tapToWake(reducedMotion = false)
         assertTrue(petShows(STRETCHING))
-        assertFalse(petShows(AWAKE))
+        assertEquals(0, continued)
+        composeRule.mainClock.advanceTimeBy(2_000)
+        assertEquals(1, continued)
     }
 
     // --- Break session: each step holds one pose ------------------------------------------
@@ -213,7 +220,6 @@ class ReducedMotionScreensTest {
         const val POSE_CYCLE_CHECK_MILLIS = 2_500L
         const val SETTLE_MILLIS = 100L
         const val MILLIS_PER_MINUTE = 60_000L
-        const val AWAKE = "Bun, happy and full of energy"
         const val STRETCHING = "Bun, stretching"
 
         /** Ink text (#2B2A3A) is dark; the Cream background and white card are not. */
