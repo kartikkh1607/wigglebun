@@ -30,6 +30,9 @@ private const val ART_WIDTH = 390f
 private const val ART_HEIGHT = 340f
 private const val ART_CENTRE = ART_WIDTH / 2f
 
+/** How far the shelf plant may slide left before it would touch the books (they end near x 70). */
+private const val SHELF_PLANT_MAX_SHIFT = 20f
+
 /** Where the floor starts and where the wall's bands are, in artboard units. */
 private const val LOWER_WALL_TOP = 196f
 private const val RAIL_TOP = 192f
@@ -41,6 +44,8 @@ private const val FLOOR_TOP = 289f
  * Home's room (design/ui_v2/Main.dc.html), drawn from [palette] in artboard units (1 unit = 1 dp).
  * The 390-wide artboard is split into groups anchored to the left edge (shelf, desk), the centre
  * (clock, rug) or the right edge (window, plant), so the room fits any width from 360 to 430 dp.
+ * Below 390 dp the shelf plant slides left with the centre (at most [SHELF_PLANT_MAX_SHIFT]), so
+ * it keeps its 390 dp gap from the pet's speech bubble instead of ending up under it.
  * The clock hangs [topInset] below the top; everything else stands on the floor at the bottom, so
  * extra height (the status bar, a taller bubble at large font sizes) is plain wall.
  */
@@ -57,13 +62,15 @@ fun RoomScene(modifier: Modifier = Modifier, palette: RoomPalette = RoomPalette.
             val floorShift = height - ART_HEIGHT
             val rightShift = width - ART_WIDTH
             val centreShift = width / 2f - ART_CENTRE
+            val shelfPlantShift = centreShift.coerceIn(-SHELF_PLANT_MAX_SHIFT, 0f)
             onDrawBehind {
                 scale(unit, unit, Offset.Zero) {
                     drawWall(palette, width, height, floorShift)
                     translate(left = centreShift, top = top) { drawClock(palette, paths) }
                     translate(left = rightShift, top = floorShift) { drawWindow(palette, paths) }
                     translate(top = floorShift) {
-                        drawShelf(palette, paths)
+                        drawShelf(palette)
+                        translate(left = shelfPlantShift) { drawShelfPlant(palette, paths) }
                         drawDesk(palette, paths)
                     }
                     translate(left = rightShift, top = floorShift) { drawPlant(palette, paths) }
@@ -142,13 +149,17 @@ private fun DrawScope.drawWindow(p: RoomPalette, paths: RoomPaths) {
     rect(p.sill, 254f, 186f, 120f, 10f, 5f)
 }
 
-private fun DrawScope.drawShelf(p: RoomPalette, paths: RoomPaths) {
+private fun DrawScope.drawShelf(p: RoomPalette) {
     rect(p.shelf, 14f, 108f, 112f, 9f, 4f)
     rect(p.shelfShadow, 14f, 114f, 112f, 5f, 2.5f)
     rect(p.books[0], 22f, 80f, 10f, 28f, 2f)
     rect(p.books[1], 34f, 86f, 9f, 22f, 2f)
     rect(p.books[2], 45f, 78f, 11f, 30f, 2f)
     rotate(12f, Offset(62f, 98f)) { rect(p.books[3], 58f, 88f, 9f, 20f, 2f) }
+}
+
+/** The pot plant on the shelf, drawn on its own so it can slide on narrow screens. */
+private fun DrawScope.drawShelfPlant(p: RoomPalette, paths: RoomPaths) {
     drawPath(paths.shelfPot, p.shelfPot)
     oval(p.leafMid, 98f, 84f, 5f, 10f, -30f)
     oval(p.leafDark, 110f, 82f, 5f, 11f, 28f)
