@@ -50,7 +50,13 @@ private const val FLOOR_TOP = 289f
  * extra height (the status bar, a taller bubble at large font sizes) is plain wall.
  */
 @Composable
-fun RoomScene(modifier: Modifier = Modifier, palette: RoomPalette = RoomPalette.Day, topInset: Dp = 0.dp) {
+fun RoomScene(
+    modifier: Modifier = Modifier,
+    palette: RoomPalette = RoomPalette.Day,
+    topInset: Dp = 0.dp,
+    /** Onboarding's naming screen (Name.dc.html) is the same room without the clock and the shelf. */
+    showClockAndShelf: Boolean = true,
+) {
     val paths = remember { RoomPaths() }
     Spacer(
         modifier.drawWithCache {
@@ -66,11 +72,13 @@ fun RoomScene(modifier: Modifier = Modifier, palette: RoomPalette = RoomPalette.
             onDrawBehind {
                 scale(unit, unit, Offset.Zero) {
                     drawWall(palette, width, height, floorShift)
-                    translate(left = centreShift, top = top) { drawClock(palette, paths) }
+                    if (showClockAndShelf) translate(left = centreShift, top = top) { drawClock(palette, paths) }
                     translate(left = rightShift, top = floorShift) { drawWindow(palette, paths) }
                     translate(top = floorShift) {
-                        drawShelf(palette)
-                        translate(left = shelfPlantShift) { drawShelfPlant(palette, paths) }
+                        if (showClockAndShelf) {
+                            drawShelf(palette)
+                            translate(left = shelfPlantShift) { drawShelfPlant(palette, paths) }
+                        }
                         drawDesk(palette, paths)
                     }
                     translate(left = rightShift, top = floorShift) { drawPlant(palette, paths) }

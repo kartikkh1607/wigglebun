@@ -70,13 +70,26 @@ val NightSubtle = Color(0xFFD9D7EC)
 /** Onboarding steps still to come. */
 val StepDotIdle = Color(0xFFE3DCD2)
 
-// Onboarding sleep screen, on Night (WakeUp.dc.html)
-val NightStar = Color(0xFFB9B5D6)
-val NightMoon = Color(0xFFFFE3A3)
-val NightFloor = Color(0xFF3A3957)
-val NightLine = Color(0xFF59577A)
-val NightBody = Color(0xFFD6D3E8)
+// Onboarding's night room (WakeUp.dc.html in design/ui_v2), besides NightRoomWall and NightRoomFloor
+val NightRoomLowerWall = Color(0xFF2A2D4A)
+val NightRoomTrim = Color(0xFF3D4166)
+val NightRoomLedge = Color(0xFF45496F)
+val NightRoomFloorLine = Color(0xFF323454)
+val NightRoomWindowGlass = Color(0xFF1E2140)
+val NightRoomMoon = Color(0xFFFFF3C9)
+val NightRoomRugEdge = Color(0xFF3B4472)
+val NightRoomRug = Color(0xFF48548A)
+val NightRoomRugStitch = Color(0xFF6D79B0)
+/** Text on the night room: the line under the title (9.2:1) and the Skip link. */
+val NightBody = Color(0xFFCFCDE6)
 val NightLink = Color(0xFFE4E1F0)
+
+// Name screen (Name.dc.html): suggestion chips, the pet name field's edge
+val NameChipYellow = Color(0xFFFFF0CC)
+val NameChipMint = Color(0xFFDDF3E9)
+val NameChipLilac = Color(0xFFE6DDFB)
+val NameChipPink = Color(0xFFFCE1EC)
+val NameFieldEdge = Color(0xFFE8E0D5)
 
 // Pet
 val PetYellow = Color(0xFFF5DC8B)

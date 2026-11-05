@@ -40,6 +40,14 @@ private val S = Dimens.Shared
  */
 @Composable
 fun SpeechBubble(text: String, modifier: Modifier = Modifier, edgeColor: Color = LocalSurface.current.edge) {
+    SpeechBubble(modifier, edgeColor) {
+        Text(text, style = WigglebunTextStyles.Bubble, color = Ink, textAlign = TextAlign.Center)
+    }
+}
+
+/** A bubble with its own content, for a line with a smaller one under it (Name.dc.html). */
+@Composable
+fun SpeechBubble(modifier: Modifier = Modifier, edgeColor: Color = LocalSurface.current.edge, content: @Composable () -> Unit) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             Modifier
@@ -50,7 +58,7 @@ fun SpeechBubble(text: String, modifier: Modifier = Modifier, edgeColor: Color =
                 .background(Card, WigglebunShapes.Bubble)
                 .padding(horizontal = S.BubblePaddingHorizontal, vertical = S.BubblePaddingVertical),
         ) {
-            Text(text, style = WigglebunTextStyles.Bubble, color = Ink, textAlign = TextAlign.Center)
+            content()
         }
         Canvas(Modifier.offset(y = -S.BubbleTailOverlap).size(S.BubbleTailWidth, S.BubbleTailHeight)) {
             val tail = Path().apply {

@@ -82,7 +82,7 @@ fun IntervalScreen(
     OnboardingQuestion(
         title = stringResource(R.string.interval_title),
         body = stringResource(R.string.interval_body),
-        step = 4,
+        step = 3,
         onContinue = onContinue,
         onSkip = onSkip,
         modifier = modifier,
