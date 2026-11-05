@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -65,6 +66,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.NightBody
 import com.kartikkhandelwal.wigglebun.ui.theme.NightLink
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomFloor
+import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomStar
 import com.kartikkhandelwal.wigglebun.ui.theme.PetBlush
 import com.kartikkhandelwal.wigglebun.ui.theme.PetPink
 import com.kartikkhandelwal.wigglebun.ui.theme.PetYellow
@@ -124,10 +126,12 @@ fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modif
     val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     BoxWithConstraints(modifier.fillMaxSize().background(NightRoomFloor)) {
         // The mockup is 844 tall below the status bar; a shorter phone squeezes its positions.
-        // A big font needs the text more than the room: from 130% the scene shrinks further.
-        val fontScale = LocalDensity.current.fontScale
-        val k = (nightRoomSqueeze(maxHeight - statusTop, S.WakeArtboardHeight) * (S.WakeFullFontScale / fontScale).coerceAtMost(1f))
-            .coerceAtLeast(S.WakeMinSqueeze)
+        // The title, the line under it and the button must be whole on screen, so the scene gets what
+        // they leave: everything above the title (556 units) and the button's bottom gap (44) scale
+        // with it. A bigger font means more text, hence a smaller scene.
+        val textHeight = S.WakeTextHeight * LocalDensity.current.fontScale
+        val room = maxHeight - statusTop - textHeight - S.WakeCtaHeight - S.WakeCtaPaddingShort
+        val k = (room / (S.WakeTitleTop + S.WakeCtaBottom)).coerceIn(S.WakeMinSqueeze, 1f)
         NightRoomScene(Modifier.fillMaxSize(), squeeze = k, topInset = statusTop)
         Column(
             Modifier.fillMaxSize().padding(top = statusTop).navigationBarsPadding(),
@@ -144,7 +148,11 @@ fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modif
                 Spacer(Modifier.height((S.WakeTitleTop - S.WakeBlobTop - S.WakeBlobHeight) * k))
                 WakeText()
             }
-            WakeButton(asleep, onWake, Modifier.padding(horizontal = S.WakeCtaHorizontal, vertical = S.WakeCtaBottom * k))
+            WakeButton(
+                asleep,
+                onWake,
+                Modifier.padding(start = S.WakeCtaHorizontal, end = S.WakeCtaHorizontal, top = S.WakeCtaPaddingShort, bottom = S.WakeCtaBottom * k),
+            )
         }
     }
 }
@@ -159,7 +167,7 @@ private fun WakeText() {
         Text(
             stringResource(R.string.wake_title),
             style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeTitleSize),
-            color = Color.White,
+            color = NightRoomStar,
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
@@ -191,15 +199,22 @@ private fun Sleeper(asleep: Boolean, k: Float, onWake: () -> Unit) {
     ) {
         if (asleep) {
             SleepingBlob(Modifier.fillMaxSize())
-            Text(
-                "z",
-                style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeZSize),
-                color = BreakEyes,
-                modifier = Modifier
+            // The sleeper's "z z": a big one and a smaller one a little higher (decoration, not read out).
+            Row(
+                Modifier
                     .align(Alignment.TopStart)
                     .offset((S.WakeZLeft - S.WakeBlobLeft) * k, (S.WakeZTop - S.WakeBlobTop) * k)
                     .clearAndSetSemantics {},
-            )
+            ) {
+                val z = stringResource(R.string.wake_z)
+                Text(z, style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeZSize), color = BreakEyes)
+                Text(
+                    z,
+                    style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeZSmallSize),
+                    color = BreakEyes,
+                    modifier = Modifier.offset(S.WakeZSmallOffsetX, S.WakeZSmallOffsetY),
+                )
+            }
         } else {
             // A full pet is taller than the blob, so it stands on the blob's floor line.
             PetView(

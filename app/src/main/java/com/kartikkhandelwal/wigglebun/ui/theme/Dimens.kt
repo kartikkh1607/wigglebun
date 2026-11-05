@@ -118,10 +118,12 @@ object Dimens {
         val CtaBottomShort = 16.dp
         val DotsBottomShort = 16.dp
 
-        // Wake-up: the artboard's positions, which a short phone squeezes (nightRoomSqueeze)
-        val WakeArtboardHeight = 844.dp
-        const val WakeFullFontScale = 1.3f
-        const val WakeMinSqueeze = 0.45f
+        // Wake-up: the artboard's positions, which a short phone or a big font squeezes
+        const val WakeMinSqueeze = 0.4f
+        /** The title and body at normal font size, with a margin: what the scene must leave room for. */
+        val WakeTextHeight = 140.dp
+        /** Space above and below the button on a short phone. */
+        val WakeCtaPaddingShort = 16.dp
         val WakeBlobTop = 318.dp
         val WakeBlobLeft = 105.dp
         val WakeBlobWidth = 180.dp
@@ -129,6 +131,9 @@ object Dimens {
         val WakeZLeft = 270.dp
         val WakeZTop = 300.dp
         val WakeZSize = 30.sp
+        val WakeZSmallSize = 22.sp
+        val WakeZSmallOffsetX = 3.dp
+        val WakeZSmallOffsetY = (-20).dp
         val WakeTitleTop = 556.dp
         val WakeTextGap = 12.dp
         val WakeTextHorizontal = 28.dp
@@ -144,9 +149,14 @@ object Dimens {
         // Naming: the day room on top, the white panel from 380 down
         val NameRoomHeight = 340.dp
         val NamePanelTop = 380.dp
-        val NamePetTop = 138.dp
+        /** Above 115% the room shrinks and the button moves into the panel; from 160% the bubble keeps one line. */
+        const val NameLargeFontScale = 1.15f
+        const val NameHugeFontScale = 1.6f
+        const val NameMinRoomScale = 0.5f
         val NamePetSize = 170.dp
         val NameBubbleTop = 62.dp
+        /** When the room shrinks the bubble would reach up under the Skip pill, so it starts below it. */
+        val NameBubbleTopBelowSkip = 78.dp
         val NameBubbleWidth = 250.dp
         val NameBubbleTitleSize = 16.sp
         /** Between the bubble's tail and the pet's ears. */

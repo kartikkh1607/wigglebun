@@ -76,6 +76,8 @@ val NightRoomTrim = Color(0xFF3D4166)
 val NightRoomLedge = Color(0xFF45496F)
 val NightRoomFloorLine = Color(0xFF323454)
 val NightRoomWindowGlass = Color(0xFF1E2140)
+/** The stars, sparkles and glow in the night room, and the wake-up title on it. */
+val NightRoomStar = Color(0xFFFFFFFF)
 val NightRoomMoon = Color(0xFFFFF3C9)
 val NightRoomRugEdge = Color(0xFF3B4472)
 val NightRoomRug = Color(0xFF48548A)

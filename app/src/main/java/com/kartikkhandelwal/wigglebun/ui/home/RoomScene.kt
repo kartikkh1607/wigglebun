@@ -56,11 +56,13 @@ fun RoomScene(
     topInset: Dp = 0.dp,
     /** Onboarding's naming screen (Name.dc.html) is the same room without the clock and the shelf. */
     showClockAndShelf: Boolean = true,
+    /** 1 draws one artboard unit per dp; less shrinks the whole room (naming at large font sizes). */
+    roomScale: Float = 1f,
 ) {
     val paths = remember { RoomPaths() }
     Spacer(
         modifier.drawWithCache {
-            val unit = 1.dp.toPx()
+            val unit = roomScale * 1.dp.toPx()
             val width = size.width / unit
             val height = size.height / unit
             val top = topInset.toPx() / unit

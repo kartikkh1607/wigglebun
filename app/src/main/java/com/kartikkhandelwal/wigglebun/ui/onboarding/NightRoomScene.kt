@@ -29,6 +29,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomMoon
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomRug
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomRugEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomRugStitch
+import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomStar
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomTrim
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomWall
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomWindowGlass
@@ -44,15 +45,9 @@ private const val FLOOR_TOP = 423f
 /** Below this squeeze the sparkle at the top right collides with Skip. */
 private const val SPARKLE_MIN_SQUEEZE = 0.7f
 
-/** Smallest fraction of the artboard's height the scene is squeezed to on a short phone. */
-private const val MIN_SQUEEZE = 0.72f
-
-/** How much of [artboardHeight] dp a screen of [available] dp keeps: 1 on a phone as tall as the mockup. */
-fun nightRoomSqueeze(available: Dp, artboardHeight: Dp): Float = (available / artboardHeight).coerceIn(MIN_SQUEEZE, 1f)
-
 /**
  * Onboarding's night room (design/ui_v2/WakeUp.dc.html), drawn from tokens in artboard units.
- * [squeeze] scales the whole scene (1 = the mockup's 1 unit per dp) so it fits a short phone; the
+ * [squeeze] scales the whole scene (1 = the mockup's 1 unit per dp) so it leaves room on a short phone; the
  * artboard is split about its centre, so any width from 360 to 430 dp works. The scene's
  * top is [topInset] below the top of the box, and the wall runs up behind the status bar.
  */
@@ -119,14 +114,14 @@ private fun DrawScope.drawSky(paths: NightPaths, showTopRightSparkle: Boolean) {
         drawCircle(NightRoomWindowGlass, 17f, Offset(229f, 165f))
     }
     listOf(168f to 160f to 2f, 182f to 208f to 1.5f, 160f to 246f to 1.8f, 232f to 236f to 1.4f, 206f to 270f to 1.6f, 196f to 150f to 1.3f)
-        .forEach { (pos, r) -> drawCircle(Color.White, r, Offset(pos.first, pos.second)) }
+        .forEach { (pos, r) -> drawCircle(NightRoomStar, r, Offset(pos.first, pos.second)) }
     rect(NightRoomTrim, 192f, 118f, 6f, 178f)
     rect(NightRoomTrim, 144f, 226f, 102f, 5f)
     rect(NightRoomLedge, 124f, 292f, 142f, 10f, 5f)
     // The top-right one would sit under the Skip link once the scene is squeezed.
-    paths.sparkles.forEachIndexed { i, p -> if (i != 1 || showTopRightSparkle) drawPath(p, Color.White, alpha = 0.9f) }
+    paths.sparkles.forEachIndexed { i, p -> if (i != 1 || showTopRightSparkle) drawPath(p, NightRoomStar, alpha = 0.9f) }
     listOf(90f to 200f to 2f, 70f to 300f to 1.6f, 350f to 170f to 1.8f)
-        .forEach { (pos, r) -> drawCircle(Color.White, r, Offset(pos.first, pos.second), alpha = 0.9f) }
+        .forEach { (pos, r) -> drawCircle(NightRoomStar, r, Offset(pos.first, pos.second), alpha = 0.9f) }
 }
 
 private fun DrawScope.drawRug() {
@@ -139,8 +134,8 @@ private fun DrawScope.drawRug() {
         style = Stroke(width = 2.5f, cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(1f, 8f))),
     )
     // Soft glow where the pet sleeps.
-    drawCircle(Color.White, 112f, Offset(ART_CENTRE, 390f), alpha = 0.04f)
-    drawCircle(Color.White, 88f, Offset(ART_CENTRE, 390f), alpha = 0.05f)
+    drawCircle(NightRoomStar, 112f, Offset(ART_CENTRE, 390f), alpha = 0.04f)
+    drawCircle(NightRoomStar, 88f, Offset(ART_CENTRE, 390f), alpha = 0.05f)
 }
 
 @Preview(widthDp = 390, heightDp = 844)

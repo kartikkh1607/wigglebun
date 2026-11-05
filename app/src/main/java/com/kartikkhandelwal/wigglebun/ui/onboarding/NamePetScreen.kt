@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -99,6 +100,19 @@ fun NamePetScreen(
     modifier: Modifier = Modifier,
 ) {
     val defaultName = stringResource(PetSpecs.Bun.defaultName)
+    // A big font needs the question more than the room: the room shrinks, the bubble keeps one line
+    // and the button scrolls with the panel, so the title and field are on screen without scrolling.
+    val fontScale = LocalDensity.current.fontScale
+    val shrink = (S.NameLargeFontScale / fontScale).coerceAtMost(1f)
+    val roomScale = (shrink * shrink).coerceAtLeast(S.NameMinRoomScale)
+    val buttonInPanel = fontScale > S.NameLargeFontScale
+    val cta: @Composable () -> Unit = {
+        ChunkyButton(
+            text = stringResource(R.string.name_cta),
+            onClick = onContinue,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
     OnSurface(Surfaces.Home) {
         Box(modifier.fillMaxSize().background(Card)) {
             Column(Modifier.fillMaxSize().imePadding()) {
@@ -106,8 +120,8 @@ fun NamePetScreen(
                     val viewport = maxHeight
                     // Room and panel scroll together when a big font or the keyboard leaves little room.
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                        Room(petName = name.ifBlank { defaultName })
-                        SheetPanel(Modifier.fillMaxWidth().heightIn(min = viewport - S.NamePanelTop)) {
+                        Room(petName = name.ifBlank { defaultName }, roomScale = roomScale, hello = fontScale < S.NameHugeFontScale)
+                        SheetPanel(Modifier.fillMaxWidth().heightIn(min = viewport - S.NamePanelTop * roomScale)) {
                             StepDots(step = 1, count = ONBOARDING_STEPS)
                             Column(verticalArrangement = Arrangement.spacedBy(S.NameTextGap)) {
                                 Text(
@@ -124,18 +138,19 @@ fun NamePetScreen(
                             }
                             NameField(name, defaultName, onNameChange, onContinue)
                             Suggestions(onNameChange)
+                            if (buttonInPanel) Box(Modifier.padding(bottom = S.NameCtaBottom)) { cta() }
                         }
                     }
                 }
                 // Part of the panel: white to the bottom of the screen, under the system bar.
-                Box(Modifier.fillMaxWidth().background(Card).navigationBarsPadding()) {
-                    ChunkyButton(
-                        text = stringResource(R.string.name_cta),
-                        onClick = onContinue,
-                        modifier = Modifier
+                if (!buttonInPanel) {
+                    Box(
+                        Modifier
                             .fillMaxWidth()
+                            .background(Card)
+                            .navigationBarsPadding()
                             .padding(start = S.NameCtaHorizontal, end = S.NameCtaHorizontal, top = S.NameCtaTop, bottom = S.NameCtaBottom),
-                    )
+                    ) { cta() }
                 }
             }
             Box(Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(top = S.SkipRowTop, end = S.SkipRowHorizontal)) {
@@ -150,16 +165,16 @@ fun NamePetScreen(
  * (a big font), so the pet always stands on the rug.
  */
 @Composable
-private fun Room(petName: String) {
+private fun Room(petName: String, roomScale: Float, hello: Boolean) {
     Box(Modifier.fillMaxWidth().background(Surfaces.Home.background)) {
         Column {
-            Box(Modifier.fillMaxWidth().heightIn(min = S.NameRoomHeight)) {
-                RoomScene(Modifier.matchParentSize(), showClockAndShelf = false)
+            Box(Modifier.fillMaxWidth().heightIn(min = S.NameRoomHeight * roomScale)) {
+                RoomScene(Modifier.matchParentSize(), showClockAndShelf = false, roomScale = roomScale)
                 Column(
-                    Modifier.fillMaxWidth().padding(bottom = S.NamePetFloorGap),
+                    Modifier.fillMaxWidth().padding(bottom = S.NamePetFloorGap * roomScale),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(S.NameBubbleTop))
+                    Spacer(Modifier.height(if (roomScale < 1f) S.NameBubbleTopBelowSkip else S.NameBubbleTop))
                     SpeechBubble(Modifier.widthIn(max = S.NameBubbleWidth)) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -168,20 +183,23 @@ private fun Room(petName: String) {
                                 color = Ink,
                                 textAlign = TextAlign.Center,
                             )
-                            Text(
-                                stringResource(R.string.intro_body),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = InkMuted,
-                                textAlign = TextAlign.Center,
-                            )
+                            // Left out at the biggest fonts, where it would crowd the pet and the question.
+                            if (hello) {
+                                Text(
+                                    stringResource(R.string.intro_body),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = InkMuted,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
                         }
                     }
-                    Spacer(Modifier.height(S.NameBubbleToPet))
-                    PetView(energy = 1f, mood = Mood.HAPPY, spec = PetSpecs.Bun, name = petName, modifier = Modifier.size(S.NamePetSize))
+                    Spacer(Modifier.height(S.NameBubbleToPet * roomScale))
+                    PetView(energy = 1f, mood = Mood.HAPPY, spec = PetSpecs.Bun, name = petName, modifier = Modifier.size(S.NamePetSize * roomScale))
                 }
             }
             // The floor carries on to where the panel starts.
-            Spacer(Modifier.height(S.NamePanelTop - S.NameRoomHeight))
+            Spacer(Modifier.height((S.NamePanelTop - S.NameRoomHeight) * roomScale))
         }
     }
 }

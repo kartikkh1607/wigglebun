@@ -138,6 +138,7 @@
     <string name="wake_title">Shh… someone’s\nstill asleep</string>
     <string name="wake_body">They’ve been sitting way too long.\nHelp them wake up and stretch.</string>
     <string name="wake_cta">Tap to wake them up</string>
+    <string name="wake_z" translatable="false">z</string>
     <string name="wake_blob_description">Your pet, fast asleep</string>
     <string name="intro_title">Hi! That was some nap!</string>
     <string name="intro_body">Thanks for waking me up.</string>
