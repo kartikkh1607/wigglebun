@@ -36,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -282,15 +283,17 @@ private fun NextPetCard(next: NextPetUi, pet: ActivePet, onClick: () -> Unit, mo
                 )
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(C.NextCardTextGap)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(C.NextCardTextGap)) {
-                    Text(title, style = WigglebunTextStyles.SmallCardTitle, color = Ink, modifier = Modifier.weight(1f))
-                    Text(
-                        stringResource(R.string.next_pet_count, next.saved, next.price),
-                        style = WigglebunTextStyles.StrongLabel,
-                        color = MovementChipText,
-                        maxLines = 1,
-                    )
-                }
+                TitleAndCount(
+                    title = { Text(title, style = WigglebunTextStyles.SmallCardTitle, color = Ink) },
+                    count = {
+                        Text(
+                            stringResource(R.string.next_pet_count, next.saved, next.price),
+                            style = WigglebunTextStyles.StrongLabel,
+                            color = MovementChipText,
+                            maxLines = 1,
+                        )
+                    },
+                )
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -307,6 +310,37 @@ private fun NextPetCard(next: NextPetUi, pet: ActivePet, onClick: () -> Unit, mo
                     )
                 }
                 Text(hint, style = WigglebunTextStyles.Hint, color = InkMuted)
+            }
+        }
+    }
+}
+
+/**
+ * The title with the count at the end of its line, as in the mockup, while the title fits on one
+ * line beside it. When it doesn't (larger fonts), the title gets the whole width and the count
+ * goes under it, so neither is squeezed into a narrow column.
+ */
+@Composable
+private fun TitleAndCount(title: @Composable () -> Unit, count: @Composable () -> Unit) {
+    Layout(contents = listOf(title, count)) { (titleMeasurables, countMeasurables), constraints ->
+        val gap = C.NextCardTextGap.roundToPx()
+        val width = constraints.maxWidth
+        val countPlaceable = countMeasurables.first().measure(constraints.copy(minWidth = 0))
+        val besideWidth = (width - countPlaceable.width - gap).coerceAtLeast(0)
+        val titleMeasurable = titleMeasurables.first()
+        val fitsBeside = titleMeasurable.maxIntrinsicWidth(constraints.maxHeight) <= besideWidth
+        if (fitsBeside) {
+            val titlePlaceable = titleMeasurable.measure(constraints.copy(minWidth = 0, maxWidth = besideWidth))
+            val height = maxOf(titlePlaceable.height, countPlaceable.height)
+            layout(width, height) {
+                titlePlaceable.place(0, (height - titlePlaceable.height) / 2)
+                countPlaceable.place(width - countPlaceable.width, (height - countPlaceable.height) / 2)
+            }
+        } else {
+            val titlePlaceable = titleMeasurable.measure(constraints.copy(minWidth = 0))
+            layout(width, titlePlaceable.height + gap + countPlaceable.height) {
+                titlePlaceable.place(0, 0)
+                countPlaceable.place(0, titlePlaceable.height + gap)
             }
         }
     }
