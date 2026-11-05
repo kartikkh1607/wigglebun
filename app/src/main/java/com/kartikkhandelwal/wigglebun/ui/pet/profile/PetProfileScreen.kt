@@ -59,14 +59,13 @@ import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
-import com.kartikkhandelwal.wigglebun.ui.theme.CardEdge
-import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreen
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.PetShadow
+import com.kartikkhandelwal.wigglebun.ui.theme.OnSurface
 import com.kartikkhandelwal.wigglebun.ui.theme.SessionAccent
+import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.Track
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
@@ -83,7 +82,7 @@ fun PetProfileScreenRoute(modifier: Modifier = Modifier, viewModel: PetProfileVi
     val state by viewModel.state.collectAsStateWithLifecycle()
     val loaded = state
     if (loaded == null) {
-        Box(modifier.fillMaxSize().background(Cream))
+        Box(modifier.fillMaxSize().background(Surfaces.Profile.background))
         return
     }
     PetProfileScreen(loaded, modifier)
@@ -95,11 +94,17 @@ fun PetProfileScreenRoute(modifier: Modifier = Modifier, viewModel: PetProfileVi
  */
 @Composable
 fun PetProfileScreen(state: PetProfileUiState, modifier: Modifier = Modifier) {
+    // Sky, as #30 direction B drew it (no Pet profile mockup in design/ui_v2).
+    OnSurface(Surfaces.Profile) { PetProfileContent(state, modifier) }
+}
+
+@Composable
+private fun PetProfileContent(state: PetProfileUiState, modifier: Modifier) {
     val name = state.pet.displayName()
     Column(
         modifier
             .fillMaxSize()
-            .background(Cream)
+            .background(Surfaces.Profile.background)
             .verticalScroll(rememberScrollState())
             .statusBarsPadding()
             .padding(horizontal = Dimens.ScreenPadding),
@@ -111,7 +116,7 @@ fun PetProfileScreen(state: PetProfileUiState, modifier: Modifier = Modifier) {
                     .align(Alignment.TopCenter)
                     .padding(top = P.PetShadowOffset)
                     .size(P.PetShadowWidth, P.PetShadowHeight),
-            ) { drawOval(PetShadow) }
+            ) { drawOval(Surfaces.Profile.edge) }
             PetView(
                 energy = state.energy,
                 mood = state.mood,
@@ -145,7 +150,7 @@ fun PetProfileScreen(state: PetProfileUiState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun ProfileCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    ChunkySurface(shape = WigglebunShapes.Card, faceColor = Card, edgeColor = CardEdge, edgeHeight = P.CardEdge, modifier = modifier) {
+    ChunkySurface(shape = WigglebunShapes.Card, faceColor = Card, edgeHeight = P.CardEdge, modifier = modifier) {
         Column(Modifier.fillMaxWidth().padding(P.CardPadding), verticalArrangement = Arrangement.spacedBy(P.CardLabelGap), content = content)
     }
 }

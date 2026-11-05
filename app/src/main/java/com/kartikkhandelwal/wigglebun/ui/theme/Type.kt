@@ -129,4 +129,10 @@ object WigglebunTextStyles {
 
     /** Break session instruction (Nunito 18, 700, line height 1.45). */
     val Instruction = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 26.sp)
+
+    /** The pet's speech bubble (design/ui_v2/Main.dc.html: Nunito 14, 800, line height 1.3). */
+    val Bubble = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, lineHeight = 18.sp)
+
+    /** "On" / "Added" status chip (design/ui_v2/Settings.dc.html: Nunito 14, 800). */
+    val Status = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, lineHeight = 19.sp)
 }

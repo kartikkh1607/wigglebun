@@ -54,6 +54,7 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
+import com.kartikkhandelwal.wigglebun.ui.components.StepDots
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.Poses
@@ -169,7 +170,7 @@ fun WakeUpScreen(
             }
             WakeButton(asleep, onWake, onContinue)
             Spacer(Modifier.height(if (tall) S.CtaBottom else S.CtaBottomShort))
-            StepDots(step = 1, active = Sun, inactive = animatedColor(asleep, NightLine, CheckIdle).value)
+            StepDots(step = 1, count = ONBOARDING_STEPS, active = Sun, inactive = animatedColor(asleep, NightLine, CheckIdle).value)
             Spacer(Modifier.height(if (tall) S.DotsBottom else S.DotsBottomShort))
         }
     }

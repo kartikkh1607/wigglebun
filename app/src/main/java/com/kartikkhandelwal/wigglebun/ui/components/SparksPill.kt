@@ -20,7 +20,7 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
-import com.kartikkhandelwal.wigglebun.ui.theme.TopButtonEdge
+import com.kartikkhandelwal.wigglebun.ui.theme.LocalSurface
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
 
@@ -28,12 +28,12 @@ private val H = Dimens.Home
 
 /** The sparks balance pill (Main.dc.html, Collection.dc.html): white, chunky edge, star + number. */
 @Composable
-fun SparksPill(sparks: Int, modifier: Modifier = Modifier) {
+fun SparksPill(sparks: Int, modifier: Modifier = Modifier, edgeColor: Color = LocalSurface.current.edge) {
     val description = pluralStringResource(R.plurals.cd_sparks, sparks, sparks)
     ChunkySurface(
         shape = WigglebunShapes.Pill,
         faceColor = Card,
-        edgeColor = TopButtonEdge,
+        edgeColor = edgeColor,
         edgeHeight = H.TopButtonEdge,
         modifier = modifier.clearAndSetSemantics { contentDescription = description },
     ) {

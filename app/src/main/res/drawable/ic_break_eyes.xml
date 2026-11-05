@@ -1,14 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Eyes rest 20-20-20 (new, same style): an eye. -->
+<!-- From design/ui_v2/icons/break_eyes.svg. Full colour: draw untinted. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
     <path
-        android:pathData="M2.5,12 C5,7.5 8.5,5.5 12,5.5 C15.5,5.5 19,7.5 21.5,12 C19,16.5 15.5,18.5 12,18.5 C8.5,18.5 5,16.5 2.5,12 Z M9.5,12 a2.5,2.5 0,1 0,5 0 a2.5,2.5 0,1 0,-5 0"
+        android:pathData="M4 28 C11 17 37 17 44 28 C37 39 11 39 4 28 Z"
+        android:fillColor="#FFA08AE4" />
+    <path
+        android:pathData="M4 26 C11 15 37 15 44 26 C37 37 11 37 4 26 Z"
+        android:fillColor="#FFB9A3F0" />
+    <path
+        android:pathData="M12.5 21.2 C17 18.4 21.5 17.5 25.5 17.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeAlpha="0.65"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M9.5 25 C16.5 32.5 31.5 32.5 38.5 25"
         android:strokeColor="#FF2B2A3A"
-        android:strokeWidth="2.2"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M14.6 30.4 L12.4 34.4 M24 32.4 V37 M33.4 30.4 L35.6 34.4"
+        android:strokeColor="#FF2B2A3A"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M35.5 4.5 H42 L35.5 11 H42"
+        android:strokeColor="#FF7E66C9"
+        android:strokeWidth="2.8"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 </vector>

@@ -50,6 +50,7 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.ui.collection.PetSheet
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
+import com.kartikkhandelwal.wigglebun.ui.components.StepDots
 import com.kartikkhandelwal.wigglebun.ui.home.formatTime
 import com.kartikkhandelwal.wigglebun.ui.home.minuteOfDay
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
@@ -200,7 +201,7 @@ internal fun OnboardingQuestion(
             enabled = continueEnabled,
             modifier = Modifier.fillMaxWidth().padding(horizontal = S.NameButtonHorizontal, vertical = S.CtaBottomShort),
         )
-        StepDots(step = step, active = Sun, inactive = CheckIdle)
+        StepDots(step = step, count = ONBOARDING_STEPS)
         Spacer(Modifier.height(S.DotsBottomShort))
     }
 }

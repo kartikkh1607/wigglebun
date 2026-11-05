@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From design/ui_v2/icons/settings_timer.svg. Full colour: draw untinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M22.5,3.5 H25.5 A2.5,2.5 0 0,1 28,6 V7 A2.5,2.5 0 0,1 25.5,9.5 H22.5 A2.5,2.5 0 0,1 20,7 V6 A2.5,2.5 0 0,1 22.5,3.5 Z"
+        android:fillColor="#FFC9573A" />
+    <group android:rotation="45" android:pivotX="38" android:pivotY="11.5">
+        <path
+            android:pathData="M37,9 H39 A2,2 0 0,1 41,11 V12 A2,2 0 0,1 39,14 H37 A2,2 0 0,1 35,12 V11 A2,2 0 0,1 37,9 Z"
+            android:fillColor="#FFC9573A" />
+    </group>
+    <path
+        android:pathData="M7.5,29 A16.5,16.5 0 1,0 40.5,29 A16.5,16.5 0 1,0 7.5,29 Z"
+        android:fillColor="#FFE36F50" />
+    <path
+        android:pathData="M7.5,27 A16.5,16.5 0 1,0 40.5,27 A16.5,16.5 0 1,0 7.5,27 Z"
+        android:fillColor="#FFF68A6B" />
+    <path
+        android:pathData="M12.5,27 A11.5,11.5 0 1,0 35.5,27 A11.5,11.5 0 1,0 12.5,27 Z"
+        android:fillColor="#FFFFFFFF" />
+    <path
+        android:pathData="M24 27 V19.5 M24 27 L29.5 30"
+        android:strokeColor="#FF2B2A3A"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M21.8,27 A2.2,2.2 0 1,0 26.2,27 A2.2,2.2 0 1,0 21.8,27 Z"
+        android:fillColor="#FF2B2A3A" />
+</vector>

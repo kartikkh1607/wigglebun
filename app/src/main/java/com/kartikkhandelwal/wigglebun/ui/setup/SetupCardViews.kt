@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.ui.setup
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,13 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -32,6 +33,9 @@ import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeckTint
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakStandTint
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakWalkTint
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
@@ -69,21 +73,30 @@ private val SetupCard.why: Int
         SetupCard.WIDGET -> R.string.setup_widget_why
     }
 
+/** Full-colour icons (design/ui_v2/icons), drawn untinted. */
 @get:DrawableRes
 private val SetupCard.icon: Int
     get() = when (this) {
-        SetupCard.NOTIFICATIONS -> R.drawable.ic_setup_notifications
+        SetupCard.NOTIFICATIONS -> R.drawable.ic_settings_bell
         SetupCard.MOVEMENT -> R.drawable.ic_break_walk
-        SetupCard.WIDGET -> R.drawable.ic_tab_collection
+        SetupCard.WIDGET -> R.drawable.ic_settings_widget
+    }
+
+/** The tile behind each icon, as in design/ui_v2/Settings.dc.html. */
+private val SetupCard.tile: Color
+    get() = when (this) {
+        SetupCard.NOTIFICATIONS -> BreakStandTint
+        SetupCard.MOVEMENT -> BreakWalkTint
+        SetupCard.WIDGET -> BreakNeckTint
     }
 
 @Composable
 private fun IconTile(card: SetupCard) {
     Box(
-        Modifier.size(S.IconTile).clip(WigglebunShapes.IconTile).background(Track),
+        Modifier.size(S.IconTile).clip(WigglebunShapes.IconTile).background(card.tile),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(painterResource(card.icon), contentDescription = null, tint = Ink, modifier = Modifier.size(S.Icon))
+        Image(painterResource(card.icon), contentDescription = null, modifier = Modifier.size(S.Icon))
     }
 }
 

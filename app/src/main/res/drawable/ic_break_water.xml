@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Drink water (new, same style): a glass with a water line. -->
+<!-- From design/ui_v2/icons/break_water.svg. Full colour: draw untinted. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
     <path
-        android:pathData="M6.5,4 H17.5 L16,20 H8 Z M7.2,10 C9.5,11 11.5,9 13.5,10 C15,10.7 16,10.3 16.8,10"
-        android:strokeColor="#FF2B2A3A"
-        android:strokeWidth="2.2"
+        android:pathData="M27.5 14 L32 4 H38.5"
+        android:strokeColor="#FFCF6890"
+        android:strokeWidth="3.4"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
+    <path
+        android:pathData="M10 14 H38 L35 43 C34.8 45.3 33 47 30.7 47 H17.3 C15 47 13.2 45.3 13 43 Z"
+        android:fillColor="#FFE683A7" />
+    <path
+        android:pathData="M10 12 H38 L35 41 C34.8 43.3 33 45 30.7 45 H17.3 C15 45 13.2 43.3 13 41 Z"
+        android:fillColor="#FFF4A3C0" />
+    <path
+        android:pathData="M11.5,9.5 H36.5 A3,3 0 0,1 39.5,12.5 V12.5 A3,3 0 0,1 36.5,15.5 H11.5 A3,3 0 0,1 8.5,12.5 V12.5 A3,3 0 0,1 11.5,9.5 Z"
+        android:fillColor="#FFE683A7" />
+    <group android:rotation="-6" android:pivotX="16" android:pivotY="25">
+        <path
+            android:pathData="M16,19 H16 A1.4,1.4 0 0,1 17.4,20.4 V30.6 A1.4,1.4 0 0,1 16,32 H16 A1.4,1.4 0 0,1 14.6,30.6 V20.4 A1.4,1.4 0 0,1 16,19 Z"
+            android:fillColor="#FFFFFFFF"
+            android:fillAlpha="0.65" />
+    </group>
+    <path
+        android:pathData="M25 22 C25 22 19.8 28 19.8 31.6 C19.8 34.5 22.1 36.8 25 36.8 C27.9 36.8 30.2 34.5 30.2 31.6 C30.2 28 25 22 25 22 Z"
+        android:fillColor="#FFFFFFFF" />
 </vector>
