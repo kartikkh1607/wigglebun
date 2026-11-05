@@ -3,6 +3,9 @@ package com.kartikkhandelwal.wigglebun.ui.setup
 import android.app.Application
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
@@ -29,6 +32,10 @@ class SetupFlowTest {
     @get:Rule
     val composeRule = createComposeRule()
 
+    private fun hasClickLabel(label: String) = SemanticsMatcher("click label $label") {
+        it.config.getOrElseNullable(SemanticsActions.OnClick) { null }?.label == label
+    }
+
     private val performed = mutableListOf<SetupCardUi>()
 
     private fun start() {
@@ -46,7 +53,7 @@ class SetupFlowTest {
     @Test
     fun tappingACardExplainsFirstAndAsksOnlyOnContinue() {
         start()
-        composeRule.onNodeWithText("Enable notifications").performClick()
+        composeRule.onNode(hasText("Notifications") and hasClickAction()).performClick()
         composeRule.onNode(hasText("So your pet can remind you when", substring = true)).assertIsDisplayed()
         assertTrue(performed.isEmpty())
 
@@ -55,25 +62,40 @@ class SetupFlowTest {
         assertEquals(listOf(SettingsPreviewStates.Notifications), performed)
     }
 
-    /** Once it's on there's nothing left to enable; a refused one still needs enabling. */
+    /**
+     * Rows keep their short name in every state (design/ui_v2/Settings.dc.html): one that's on
+     * shows a chip and can't be tapped; one refused in the phone's settings says so and still
+     * leads on ("Turn on", through the explanation).
+     */
     @Test
-    fun cardsThatAreOnDropTheWordEnable() {
+    fun rowsShowTheirStateOnTheRight() {
         composeRule.setContent {
             CompositionLocalProvider(LocalInspectionMode provides true) {
                 WigglebunTheme { SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.Mixed, SettingsActions()) }
             }
         }
-        composeRule.onNodeWithText("Notifications").assertIsDisplayed()
+        composeRule.onNode(hasText("Notifications") and hasText("On")).assertIsDisplayed()
+        composeRule.onNode(hasText("Notifications") and hasClickAction()).assertDoesNotExist()
+        composeRule.onNode(hasText("Widget") and hasText("Added")).assertIsDisplayed()
+        composeRule.onNode(hasText("Movement detection") and hasText("Turned off in your phone’s settings") and hasClickAction())
+            .assertIsDisplayed()
         composeRule.onNodeWithText("Enable notifications").assertDoesNotExist()
-        composeRule.onNodeWithText("Widget").assertIsDisplayed()
+        composeRule.onNodeWithText("Enable movement detection").assertDoesNotExist()
         composeRule.onNodeWithText("Add the widget").assertDoesNotExist()
-        composeRule.onNodeWithText("Enable movement detection").assertIsDisplayed() // refused, so still off
+    }
+
+    /** An off row's action is "Turn on" ("Add" for the widget), read by TalkBack as the row's. */
+    @Test
+    fun offRowsSayWhatATapDoes() {
+        start()
+        composeRule.onNode(hasText("Notifications") and hasClickAction()).assert(hasClickLabel("Turn on"))
+        composeRule.onNode(hasText("Widget") and hasClickAction()).assert(hasClickLabel("Add"))
     }
 
     @Test
     fun notNowInTheExplanationAsksNothing() {
         start()
-        composeRule.onNodeWithText("Enable movement detection").performClick()
+        composeRule.onNode(hasText("Movement detection") and hasClickAction()).performClick()
         composeRule.onNode(hasText("Not now") and hasClickAction()).performClick()
         composeRule.waitForIdle()
         assertTrue(performed.isEmpty())
