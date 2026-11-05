@@ -49,7 +49,10 @@ object RewardRules {
     }
 
     /** Only the first completion of a type each day pays. */
-    fun breakKey(date: LocalDate, type: BreakType): String = "break:$date:${type.name}"
+    fun breakKey(date: LocalDate, type: BreakType): String = "${breakKeysOn(date)}${type.name}"
+
+    /** What every [breakKey] of [date] starts with. */
+    fun breakKeysOn(date: LocalDate): String = "break:$date:"
 
     /** A milestone pays once per lifetime. */
     fun milestoneKey(days: Int): String = "milestone:$days"

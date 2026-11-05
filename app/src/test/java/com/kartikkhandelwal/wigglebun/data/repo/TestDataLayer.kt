@@ -74,6 +74,7 @@ internal class TestDataLayer(context: Application, val clock: AppClock = AppCloc
         scope = scope,
     )
     val recordBreakDone = RecordBreakDone(sitRepository, breaks, wallet, settings, clock)
+    val streaks = StreakRepository(sitRepository, breaks, settings, clock)
 
     /**
      * Every day is a work day, always (written directly, so no work-day history is recorded and

@@ -118,7 +118,6 @@ val BreakWaterTint = Color(0xFFFCE1EC)
 // Mood chip backgrounds and timer bar colours
 val MoodHappyChip = Color(0xFFDDF3E9)
 val MoodTiredChip = Color(0xFFFFF0CC)
-val MoodStiffChip = Color(0xFFFDDCD2)
 val TimerHappy = Color(0xFF4DB88A)
 val TimerTired = Color(0xFFF2A93B)
 val TimerStiff = Color(0xFFE5603A)
@@ -130,8 +129,14 @@ val CheckIdle = Color(0xFFB5ADA3)
 val TopButtonEdge = Color(0xFFE8DCCD)
 val SparkEdge = Color(0xFFE5A52A)
 
-// Home (Main.dc.html, FocusCard.dc.html)
-val PetShadow = Color(0xFFE6D9C8)
+// Home (design/ui_v2/Main.dc.html, FocusCard.dc.html)
+/** Behind a break card's spark reward. */
+val RewardChip = Color(0xFFFFF4D6)
+/** The streak's flame chip on the timer card: 7.8:1. */
+val FlameChip = Color(0xFFFFE9DF)
+val FlameChipText = Color(0xFF9A3D20)
+/** A streak-goal segment not reached yet. */
+val StreakSegmentIdle = Color(0xFFE9E1D6)
 /** Focused card overlay backdrop: rgba(33, 32, 48, 0.72). */
 val Scrim = Color(0xB8212030)
 val ActionEdge = Color(0xFFCFC6BA)
