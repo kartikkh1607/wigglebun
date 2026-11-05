@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.ui.motion.ProvideReducedMotion
 import com.kartikkhandelwal.wigglebun.ui.navigation.AppShellViewModel
 import com.kartikkhandelwal.wigglebun.ui.navigation.WigglebunNavHost
 import com.kartikkhandelwal.wigglebun.ui.onboarding.AppGate
@@ -39,14 +40,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             val activePet by shell.activePet.collectAsStateWithLifecycle()
             val onboardingDone by shell.onboardingDone.collectAsStateWithLifecycle()
-            WigglebunTheme {
-                AppGate(
-                    onboardingDone = onboardingDone,
-                    onboarding = { OnboardingFlowRoute() },
-                    app = {
-                        WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
-                    },
-                )
+            // The phone's "Remove animations" setting stills the app's own motion too.
+            ProvideReducedMotion {
+                WigglebunTheme {
+                    AppGate(
+                        onboardingDone = onboardingDone,
+                        onboarding = { OnboardingFlowRoute() },
+                        app = {
+                            WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
+                        },
+                    )
+                }
             }
         }
     }
