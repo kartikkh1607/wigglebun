@@ -55,6 +55,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButtonStyle
 import com.kartikkhandelwal.wigglebun.ui.components.StepDots
+import com.kartikkhandelwal.wigglebun.ui.motion.LocalReducedMotion
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.Poses
@@ -118,10 +119,12 @@ fun WakeUpScreenRoute(petName: String, onContinue: () -> Unit, onSkip: () -> Uni
             phase = WakePhase.AWAKE
         }
     }
+    // The stretch is only something to watch, so with animations removed the pet wakes straight up.
+    val reducedMotion = LocalReducedMotion.current
     WakeUpScreen(
         phase = phase,
         petName = petName,
-        onWake = { phase = WakePhase.STRETCHING },
+        onWake = { phase = if (reducedMotion) WakePhase.AWAKE else WakePhase.STRETCHING },
         onContinue = onContinue,
         onSkip = onSkip,
         modifier = modifier,

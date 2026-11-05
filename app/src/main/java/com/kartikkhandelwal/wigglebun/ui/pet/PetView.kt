@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -33,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.ui.motion.LocalReducedMotion
+import com.kartikkhandelwal.wigglebun.ui.motion.animationsEnabled
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakSky
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
@@ -53,7 +54,8 @@ private const val POSE_DAMPING = 0.6f
  * @param energy 0..1; the body colour fills from the bottom up to this level.
  * @param animated idle breathing, blinking, lean spring, celebrate jump, z's and sweat.
  *   Off in previews and screenshot tests, which then show the exact still pose of
- *   design/pet_moods/bun_<mood>.svg.
+ *   design/pet_moods/bun_<mood>.svg, and when the phone's "Remove animations" is on
+ *   ([LocalReducedMotion]): the same still pose, with no frame loop running.
  * @param sleepZSide RIGHT as in bun_sleep.svg; Home uses LEFT so the z's stay clear of the
  *   plant pot in the desk scene.
  * @param pose break-session pose (CLAUDE.md §7); its rotation, scale and lift spring from the
@@ -67,7 +69,7 @@ fun PetView(
     modifier: Modifier = Modifier,
     spec: PetSpec = PetSpecs.Bun,
     name: String = stringResource(spec.defaultName),
-    animated: Boolean = !LocalInspectionMode.current,
+    animated: Boolean = animationsEnabled(),
     sleepZSide: SleepZSide = SleepZSide.RIGHT,
     pose: PoseSpec? = null,
     accessories: List<AccessoryId> = emptyList(),

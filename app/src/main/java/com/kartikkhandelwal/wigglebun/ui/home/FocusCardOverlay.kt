@@ -38,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,6 +53,7 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.ui.categoryChipColors
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.labelRes
+import com.kartikkhandelwal.wigglebun.ui.motion.animationsEnabled
 import com.kartikkhandelwal.wigglebun.ui.theme.ActionEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.CloseBorder
@@ -103,7 +103,7 @@ fun FocusCardOverlay(
     onSnooze: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
-    animated: Boolean = !LocalInspectionMode.current,
+    animated: Boolean = animationsEnabled(),
 ) {
     val appear = remember { Animatable(if (animated) 0f else 1f) }
     LaunchedEffect(Unit) {
