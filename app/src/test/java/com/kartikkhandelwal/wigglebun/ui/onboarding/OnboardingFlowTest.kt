@@ -185,6 +185,24 @@ class OnboardingFlowTest {
         assertTrue(saved.isEmpty())
     }
 
+    /** Back on Hours and Interval goes one step back, with what was answered still there. */
+    @Test
+    fun backGoesOneStepBack() {
+        start()
+        tap("Skip")
+        composeRule.onNode(hasSetTextAction()).performTextInput("Biscuit")
+        tap("Nice to meet you!")
+        composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
+
+        tap("Continue")
+        composeRule.onNodeWithText("How often should I nudge you?").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.onNodeWithText("What will you call me?").assertIsDisplayed()
+        composeRule.onNodeWithText("7/12").assertIsDisplayed()
+    }
+
     /** "Skip" is on every step and keeps the default: nothing is saved. */
     @Test
     fun skippingEveryStepSavesNothing() {

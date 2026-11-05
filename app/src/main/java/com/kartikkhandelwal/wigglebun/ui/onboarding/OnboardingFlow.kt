@@ -215,21 +215,26 @@ fun OnboardingFlow(
         }
         composable<WorkHoursRoute> {
             val next = dropUnlessResumed { navController.navigate(IntervalRoute) { launchSingleTop = true } }
+            val back = dropUnlessResumed { navController.popBackStack() }
             WorkHoursScreenRoute(
                 draft = workHours,
                 problem = hoursProblem,
+                petName = petName,
                 onToggleDay = actions.onToggleDay,
                 onTimePicked = actions.onTimePicked,
+                onBack = back,
                 onContinue = { if (actions.onSaveWorkHours()) next() },
                 onSkip = next,
             )
         }
         composable<IntervalRoute> {
             val next = dropUnlessResumed { navController.navigate(FirstStretchRoute) { launchSingleTop = true } }
+            val back = dropUnlessResumed { navController.popBackStack() }
             IntervalScreenRoute(
                 minutes = intervalMinutes,
                 petName = petName,
                 onPicked = actions.onIntervalPicked,
+                onBack = back,
                 onContinue = {
                     actions.onSaveInterval()
                     next()

@@ -18,9 +18,11 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
@@ -50,16 +52,19 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.ui.collection.PetSheet
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
-import com.kartikkhandelwal.wigglebun.ui.components.PillCard
-import com.kartikkhandelwal.wigglebun.ui.components.StepDots
+import com.kartikkhandelwal.wigglebun.ui.components.SettingsRow
 import com.kartikkhandelwal.wigglebun.ui.home.formatTime
 import com.kartikkhandelwal.wigglebun.ui.home.minuteOfDay
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyesTint
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakStandTint
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.CheckIdle
 import com.kartikkhandelwal.wigglebun.ui.theme.Coral
 import com.kartikkhandelwal.wigglebun.ui.theme.Cream
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
+import com.kartikkhandelwal.wigglebun.ui.theme.OnboardingCard
+import com.kartikkhandelwal.wigglebun.ui.theme.OnboardingCardDivider
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
 import com.kartikkhandelwal.wigglebun.ui.theme.Sun
 import com.kartikkhandelwal.wigglebun.ui.theme.Track
@@ -70,6 +75,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 private val S = Dimens.Onboarding
+private val P = Dimens.OnboardingPanel
 
 /** Which time the picker sheet is setting. */
 enum class WorkTime(@StringRes val sheetTitle: Int) {
@@ -81,14 +87,16 @@ enum class WorkTime(@StringRes val sheetTitle: Int) {
 fun WorkHoursScreenRoute(
     draft: WorkHoursDraft,
     problem: WorkHoursProblem?,
+    petName: String,
     onToggleDay: (DayOfWeek) -> Unit,
     onTimePicked: (WorkTime, Int) -> Unit,
+    onBack: () -> Unit,
     onContinue: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var picking by rememberSaveable { mutableStateOf<WorkTime?>(null) }
-    WorkHoursScreen(draft, problem, onToggleDay, onPickTime = { picking = it }, onContinue, onSkip, modifier)
+    WorkHoursScreen(draft, problem, petName, onToggleDay, onPickTime = { picking = it }, onBack, onContinue, onSkip, modifier)
     picking?.let { time ->
         PetSheet(onDismiss = { picking = null }) {
             TimeSheetContent(
@@ -104,26 +112,30 @@ fun WorkHoursScreenRoute(
 }
 
 /**
- * One question: when do you work? (CLAUDE.md §6.2). Times are picked in a bottom sheet. No work
- * days turns Continue off and says why at once; [problem] is what the last Continue found (the
- * same start and end), which is never flagged while editing.
+ * One question: when do you work? (CLAUDE.md §6.2, design/ui_v2/Hours.dc.html). Times are picked in
+ * a bottom sheet. No work days turns Continue off and says why at once; [problem] is what the last
+ * Continue found (the same start and end), which is never flagged while editing.
  */
 @Composable
 fun WorkHoursScreen(
     draft: WorkHoursDraft,
     problem: WorkHoursProblem?,
+    petName: String,
     onToggleDay: (DayOfWeek) -> Unit,
     onPickTime: (WorkTime) -> Unit,
+    onBack: () -> Unit,
     onContinue: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OnboardingQuestion(
+    OnboardingPanelScreen(
+        step = 2,
         title = stringResource(R.string.hours_title),
         body = stringResource(R.string.hours_body),
-        step = 2,
-        onContinue = onContinue,
+        panelHeight = P.HoursPanelHeight,
+        onBack = onBack,
         onSkip = onSkip,
+        onContinue = onContinue,
         modifier = modifier,
         continueEnabled = draft.canSave,
         error = draft.shownProblem(problem)?.let {
@@ -134,76 +146,10 @@ fun WorkHoursScreen(
                 },
             )
         },
+        scene = { scale -> HoursScene(draft, petName, scale) },
     ) {
         DayChips(draft.days, onToggleDay)
-        TimeRow(R.string.hours_start, draft.startMinute, onClick = { onPickTime(WorkTime.START) })
-        TimeRow(
-            label = R.string.hours_end,
-            minute = draft.endMinute,
-            note = if (draft.endsNextDay) stringResource(R.string.hours_next_day) else null,
-            onClick = { onPickTime(WorkTime.END) },
-        )
-    }
-}
-
-/**
- * Shared by the two question screens: Skip, title, body, the answer, Continue, dots. [error], if
- * any, shows right above Continue.
- */
-@Composable
-internal fun OnboardingQuestion(
-    title: String,
-    body: String,
-    step: Int,
-    onContinue: () -> Unit,
-    onSkip: () -> Unit,
-    modifier: Modifier = Modifier,
-    continueEnabled: Boolean = true,
-    error: String? = null,
-    content: @Composable () -> Unit,
-) {
-    Column(
-        modifier.fillMaxSize().background(Cream).systemBarsPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        SkipRow(color = Ink, onSkip = onSkip)
-        Column(
-            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = S.NameFieldHorizontal),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(S.QuestionGap),
-        ) {
-            Spacer(Modifier.height(S.QuestionTop))
-            Text(
-                title,
-                style = MaterialTheme.typography.displayMedium,
-                color = Ink,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.semantics { heading() },
-            )
-            Text(body, style = MaterialTheme.typography.bodyLarge, color = InkMuted, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(S.QuestionAnswerTop))
-            content()
-        }
-        if (error != null) {
-            Text(
-                error,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Coral,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = S.NameButtonHorizontal, end = S.NameButtonHorizontal, top = S.QuestionGap)
-                    .semantics { liveRegion = LiveRegionMode.Polite },
-            )
-        }
-        ChunkyButton(
-            text = stringResource(R.string.onboarding_continue),
-            onClick = onContinue,
-            enabled = continueEnabled,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = S.NameButtonHorizontal, vertical = S.CtaBottomShort),
-        )
-        StepDots(step = step, count = ONBOARDING_STEPS)
-        Spacer(Modifier.height(S.DotsBottomShort))
+        StartEndRows(draft, onPickTime)
     }
 }
 
@@ -247,17 +193,35 @@ internal fun DayChips(
     }
 }
 
+/** Starts and Ends on one soft card (Hours.dc.html); a tap opens the clock sheet. */
 @Composable
-internal fun TimeRow(@StringRes label: Int, minute: Int, note: String? = null, onClick: () -> Unit) {
-    PillCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(label), style = MaterialTheme.typography.titleMedium, color = Ink)
-                if (note != null) Text(note, style = MaterialTheme.typography.labelMedium, color = InkMuted)
-            }
-            Text(formatTime(minuteOfDay(minute)), style = MaterialTheme.typography.titleLarge, color = Ink)
-        }
+private fun StartEndRows(draft: WorkHoursDraft, onPickTime: (WorkTime) -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(P.RowsRadius))
+            .background(OnboardingCard),
+    ) {
+        SettingsRow(
+            icon = R.drawable.ic_settings_sunrise,
+            tile = BreakStandTint,
+            title = stringResource(R.string.hours_start),
+            onClick = { onPickTime(WorkTime.START) },
+        ) { TimeValue(draft.startMinute) }
+        HorizontalDivider(thickness = P.RowsDividerThickness, color = OnboardingCardDivider)
+        SettingsRow(
+            icon = R.drawable.ic_settings_moon,
+            tile = BreakEyesTint,
+            title = stringResource(R.string.hours_end),
+            subtitle = if (draft.endsNextDay) stringResource(R.string.hours_next_day) else null,
+            onClick = { onPickTime(WorkTime.END) },
+        ) { TimeValue(draft.endMinute) }
     }
+}
+
+@Composable
+private fun TimeValue(minute: Int) {
+    Text(formatTime(minuteOfDay(minute)), style = MaterialTheme.typography.titleLarge, color = Ink)
 }
 
 /** A clock in a bottom sheet (CLAUDE.md §6.2). Nothing changes until Done. */
@@ -339,47 +303,66 @@ private val PreviewDraft = WorkHoursDraft.of(WorkSchedule.Default)
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WorkHoursPreview() {
-    WigglebunTheme { WorkHoursScreen(PreviewDraft, null, {}, {}, {}, {}) }
+    WigglebunTheme { WorkHoursScreen(PreviewDraft, null, "Bun", {}, {}, {}, {}, {}) }
 }
 
 /** Every day unticked: Continue is off straight away, and the reason shows above it. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WorkHoursNoDaysPreview() {
-    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(days = emptySet()), null, {}, {}, {}, {}) }
+    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(days = emptySet()), null, "Bun", {}, {}, {}, {}, {}) }
 }
 
 /** Continue was tapped with the same start and end: the step stays, and the reason shows above Continue. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WorkHoursSameTimePreview() {
-    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 18 * 60), WorkHoursProblem.SAME_TIME, {}, {}, {}, {}) }
+    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 18 * 60), WorkHoursProblem.SAME_TIME, "Bun", {}, {}, {}, {}, {}) }
 }
 
 /** Halfway from 9–18 to 18–02: start and end match for now, and nothing complains until Continue. */
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WorkHoursSameTimeEditingPreview() {
-    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 18 * 60), null, {}, {}, {}, {}) }
+    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 18 * 60), null, "Bun", {}, {}, {}, {}, {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WorkHoursOvernightPreview() {
-    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 22 * 60, endMinute = 6 * 60), null, {}, {}, {}, {}) }
+    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 22 * 60, endMinute = 6 * 60), null, "Bun", {}, {}, {}, {}, {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun WorkHoursTimeSheetPreview() {
     SheetStillFrame(
-        screen = { WorkHoursScreen(PreviewDraft, null, {}, {}, {}, {}) },
+        screen = { WorkHoursScreen(PreviewDraft, null, "Bun", {}, {}, {}, {}, {}) },
         sheet = { TimeSheetContent(WorkTime.START, PreviewDraft.startMinute, onDone = {}) },
     )
+}
+
+/** An hour's work: start and end labels would touch, so one is left out. */
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+internal fun WorkHoursShortPreview() {
+    WigglebunTheme { WorkHoursScreen(PreviewDraft.copy(startMinute = 9 * 60, endMinute = 10 * 60), null, "Bun", {}, {}, {}, {}, {}) }
+}
+
+@Preview(widthDp = 360, heightDp = 640)
+@Composable
+internal fun WorkHoursSmallPhonePreview() {
+    WigglebunTheme { WorkHoursScreen(PreviewDraft, null, "WWWWWWWWWWWW", {}, {}, {}, {}, {}) }
+}
+
+@Preview(widthDp = 360, heightDp = 640, fontScale = 2f)
+@Composable
+internal fun WorkHoursSmallHugeFontPreview() {
+    WigglebunTheme { WorkHoursScreen(PreviewDraft, null, "Bun", {}, {}, {}, {}, {}) }
 }
 
 @Preview(widthDp = 360, heightDp = 640, fontScale = 1.3f)
 @Composable
 internal fun WorkHoursSmallLargeFontPreview() {
-    WigglebunTheme { WorkHoursScreen(PreviewDraft, null, {}, {}, {}, {}) }
+    WigglebunTheme { WorkHoursScreen(PreviewDraft, null, "Bun", {}, {}, {}, {}, {}) }
 }

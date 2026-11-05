@@ -505,6 +505,77 @@ object Dimens {
         val LegendDotGap = 6.dp
         val ListBottomPadding = 24.dp
     }
+
+    /** Hours and Interval onboarding screens (Hours.dc.html, Interval.dc.html: 390 x 844, panel from y 302). */
+    object OnboardingPanel {
+        val SceneHeight = 302.dp
+        /** The scene never shrinks below this fraction, whatever the font or phone. */
+        const val MinScale = 0.45f
+        /** Above this font scale the button scrolls with the panel instead of staying pinned. */
+        const val LargeFontScale = 1.15f
+        val TopButtonsInset = 16.dp
+        /** Below Back and Skip at normal font size, and how much more per extra font scale (the Skip pill grows). */
+        val TopButtonsClear = 68.dp
+        val TopButtonsClearPerFont = 24.dp
+        val SkipTop = 22.dp
+        val SkipEnd = 20.dp
+        val CtaHorizontal = 24.dp
+        val CtaTop = 12.dp
+        val CtaBottom = 32.dp
+        val ErrorTop = 8.dp
+        val BodyGap = 6.dp
+        val TitleSize = 29.sp
+        /** What the Hours and Interval panels need at normal font size: the scene leaves room for it. */
+        val HoursPanelHeight = 340.dp
+        val IntervalPanelHeight = 380.dp
+
+        // Hours: the pet and the 24-hour bar
+        val HoursPetTop = 64.dp
+        val HoursPetSize = 130.dp
+        val ClockBarTop = 220.dp
+        val ClockBarHeight = 34.dp
+        val ClockBarInset = 30.dp
+        val ClockBarEdge = 4.dp
+        val ClockLabelsTop = 262.dp
+        val ClockLabelsInset = 22.dp
+        val ClockLabelGap = 6.dp
+        val ClockSunRadius = 9.dp
+        val ClockSunRay = 2.4.dp
+        val ClockMoonRadius = 8.dp
+        /** A sun or moon needs at least this much of the bar around it. */
+        val ClockSymbolRoom = 34.dp
+        val RowsRadius = 22.dp
+        val RowsDividerThickness = 1.5.dp
+
+        // Interval: the two pets and the slider card
+        val IntervalPetsTop = 96.dp
+        val IntervalPetSize = 118.dp
+        val IntervalPetColumn = 124.dp
+        val IntervalPetLabelGap = 14.dp
+        val IntervalArrowWidth = 44.dp
+        val IntervalArrowHeight = 24.dp
+        val IntervalArrowGap = 10.dp
+        val IntervalArrowDrop = 64.dp
+        val IntervalLabelPaddingHorizontal = 12.dp
+        val IntervalLabelPaddingVertical = 4.dp
+        val IntervalHillRadiusX = 78.dp
+        val IntervalHillRadiusY = 14.dp
+        val IntervalHillOffset = 20.dp
+        val IntervalColumnCentre = 94.dp
+        val IntervalChipGap = 4.dp
+        val IntervalLabelSize = 13.sp
+        val IntervalCardRadius = 24.dp
+        val IntervalCardPaddingTop = 16.dp
+        val IntervalCardPaddingHorizontal = 18.dp
+        val IntervalCardPaddingBottom = 18.dp
+        val IntervalCardGap = 14.dp
+        val IntervalValueSize = 40.sp
+        val SliderHeight = 48.dp
+        val SliderTrackHeight = 8.dp
+        val SliderThumb = 30.dp
+        val SliderThumbRing = 3.dp
+        val SliderThumbDrop = 4.dp
+    }
 }
 
 /** A dot behind a header, [x] from the left edge or, with [fromRight], from the right one. */
