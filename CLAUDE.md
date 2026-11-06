@@ -118,7 +118,7 @@ Lost exit events: a walk still open **45 minutes** after it started is closed at
 | 0–50% | `HAPPY` | energy level 100→75%, dot eyes, small nose-mouth, bouncy idle |
 | 50–100% | `TIRED` | energy level 75→25%, flat-line eyes, flat mouth, slower idle, 2° lean |
 | >100% | `STIFF` | energy level ≤20%, flat eyes, frown, 7° slump, sweat drop |
-| during a break | `STRETCH` | full energy, arms up, happy ^ ^ eyes (pose frames take over) |
+| during a break | `STRETCH` | energy fills from 40% (`SESSION_START_ENERGY`) to full over the whole session, arms up, happy ^ ^ eyes (pose frames take over); the "Colour coming back!" chip says so |
 | just finished a break | `CELEBRATE` | full energy, ^ ^ eyes, open smile, jump + confetti, 3 s, then `HAPPY` |
 | outside work hours | `SLEEPING` | full energy, closed curved eyes, "z z" |
 
@@ -126,7 +126,7 @@ Energy level is continuous: `energy = clamp(1 - sitMinutes / (interval * 1.2), 0
 
 ### 5.3 Break types (user can toggle which appear on Home)
 
-Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eyes rest (20-20-20) · Drink water. Each has a colour, a duration, a coin reward (default 5) and simple step illustrations: 2–4 steps in v1.0 (`ui/breaksession/BreakRoutines.kt`; Drink water has no prop art and Eyes rest only moves the eyes), 4–6 each in v1.1.
+Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eyes rest (20-20-20) · Drink water. Each has a colour, a duration, a coin reward (default 5) and simple step illustrations, each step with a short title and a line of text: 2–4 steps in v1.0 (`ui/breaksession/BreakRoutines.kt`; Drink water has no prop art and Eyes rest only moves the eyes), 4–6 each in v1.1.
 
 ### 5.4 Economy
 
@@ -174,7 +174,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
    - Under it, on the floor colour: the timer card, "32 min" + "since your last break" + a 12 dp bar in the mood colour, the "Take a 2-min break" button when stiff, and on work days a "Streak goal" row (3 segments for `DAILY_GOAL`, "2 of 3", a flame chip with the streak days, hidden at 0; from `StreakRepository`, shared with Pet profile).
    - "Breaks for today" list: cards with icon tile, title, spark reward chip, chunky check button. A done card reads "Done · +5 sparks" with what the ledger actually paid today, just "Done" for a repeat.
    - Tapping a card opens a **focused card overlay** with three big actions: Skip · Done · Snooze.
-4. **Break session** – full-screen guided stretch with pet doing the move, step text, countdown ring, "Done" → celebrate + reward.
+4. **Break session** (`design/ui_v2/Stretch.dc.html`, `Celebrate.dc.html`) – full-screen guided stretch. Top: Close, a pill with the break's icon and "Stand up · 1 min", one bar per step (finished full, the current one filling). Then the countdown ring (a soft disc, the step's arc, the pet inside doing the move with its colour filling over the whole session, 40% → full) with the timer pill on its foot and the chip "Colour coming back!" ("Paused" while paused). Then the white panel: "STEP 2 OF 4", the step's title, its text, the "Move gently" note on the first step of a moving break, and Pause (a fixed 112 dp) + Next step (the last step: green Done). `SessionLayout` gives the panel what it needs and shrinks the ring first (never below 45%); then the panel's text scrolls above the pinned buttons. Above 130% font the ring, timer and text scroll together above the pinned buttons. **Celebration:** green wall with a ray burst from the pet's halo, the pet jumping on its rug, "You did it!", "Bun's colour is back…", a white card "+5 sparks" with "Save up to adopt Pip at 75" (or "You can adopt Pip!"; only when the break paid; `BreakSessionViewModel.nextPetHint`), a card per streak bonus, the streak card ("1 of 3 breaks for your streak" + "today"), Continue. The scene shrinks on a short phone (never below 45%); above 115% font Continue scrolls with the content.
 5. **Collection** (tab 2, `design/ui_v2/Collection.dc.html`) – header over soft mint circles, Pets | Accessories switch, then on Pets a "next pet" card and the grid of pets: owned ones in colour, the one with you framed in Ink with a warm glow, locked ones as grey silhouettes with a price; tap to preview.
    - **Next pet card:** the cheapest pet not adopted yet ("Saving up for Pip" under a quarter of its price, then "Pip is almost yours", "You can adopt Pip!" once affordable), "30 / 75" and a bar of the sparks saved toward it, and "About 3 more days of breaks" ("About a day of breaks to go" for one day or less). Days are at the user's own pace (UI v2 decision D4, `domain/rewards/SparksPace.kt`): sparks missing ÷ the average break rewards a day over the last 7 finished days that had a break (today counts once it is over; streak bonuses left out, so a one-off milestone can't promise the pet too soon), 15 a day until there is a finished break day, so install day's first stretch (5 sparks) still shows Pip about 5 days away, not 14. Hidden once every pet is adopted; tapping it opens that pet's sheet.
    - **Accessories (v1: 4 items)**, the ongoing spark sink once every pet is owned: bought once with sparks (50, 75, 100, 125) and worn by any pet, one per slot (head, face, neck). Collection has a Pets | Accessories switch; worn items show on Home, in break sessions, on the profile and in Collection, **not on the widget** (its mood images stay one static PNG per pet and mood).
@@ -249,7 +249,7 @@ App must work fully (timer + manual Done) if both are denied.
 
 ## 11. Design system
 
-Reference mockups: `design/ui_v2/*.dc.html` first (the UI v2 refresh: Home, Collection, Settings, Locked Home and the onboarding screens through the paywall; README there), then `design/mockups_source/*.dc.html` for what ui_v2 doesn't cover (the focused card, `Pet`, `PetMoods`, `Tokens`, the break session until its ui_v2 restyle). Both are HTML sources of 390×844 phone artboards: read them for exact layout, spacing, sizes and copy; they need a runtime to render, so read them as code. Also any screenshots Kartik adds in `design/mockups/`. Match them. Full file map: `design/README.md`.
+Reference mockups: `design/ui_v2/*.dc.html` first (the UI v2 refresh: Home, Collection, Settings, Locked Home and the onboarding screens through the paywall; README there), then `design/mockups_source/*.dc.html` for what ui_v2 doesn't cover (the focused card, `Pet`, `PetMoods`, `Tokens`). Both are HTML sources of 390×844 phone artboards: read them for exact layout, spacing, sizes and copy; they need a runtime to render, so read them as code. Also any screenshots Kartik adds in `design/mockups/`. Match them. Full file map: `design/README.md`.
 
 **Colours** (`ui/theme/Color.kt`)
 
@@ -281,7 +281,7 @@ Reference mockups: `design/ui_v2/*.dc.html` first (the UI v2 refresh: Home, Coll
 | `Collection` | `#DDF1E6` / `#BFE0CE` | Collection |
 | `Settings` | `#ECE9F7` / `#D6D1EC` | Settings |
 | `Profile` | `#E2EEFB` / `#C7DAF1` | Pet profile (no ui_v2 mockup: #30 direction B's sky); the paywall's top |
-| `Session` | `#EAF3FD` / `#CBDDF1` | Break session |
+| `Session` | `#EAF3FD` / `#C7DAF1` | Break session (ring arc `#5E9FE6`, track `#C7DAF1`, disc `#DCEAFB`); its celebration is on `HomeWall` |
 | — | `#2F3352` wall, `#2A2C45` floor | Onboarding's night room (`NightRoomWall`, `NightRoomFloor`) |
 
 **Tab bar** (design/ui_v2 nav): full-colour icons, never tinted (coral house, four-square grid, lilac gear `#B9A3F0`, `#9C82E6` when selected); the Pet tab shows a small still `PetView` of the active pet. The selected tab gets a 60×36 pill and the bar a 2 dp top border in that tab's colours: Home `#FFE3D8` / `#EFE6DA`, Collection `#D3F0E1` / `#CFE8DA`, Pet `#FFF0CC` / `#D5E5F7`, Settings `#E6DDFB` / `#DDD8EF`.
@@ -363,6 +363,9 @@ v1.0 build order (approved 2026-11-04): release foundations + cleanup → privac
 - Settings, Work hours: at 200% font on a small phone (360 dp) the day circles (M T W T F S S) touch each other and their 48 dp tap targets may overlap. Needs a layout that keeps the circles apart (smaller circles, or wrapping to two rows), with a 200% / 360 dp screenshot. The same `DayChips` is on onboarding's Hours screen.
 - Naming screen at 130% font (360 dp): the speech bubble's "nap!" wraps alone onto its own line. Rebalance the line break (or the bubble width).
 - Wake-up at 200% font on 360×640: the last body line sits partly behind the button; it can be reached by scrolling, but the squeeze could leave it whole.
+- Onboarding Hours at 200% font (360 dp): the 24-hour bar's labels ("12 AM", "9 AM") crowd together.
+- Onboarding Interval at 200% font (360 dp): the "After 45 min sitting" chip is clipped by the panel's top edge.
+- Break session at 200% font on 360×640: the ring, timer and text scroll together, so the instruction is below the first screen and has to be scrolled to while the timer runs. A smaller ring or a one-line timer row would show more of it.
 
 ---
 

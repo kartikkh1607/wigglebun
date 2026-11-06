@@ -7,9 +7,12 @@ import androidx.navigation.toRoute
 import com.kartikkhandelwal.wigglebun.data.repo.BreakDoneResult
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.RecordBreakDone
+import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
 import com.kartikkhandelwal.wigglebun.data.time.ElapsedClock
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
 import com.kartikkhandelwal.wigglebun.ui.navigation.BreakSessionRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +34,8 @@ class BreakSessionViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val recordBreakDone: RecordBreakDone,
     private val elapsed: ElapsedClock,
-    petRepository: PetRepository,
+    private val petRepository: PetRepository,
+    private val wallet: WalletRepository,
 ) : ViewModel() {
 
     val type: BreakType = savedStateHandle.toRoute<BreakSessionRoute>().breakType
@@ -42,9 +47,10 @@ class BreakSessionViewModel @Inject constructor(
     )
     private var pet: ActivePet? = null
     private var result: BreakDoneResult? = null
+    private var nextPet: NextPetHint? = null
     private var completing = false
 
-    private val _state = MutableStateFlow(sessionUiState(type, pet, timer, elapsed.nowMillis(), result))
+    private val _state = MutableStateFlow(sessionUiState(type, pet, timer, elapsed.nowMillis(), result, nextPet))
     val state: StateFlow<BreakSessionUiState> = _state.asStateFlow()
 
     init {
@@ -106,13 +112,25 @@ class BreakSessionViewModel @Inject constructor(
         timer = timer.pause(now)
         publish(now)
         viewModelScope.launch {
-            result = recordBreakDone(type)
+            val done = recordBreakDone(type)
+            // The celebration's "save up for Pip" line, read after the payment so it is current.
+            nextPet = if (done.sparksEarned > 0) nextPetHint() else null
+            result = done
             publish()
         }
     }
 
     private fun publish(now: Long = elapsed.nowMillis()) {
         timer = timer.advance(now)
-        _state.value = sessionUiState(type, pet, timer, now, result)
+        _state.value = sessionUiState(type, pet, timer, now, result, nextPet)
+    }
+
+    /** The cheapest pet not adopted yet and whether the sparks already cover it; null once all are. */
+    private suspend fun nextPetHint(): NextPetHint? {
+        val owned = petRepository.owned.first()
+        val sparks = wallet.balance.first()
+        val id = PetId.entries.filter { it !in owned }.minByOrNull(PetPrices::of) ?: return null
+        val price = PetPrices.of(id)
+        return NextPetHint(id, price, affordable = sparks >= price)
     }
 }
