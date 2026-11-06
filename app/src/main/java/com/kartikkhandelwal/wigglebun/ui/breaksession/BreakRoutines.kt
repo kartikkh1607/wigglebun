@@ -12,11 +12,11 @@ import com.kartikkhandelwal.wigglebun.ui.pet.Poses
 const val POSE_HOLD_MILLIS = 1_200L
 
 /**
- * One instruction of a break session. [poses] loop, each held [POSE_HOLD_MILLIS]; empty means
+ * One instruction of a break session: a short [title] and the [text] under it. [poses] loop, each held [POSE_HOLD_MILLIS]; empty means
  * no pose (the mood's own idle). The type's duration is split evenly across its steps.
  */
 @Immutable
-data class SessionStep(@StringRes val text: Int, val poses: List<PoseSpec>)
+data class SessionStep(@StringRes val title: Int, @StringRes val text: Int, val poses: List<PoseSpec>)
 
 /** The guided steps for this break type (built once; the session reads them every tick). */
 fun BreakType.sessionSteps(): List<SessionStep> = routines.getValue(this)
@@ -36,39 +36,39 @@ private val shoulderRoll = listOf(Poses.ShouldersNeutral, Poses.ShouldersUp, Pos
 private val routines: Map<BreakType, List<SessionStep>> = BreakType.entries.associateWith { type ->
     when (type) {
         BreakType.STAND_UP -> listOf(
-            SessionStep(R.string.step_stand_up_1, listOf(Poses.Sit)),
-            SessionStep(R.string.step_stand_up_2, listOf(Poses.PushUp)),
-            SessionStep(R.string.step_stand_up_3, listOf(Poses.Stand)),
-            SessionStep(R.string.step_stand_up_4, listOf(Poses.ReachUp)),
+            SessionStep(R.string.step_stand_up_1_title, R.string.step_stand_up_1, listOf(Poses.Sit)),
+            SessionStep(R.string.step_stand_up_2_title, R.string.step_stand_up_2, listOf(Poses.PushUp)),
+            SessionStep(R.string.step_stand_up_3_title, R.string.step_stand_up_3, listOf(Poses.Stand)),
+            SessionStep(R.string.step_stand_up_4_title, R.string.step_stand_up_4, listOf(Poses.ReachUp)),
         )
         BreakType.WALK -> listOf(
-            SessionStep(R.string.step_walk_1, march),
-            SessionStep(R.string.step_walk_2, march),
+            SessionStep(R.string.step_walk_1_title, R.string.step_walk_1, march),
+            SessionStep(R.string.step_walk_2_title, R.string.step_walk_2, march),
         )
         BreakType.NECK -> listOf(
-            SessionStep(R.string.step_neck_1, listOf(Poses.NeckCentre)),
-            SessionStep(R.string.step_neck_2, listOf(Poses.NeckTiltRight)),
-            SessionStep(R.string.step_neck_3, listOf(Poses.NeckCentre)),
-            SessionStep(R.string.step_neck_4, listOf(Poses.NeckTiltLeft)),
+            SessionStep(R.string.step_neck_1_title, R.string.step_neck_1, listOf(Poses.NeckCentre)),
+            SessionStep(R.string.step_neck_2_title, R.string.step_neck_2, listOf(Poses.NeckTiltRight)),
+            SessionStep(R.string.step_neck_3_title, R.string.step_neck_3, listOf(Poses.NeckCentre)),
+            SessionStep(R.string.step_neck_4_title, R.string.step_neck_4, listOf(Poses.NeckTiltLeft)),
         )
         BreakType.SHOULDERS -> listOf(
-            SessionStep(R.string.step_shoulders_1, shoulderRoll),
-            SessionStep(R.string.step_shoulders_2, shoulderRoll.reversed()),
+            SessionStep(R.string.step_shoulders_1_title, R.string.step_shoulders_1, shoulderRoll),
+            SessionStep(R.string.step_shoulders_2_title, R.string.step_shoulders_2, shoulderRoll.reversed()),
         )
         BreakType.WRIST -> listOf(
-            SessionStep(R.string.step_wrist_1, listOf(Poses.WristRight)),
-            SessionStep(R.string.step_wrist_2, listOf(Poses.WristLeft)),
+            SessionStep(R.string.step_wrist_1_title, R.string.step_wrist_1, listOf(Poses.WristRight)),
+            SessionStep(R.string.step_wrist_2_title, R.string.step_wrist_2, listOf(Poses.WristLeft)),
         )
         // 20-20-20: relaxed / closed eyes, no body pose.
         BreakType.EYES -> listOf(
-            SessionStep(R.string.step_eyes_1, listOf(Poses.EyesOpen)),
-            SessionStep(R.string.step_eyes_2, listOf(Poses.EyesOpen, Poses.EyesClosed)),
-            SessionStep(R.string.step_eyes_3, listOf(Poses.EyesClosed)),
+            SessionStep(R.string.step_eyes_1_title, R.string.step_eyes_1, listOf(Poses.EyesOpen)),
+            SessionStep(R.string.step_eyes_2_title, R.string.step_eyes_2, listOf(Poses.EyesOpen, Poses.EyesClosed)),
+            SessionStep(R.string.step_eyes_3_title, R.string.step_eyes_3, listOf(Poses.EyesClosed)),
         )
         // No cup art: the pet idles happily next to the instruction.
         BreakType.WATER -> listOf(
-            SessionStep(R.string.step_water_1, emptyList()),
-            SessionStep(R.string.step_water_2, emptyList()),
+            SessionStep(R.string.step_water_1_title, R.string.step_water_1, emptyList()),
+            SessionStep(R.string.step_water_2_title, R.string.step_water_2, emptyList()),
         )
     }
 }

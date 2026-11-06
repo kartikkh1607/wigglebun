@@ -186,10 +186,27 @@ val ActionEdge = Color(0xFFCFC6BA)
 val CloseBorder = Color(0xFF8F8CA8)
 val MovementChipText = Color(0xFF2B7A57)
 
-// Break session (BreakSession.dc.html)
+// Break session (design/ui_v2/Stretch.dc.html). SessionAccent stays for the profile's streak bar.
 val SessionAccent = Color(0xFF4E8FD9)
-val SessionTrack = Color(0xFFD5E5F7)
-val SessionEdge = Color(0xFFCBDDF1)
-val SessionSegmentIdle = Color(0xFFCFE0F3)
-/** "Step 2 of 4" and the safety line: 5.6:1 on BreakSky. */
-val SessionMuted = Color(0xFF5B6577)
+val SessionEdge = Color(0xFFC7DAF1)
+val SessionTrack = Color(0xFFC7DAF1)
+/** The ring's arc and the step bars' fill. */
+val SessionProgress = Color(0xFF5E9FE6)
+/** The soft disc behind the pet inside the ring. */
+val SessionDisc = Color(0xFFDCEAFB)
+/** "STEP 2 OF 4": 5.2:1 on Card. */
+val SessionStepLabel = Color(0xFF3C6FA8)
+/** "Colour coming back!" chip. */
+val SessionChip = Color(0xFFFFF0CC)
+/** The "!" note under the instruction. */
+val SessionNoteTile = Color(0xFFE6DDFB)
+val SessionNoteMark = Color(0xFF5B47A8)
+
+// Celebration (design/ui_v2/Celebrate.dc.html), on the HomeWall surface
+val CelebrateRays = Color(0xFFE3F2E6)
+val CelebrateHalo = Color(0xFFE9F6EB)
+/** The subtitle under "You did it!": 6.1:1 on HomeWall. */
+val CelebrateText = Color(0xFF3F5A47)
+val CelebrateSparkTile = Color(0xFFFFF0CC)
+/** Streak bars not yet reached today. */
+val StreakBarIdle = Color(0xFFE9E1D6)

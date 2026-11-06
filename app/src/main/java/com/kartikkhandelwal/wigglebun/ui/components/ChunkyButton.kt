@@ -41,7 +41,6 @@ import com.kartikkhandelwal.wigglebun.ui.theme.DoneGreenEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.SessionEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Sun
 import com.kartikkhandelwal.wigglebun.ui.theme.SunEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Track
@@ -72,15 +71,6 @@ enum class ChunkyButtonStyle(
      * flat Track face and full-strength InkMuted text instead of the 50% fade, so it stays legible.
      */
     Inactive(face = Track, edge = CardEdge, content = InkMuted, edgeHeight = Dimens.SecondaryButtonEdge),
-
-    /** Secondary on the blue break-session background (BreakSession.dc.html "Pause"). */
-    SessionSecondary(
-        face = Card,
-        edge = SessionEdge,
-        content = Ink,
-        edgeHeight = Dimens.SecondaryButtonEdge,
-        borderColor = SessionEdge,
-    ),
 }
 
 @Composable

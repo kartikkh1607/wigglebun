@@ -1,27 +1,31 @@
 package com.kartikkhandelwal.wigglebun.ui.breaksession
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.res.stringResource
@@ -36,17 +40,20 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.data.repo.BreakDoneResult
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.rewards.Milestone
 import com.kartikkhandelwal.wigglebun.domain.rewards.Streak
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
-import com.kartikkhandelwal.wigglebun.ui.labelRes
 import com.kartikkhandelwal.wigglebun.ui.motion.LocalReducedMotion
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import com.kartikkhandelwal.wigglebun.ui.pet.spec
-import com.kartikkhandelwal.wigglebun.ui.theme.BreakSky
+import com.kartikkhandelwal.wigglebun.ui.components.SheetPanel
+import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
+import com.kartikkhandelwal.wigglebun.ui.theme.OnSurface
+import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import kotlinx.coroutines.delay
 import java.time.LocalDate
@@ -55,9 +62,6 @@ private val S = Dimens.BreakSession
 
 /** The celebration lasts 3 s (CLAUDE.md §5.2), then the session returns to Home by itself. */
 private const val CELEBRATE_MILLIS = 3_000L
-
-/** Mockup: the 210 dp pet inside the 280 dp ring. */
-private const val PET_IN_RING = 210f / 280f
 
 /** Ring and countdown opacity while paused. */
 private const val PAUSED_ALPHA = 0.4f
@@ -112,7 +116,7 @@ fun BreakSessionScreenRoute(
     )
 }
 
-/** Full-screen guided break (CLAUDE.md §6.4, design/mockups_source/BreakSession.dc.html). */
+/** Full-screen guided break (CLAUDE.md §6.4, design/ui_v2/Stretch.dc.html) and its celebration (Celebrate.dc.html). */
 @Composable
 fun BreakSessionScreen(
     state: BreakSessionUiState,
@@ -125,17 +129,22 @@ fun BreakSessionScreen(
 ) {
     val pet = state.pet
     val petName = pet?.displayName().orEmpty()
-    Box(
-        modifier
-            .fillMaxSize()
-            .background(BreakSky)
-            .systemBarsPadding(),
-    ) {
-        val result = state.result
-        if (result == null) {
-            SessionContent(state, petName, onClose, onTogglePause, onNext, onDone)
-        } else {
-            CelebrationContent(result, pet?.spec ?: PetSpecs.Bun, petName, onContinue, accessories = pet?.wearing.orEmpty())
+    val result = state.result
+    val surface = if (result == null) Surfaces.Session else Surfaces.HomeWall
+    OnSurface(surface) {
+        Box(modifier.fillMaxSize().background(surface.background)) {
+            if (result == null) {
+                SessionContent(state, petName, onClose, onTogglePause, onNext, onDone)
+            } else {
+                CelebrationContent(
+                    result = result,
+                    pet = pet?.spec ?: PetSpecs.Bun,
+                    petName = petName,
+                    nextPet = state.nextPet,
+                    onContinue = onContinue,
+                    accessories = pet?.wearing.orEmpty(),
+                )
+            }
         }
     }
 }
@@ -150,53 +159,61 @@ private fun SessionContent(
     onDone: () -> Unit,
 ) {
     val stepLabel = stringResource(R.string.session_step, state.stepIndex + 1, state.stepCount)
-    // Paused reads at a glance: ring and countdown dim, "Paused" appears under the time.
+    // Paused reads at a glance: ring and countdown dim and the chip says "Paused".
     val timerAlpha by animateFloatAsState(
         targetValue = if (state.isPaused) PAUSED_ALPHA else 1f,
         animationSpec = tween(PAUSE_FADE_MILLIS, easing = FastOutSlowInEasing),
         label = "timerAlpha",
     )
-    Column(Modifier.fillMaxSize()) {
-        // Everything above the buttons; the free space collects under the card, as in the mockup.
-        Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(Modifier.height(S.TopPadding))
-            SessionHeader(title = stringResource(state.type.labelRes), stepLabel = stepLabel, onClose = onClose)
-            Segments(
-                count = state.stepCount,
-                filled = state.stepIndex + 1,
-                modifier = Modifier.padding(top = S.SegmentsTop, start = S.SegmentsHorizontal, end = S.SegmentsHorizontal),
-            )
-            // The ring shrinks on short screens / large fonts so the instruction stays visible.
-            BoxWithConstraints(Modifier.weight(1f, fill = false).fillMaxWidth()) {
-                val ring = minOf(S.RingSize, maxHeight - S.RingTop).coerceAtLeast(0.dp)
-                CountdownRing(
-                    progress = state.progress,
-                    ringAlpha = timerAlpha,
-                    modifier = Modifier.align(Alignment.TopCenter).padding(top = S.RingTop).size(ring),
-                ) {
-                    state.pet?.let { pet ->
-                        PetView(
-                            energy = 1f,
-                            mood = state.mood,
-                            spec = pet.spec,
-                            name = petName,
-                            // With animations removed each step holds one pose instead of cycling.
-                            pose = if (LocalReducedMotion.current) state.stillPose else state.pose,
-                            accessories = pet.wearing,
-                            modifier = Modifier.size(ring * PET_IN_RING),
-                        )
-                    }
-                }
+    val top: @Composable () -> Unit = {
+        Spacer(Modifier.height(S.TopPadding))
+        SessionHeader(state.type, onClose)
+        StepBars(
+            count = state.stepCount,
+            currentIndex = state.stepIndex,
+            currentProgress = state.progress,
+            modifier = Modifier.padding(top = S.SegmentsTop, start = S.SegmentsHorizontal, end = S.SegmentsHorizontal),
+        )
+    }
+    val ring: @Composable (Modifier) -> Unit = { ringModifier ->
+        CountdownRing(progress = state.progress, ringAlpha = timerAlpha, modifier = ringModifier) {
+            state.pet?.let { pet ->
+                PetView(
+                    // The colour fills over the whole session, so each step sees it come back.
+                    energy = state.energy,
+                    mood = state.mood,
+                    spec = pet.spec,
+                    name = petName,
+                    // With animations removed each step holds one pose instead of cycling.
+                    pose = if (LocalReducedMotion.current) state.stillPose else state.pose,
+                    accessories = pet.wearing,
+                    modifier = Modifier
+                        .fillMaxSize(S.PetInRing)
+                        // The pet's box has its feet low; lift it so the pet sits in the middle of the ring.
+                        .graphicsLayer { translationY = -size.height * S.PetLift },
+                )
             }
-            CountdownText(state.remainingMillis, Modifier.padding(top = S.TimerTop).alpha(timerAlpha))
-            AnimatedVisibility(visible = state.isPaused) { PausedLabel() }
-            InstructionCard(
-                stepLabel = stepLabel,
-                instruction = stringResource(state.instruction),
-                showSafetyNote = state.showSafetyNote,
-                modifier = Modifier.padding(top = S.CardTop, start = S.CardHorizontal, end = S.CardHorizontal),
-            )
         }
+    }
+    val timer: @Composable (Modifier) -> Unit = { timerModifier ->
+        TimerRow(
+            remainingMillis = state.remainingMillis,
+            isPaused = state.isPaused,
+            colourIsBack = state.colourIsBack,
+            showColourChip = state.showColourChip,
+            timerAlpha = timerAlpha,
+            modifier = timerModifier,
+        )
+    }
+    val text: @Composable () -> Unit = {
+        InstructionText(
+            stepLabel = stepLabel,
+            title = stringResource(state.title),
+            instruction = stringResource(state.instruction),
+            showSafetyNote = state.showSafetyNote,
+        )
+    }
+    val buttons: @Composable (Modifier) -> Unit = { buttonsModifier ->
         SessionButtons(
             isPaused = state.isPaused,
             isLastStep = state.isLastStep,
@@ -204,8 +221,37 @@ private fun SessionContent(
             onTogglePause = onTogglePause,
             onNext = onNext,
             onDone = onDone,
-            modifier = Modifier.padding(start = S.ButtonsHorizontal, end = S.ButtonsHorizontal, top = S.ButtonsTop, bottom = S.ButtonsBottom),
+            modifier = buttonsModifier,
         )
+    }
+    if (LocalDensity.current.fontScale > S.LargeFontScale) {
+        // A big font leaves no room for the ring and the text together: they scroll as one, above the
+        // pinned buttons, so the whole instruction can be read.
+        Column(Modifier.fillMaxSize().statusBarsPadding()) {
+            Column { top() }
+            Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+                Spacer(Modifier.height(S.RingTop))
+                ring(Modifier.size(S.RingSize * S.LargeFontRingScale))
+                timer(Modifier.padding(top = S.TimerGap))
+                Spacer(Modifier.height(S.TimerGap))
+                SheetPanel(Modifier.fillMaxWidth().heightIn(min = S.TextMinHeight)) { text() }
+            }
+            Column(Modifier.fillMaxWidth().background(Card).navigationBarsPadding()) {
+                buttons(Modifier.padding(start = Dimens.Shared.PanelPaddingHorizontal, end = Dimens.Shared.PanelPaddingHorizontal, top = S.ButtonsTop, bottom = S.ButtonsBottom))
+            }
+        }
+        return
+    }
+    SessionLayout(Modifier.fillMaxSize().statusBarsPadding()) {
+        Column(Modifier.sessionSlot(SessionSlot.Top)) { top() }
+        ring(Modifier.sessionSlot(SessionSlot.Ring))
+        timer(Modifier.sessionSlot(SessionSlot.Timer))
+        SheetPanel(Modifier.sessionSlot(SessionSlot.Panel).fillMaxWidth()) {
+            // Scrolls when a big font leaves less room than the text needs; the buttons stay put.
+            Column(Modifier.weight(1f, fill = false).heightIn(min = S.TextMinHeight).verticalScroll(rememberScrollState())) { text() }
+            // White to the bottom of the screen, under the system bar.
+            buttons(Modifier.padding(top = S.ButtonsTop, bottom = S.ButtonsBottom).navigationBarsPadding())
+        }
     }
 }
 
@@ -216,7 +262,14 @@ internal object BreakSessionPreviewStates {
     private val today: LocalDate = LocalDate.of(2026, 10, 27) // Tuesday
 
     /** [step] (0-based) with [remainingSeconds] left; frozen at "now" = 0. */
-    fun midStep(type: BreakType, step: Int, remainingSeconds: Int, paused: Boolean = false, result: BreakDoneResult? = null): BreakSessionUiState {
+    fun midStep(
+        type: BreakType,
+        step: Int,
+        remainingSeconds: Int,
+        paused: Boolean = false,
+        result: BreakDoneResult? = null,
+        nextPet: NextPetHint? = null,
+    ): BreakSessionUiState {
         val durations = SessionTimer.evenSplit(type.durationMinutes * MILLIS_PER_MINUTE, type.sessionSteps().size)
         val timer = SessionTimer(
             stepDurationsMillis = durations,
@@ -224,7 +277,7 @@ internal object BreakSessionPreviewStates {
             countedMillis = durations[step] - remainingSeconds * MILLIS_PER_SECOND,
             runningSinceMillis = if (paused) null else 0L,
         )
-        return sessionUiState(type, pet = ActivePet.Default, timer = timer, now = 0L, result = result)
+        return sessionUiState(type, pet = ActivePet.Default, timer = timer, now = 0L, result = result, nextPet = nextPet)
     }
 
     val StandUp = midStep(BreakType.STAND_UP, step = 0, remainingSeconds = 12)
@@ -248,6 +301,21 @@ internal object BreakSessionPreviewStates {
             bonuses = listOf(Milestone(days = 3, bonus = 20)),
             streak = Streak(days = 3, startDate = today.minusDays(2), goal = 3, todayDone = 3, todayIsWorkDay = true),
         ),
+        nextPet = NextPetHint(PetId.PIP, price = 75, affordable = false),
+    )
+
+    /** The first stretch on install day: +5 sparks, 1 of 3 breaks for the streak (design/ui_v2/Celebrate.dc.html). */
+    val CelebrateFirst = midStep(
+        BreakType.STAND_UP,
+        step = 3,
+        remainingSeconds = 0,
+        result = BreakDoneResult(
+            type = BreakType.STAND_UP,
+            sparksEarned = BreakType.STAND_UP.defaultReward,
+            bonuses = emptyList(),
+            streak = Streak(days = 0, startDate = null, goal = 3, todayDone = 1, todayIsWorkDay = true),
+        ),
+        nextPet = NextPetHint(PetId.PIP, price = 75, affordable = false),
     )
 
     /** A repeat neck stretch: celebrates, but no sparks; 2 of 3 breaks done today. */
@@ -300,8 +368,32 @@ private fun BreakSessionCelebrateNoBadgePreview() {
     WigglebunTheme { BreakSessionScreen(BreakSessionPreviewStates.CelebrateNoBadge) }
 }
 
+@Preview(widthDp = 360, heightDp = 640)
+@Composable
+private fun BreakSessionSmallPhonePreview() {
+    WigglebunTheme { BreakSessionScreen(BreakSessionPreviewStates.StandUp) }
+}
+
 @Preview(widthDp = 360, heightDp = 640, fontScale = 1.3f)
 @Composable
 private fun BreakSessionSmallLargeFontPreview() {
     WigglebunTheme { BreakSessionScreen(BreakSessionPreviewStates.Neck) }
+}
+
+@Preview(widthDp = 360, heightDp = 640, fontScale = 2f)
+@Composable
+private fun BreakSessionSmallHugeFontPreview() {
+    WigglebunTheme { BreakSessionScreen(BreakSessionPreviewStates.Neck) }
+}
+
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun BreakSessionCelebrateFirstPreview() {
+    WigglebunTheme { BreakSessionScreen(BreakSessionPreviewStates.CelebrateFirst) }
+}
+
+@Preview(widthDp = 360, heightDp = 640)
+@Composable
+private fun BreakSessionCelebrateSmallPhonePreview() {
+    WigglebunTheme { BreakSessionScreen(BreakSessionPreviewStates.CelebrateFirst) }
 }

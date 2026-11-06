@@ -111,4 +111,17 @@ class SessionTimerTest {
         val timer = neck(now = 10 * second)
         assertEquals(30 * second, timer.remainingMillis(5 * second))
     }
+
+    @Test
+    fun overallProgressRunsThroughEveryStep() {
+        assertEquals(0f, neck().overallProgress(0), 0.001f)
+        // 4 steps of 30 s: 15 s into the first is 1/8, the start of the third is 1/2.
+        assertEquals(0.125f, neck().overallProgress(15 * second), 0.001f)
+        assertEquals(0.5f, neck().advance(60 * second).overallProgress(60 * second), 0.001f)
+        // Skipping ahead counts the skipped time as passed.
+        assertEquals(0.25f, neck().next(2 * second).overallProgress(2 * second), 0.001f)
+        assertEquals(1f, neck().advance(500 * second).overallProgress(500 * second), 0.001f)
+        // Paused time does not count.
+        assertEquals(0.125f, neck().pause(15 * second).overallProgress(100 * second), 0.001f)
+    }
 }

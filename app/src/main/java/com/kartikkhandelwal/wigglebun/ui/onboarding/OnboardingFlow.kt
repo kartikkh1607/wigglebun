@@ -243,7 +243,7 @@ fun OnboardingFlow(
             )
         }
         composable<FirstStretchRoute> {
-            val start = dropUnlessResumed { navController.navigate(BreakSessionRoute(FirstBreak.name)) { launchSingleTop = true } }
+            val start = dropUnlessResumed { navController.navigate(BreakSessionRoute(FirstBreak.name, startDrained = true)) { launchSingleTop = true } }
             FirstStretchScreen(petName = petName, onStart = start, onSkip = { navController.openPaywall() })
         }
         composable<BreakSessionRoute> {

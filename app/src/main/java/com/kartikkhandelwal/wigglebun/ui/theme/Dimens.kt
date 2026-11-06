@@ -357,43 +357,87 @@ object Dimens {
         val OverlayMinMargin = 24.dp
     }
 
-    /** Break session + celebration, measured from design/mockups_source/BreakSession.dc.html. */
+    /** Break session + celebration, measured from design/ui_v2/Stretch.dc.html and Celebrate.dc.html (390-wide artboards). */
     object BreakSession {
         val TopPadding = 16.dp
-        val CloseSize = 48.dp
-        val CloseEdge = 4.dp
-        val CloseIcon = 20.dp
+        val HeaderGap = 8.dp
+
+        // The pill with the break's icon and name
+        val PillIcon = 28.dp
+        val PillPaddingStart = 8.dp
+        val PillPaddingEnd = 14.dp
+        val PillPaddingVertical = 6.dp
+        val PillEdge = 3.dp
+
         val SegmentsTop = 14.dp
         val SegmentsHorizontal = 24.dp
         val SegmentGap = 6.dp
-        val SegmentHeight = 6.dp
-        val RingTop = 34.dp
-        val RingSize = 280.dp
+        val SegmentHeight = 8.dp
+
+        // The ring: a 300 dp box, soft disc r138, track r130, stroke 12
+        val RingSize = 300.dp
         val RingStroke = 12.dp
-        val TimerTop = 14.dp
-        val CardTop = 14.dp
-        val CardHorizontal = 20.dp
-        val CardPaddingVertical = 18.dp
-        val CardPaddingHorizontal = 20.dp
-        val CardEdge = 4.dp
-        val SafetyTop = 10.dp
-        val ButtonsTop = 16.dp
-        val ButtonsHorizontal = 20.dp
-        val ButtonsBottom = 34.dp
+        const val RingRadiusFraction = 130f / 300f
+        const val DiscRadiusFraction = 138f / 300f
+        /** The pet's width in the ring (166 of 300). */
+        const val PetInRing = 166f / 300f
+        /** The ring never shrinks below this fraction of [RingSize] to make room for the text. */
+        const val RingMinScale = 0.45f
+        val RingTop = 14.dp
+        /** The pet sits a little low in its box; this lifts it to the middle of the ring. */
+        const val PetLift = 0.07f
+        /** Above this font scale the ring, timer and text scroll together above the pinned buttons. */
+        const val LargeFontScale = 1.3f
+        /** The ring's size in that layout, as a fraction of [RingSize]. */
+        const val LargeFontRingScale = 0.5f
+        /** The timer pill overlaps the ring's box by this much at full size (it sits on the ring's foot). */
+        val TimerOverlap = 20.dp
+        val TimerGap = 8.dp
+        val TimerEdge = 3.dp
+        val TimerPaddingHorizontal = 16.dp
+        val TimerPaddingVertical = 4.dp
+        val ChipPaddingHorizontal = 14.dp
+        val ChipPaddingVertical = 8.dp
+
+        // The white panel with the step's text, and its buttons
+        /** The text area is at least this tall (when there is room), so the buttons sit at the panel's foot as in the mockup. */
+        val TextMinHeight = 220.dp
+        val NoteIcon = 16.dp
+        val NoteGap = 8.dp
+        val ButtonsTop = 14.dp
+        val ButtonsBottom = 40.dp
         val ButtonsGap = 12.dp
-        val ButtonHeight = 56.dp
+        val ButtonHeight = 58.dp
+        val PauseWidth = 112.dp
         val ButtonPaddingHorizontal = 12.dp
 
-        val CelebratePetSize = 210.dp
-        val CelebrateGap = 10.dp
-        val BadgePaddingStart = 14.dp
-        val BadgePaddingEnd = 18.dp
-        val BadgePaddingVertical = 8.dp
-        val BadgeGap = 6.dp
-        val BadgeIcon = 22.dp
-        val BadgeEdge = 4.dp
-        val StreakCardTop = 8.dp
-        val StreakCardPadding = 16.dp
+        // Celebration: the scene is drawn 390 × 400 and scaled
+        val SceneHeight = 400.dp
+        val SceneWidth = 390.dp
+        /**
+         * What the title and subtitle, then each reward card and the streak card, need at normal
+         * font size; the scene (pet and glow) gets the rest, so three cards still fit on 390 x 844.
+         */
+        val LowerBase = 142.dp
+        val RewardCardSlot = 92.dp
+        val StreakCardSlot = 96.dp
+        const val SceneMinScale = 0.45f
+        /** Above this font scale Continue scrolls with the content instead of staying pinned. */
+        const val CelebrateLargeFontScale = 1.15f
+        val PetSize = 200.dp
+        val CelebrateHorizontal = 20.dp
+        val CelebrateGap = 12.dp
+        val TitleGap = 8.dp
+        val TextHorizontal = 24.dp
+        val RewardCardPaddingHorizontal = 16.dp
+        val RewardCardPaddingVertical = 14.dp
+        val RewardCardEdge = 4.dp
+        val RewardTile = 48.dp
+        val RewardTileIcon = 30.dp
+        val RewardGap = 12.dp
+        val StreakBarHeight = 12.dp
+        val StreakBarGap = 6.dp
+        val CelebrateButtonBottom = 40.dp
     }
 
     /** Collection tab, measured from design/mockups_source/Collection.dc.html. */

@@ -7,9 +7,14 @@ import androidx.navigation.toRoute
 import com.kartikkhandelwal.wigglebun.data.repo.BreakDoneResult
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.RecordBreakDone
+import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
+import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
 import com.kartikkhandelwal.wigglebun.data.time.ElapsedClock
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
+import com.kartikkhandelwal.wigglebun.domain.rewards.PetPrices
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
 import com.kartikkhandelwal.wigglebun.ui.navigation.BreakSessionRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,22 +23,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 /** The countdown only redraws this often; the time itself always comes from [ElapsedClock]. */
 private const val TICK_MILLIS = 100L
 private const val MILLIS_PER_MINUTE = 60_000L
+private const val START_ENERGY_TIMEOUT_MILLIS = 2_000L
 
 @HiltViewModel
 class BreakSessionViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val recordBreakDone: RecordBreakDone,
     private val elapsed: ElapsedClock,
-    petRepository: PetRepository,
+    private val petRepository: PetRepository,
+    private val wallet: WalletRepository,
+    private val sitRepository: SitRepository,
 ) : ViewModel() {
 
-    val type: BreakType = savedStateHandle.toRoute<BreakSessionRoute>().breakType
+    private val route = savedStateHandle.toRoute<BreakSessionRoute>()
+    val type: BreakType = route.breakType
 
     private var timer = SessionTimer.start(
         totalMillis = type.durationMinutes * MILLIS_PER_MINUTE,
@@ -42,12 +54,29 @@ class BreakSessionViewModel @Inject constructor(
     )
     private var pet: ActivePet? = null
     private var result: BreakDoneResult? = null
+    private var nextPet: NextPetHint? = null
+
+    /** The pet's energy when the session began; null until read, and the pet isn't drawn before. */
+    private var startEnergy: Float? = null
     private var completing = false
 
-    private val _state = MutableStateFlow(sessionUiState(type, pet, timer, elapsed.nowMillis(), result))
+    private val _state = MutableStateFlow(sessionUiState(type, null, timer, elapsed.nowMillis(), result, nextPet))
     val state: StateFlow<BreakSessionUiState> = _state.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            // What sitting has drained the pet to is where its colour starts to come back.
+            // Outside work hours that is full, so there is nothing to bring back. Onboarding's
+            // first stretch always starts drained: the wake-up has just said they sat too long,
+            // and the fill shows the core idea before the paywall.
+            startEnergy = if (route.startDrained) {
+                SESSION_START_ENERGY
+            } else {
+                withTimeoutOrNull(START_ENERGY_TIMEOUT_MILLIS) { sitRepository.status.filterNotNull().first().energy }
+                    ?: SESSION_START_ENERGY
+            }
+            publish()
+        }
         viewModelScope.launch {
             petRepository.activePet.collect {
                 pet = it
@@ -106,13 +135,34 @@ class BreakSessionViewModel @Inject constructor(
         timer = timer.pause(now)
         publish(now)
         viewModelScope.launch {
-            result = recordBreakDone(type)
+            val done = recordBreakDone(type)
+            // The celebration's "save up for Pip" line, read after the payment so it is current.
+            nextPet = if (done.sparksEarned > 0) nextPetHint() else null
+            result = done
             publish()
         }
     }
 
     private fun publish(now: Long = elapsed.nowMillis()) {
         timer = timer.advance(now)
-        _state.value = sessionUiState(type, pet, timer, now, result)
+        val energy = startEnergy
+        // The pet waits for its starting energy, so it never flashes at the wrong colour first.
+        _state.value = sessionUiState(type, if (energy == null) null else pet, timer, now, result, nextPet, energy ?: SESSION_START_ENERGY)
+    }
+
+    /**
+     * The cheapest pet not adopted yet and whether the sparks already cover it. With every pet
+     * adopted, the accessories are what is left to save up for; null once those are owned too.
+     */
+    private suspend fun nextPetHint(): NextPetHint? {
+        val owned = petRepository.owned.first()
+        val sparks = wallet.balance.first()
+        val id = PetId.entries.filter { it !in owned }.minByOrNull(PetPrices::of)
+        if (id != null) {
+            val price = PetPrices.of(id)
+            return NextPetHint(id, price, affordable = sparks >= price)
+        }
+        val ownedAccessories = petRepository.ownedAccessories.first()
+        return if (AccessoryId.entries.any { it !in ownedAccessories }) NextPetHint(id = null) else null
     }
 }

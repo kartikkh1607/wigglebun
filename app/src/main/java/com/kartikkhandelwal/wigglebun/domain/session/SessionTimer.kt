@@ -33,6 +33,14 @@ data class SessionTimer(
 
     fun progress(now: Long): Float = elapsedMillis(now).toFloat() / stepDurationMillis
 
+    /** 0..1 through the whole session (every step), for the pet's colour coming back. */
+    fun overallProgress(now: Long): Float {
+        val total = stepDurationsMillis.sum()
+        if (total == 0L) return 1f
+        val before = stepDurationsMillis.take(stepIndex).sum()
+        return ((before + elapsedMillis(now)).toFloat() / total).coerceIn(0f, 1f)
+    }
+
     fun isFinished(now: Long): Boolean = isLastStep && remainingMillis(now) == 0L
 
     /** Moves past every step whose time is up, carrying the overflow; the last step stops at 0:00. */

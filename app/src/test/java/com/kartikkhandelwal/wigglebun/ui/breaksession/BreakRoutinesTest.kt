@@ -28,7 +28,10 @@ class BreakRoutinesTest {
             val durations = SessionTimer.evenSplit(type.durationMinutes * minute, steps.size)
             assertEquals(type.durationMinutes * minute, durations.sum())
             assertEquals("$type steps are even", 1, durations.toSet().size)
-            steps.forEach { assertTrue(it.text != 0) }
+            steps.forEach {
+                assertTrue(it.text != 0)
+                assertTrue(it.title != 0)
+            }
         }
     }
 
@@ -94,5 +97,26 @@ class BreakRoutinesTest {
         val celebrating = sessionUiState(BreakType.NECK, null, finished.pause(10 * minute), 10 * minute, result)
         assertEquals(Mood.CELEBRATE, celebrating.mood)
         assertFalse(celebrating.keepScreenOn)
+    }
+
+    @Test
+    fun thePetsColourFillsOverTheSession() {
+        val type = BreakType.NECK
+        val timer = timerFor(type)
+        val start = sessionUiState(type, null, timer, 0, null)
+        assertEquals(SESSION_START_ENERGY, start.energy, 0.001f)
+        assertFalse(start.colourIsBack)
+
+        // Half way through: half the missing colour is back.
+        val half = sessionUiState(type, null, timer.advance(minute), minute, null)
+        assertEquals(SESSION_START_ENERGY + (1f - SESSION_START_ENERGY) / 2f, half.energy, 0.001f)
+
+        val end = sessionUiState(type, null, timer.advance(10 * minute), 10 * minute, null)
+        assertEquals(1f, end.energy, 0.001f)
+        assertTrue(end.colourIsBack)
+
+        // After Done the celebration shows the pet in full colour.
+        val result = BreakDoneResult(type, 5, emptyList(), Streak(0, null, 3, 1, true))
+        assertEquals(1f, sessionUiState(type, null, timer, 0, result).energy, 0.001f)
     }
 }

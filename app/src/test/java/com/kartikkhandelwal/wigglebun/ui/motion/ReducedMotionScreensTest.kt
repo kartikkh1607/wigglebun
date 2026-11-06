@@ -184,8 +184,8 @@ class ReducedMotionScreensTest {
     private fun shouldersAt(millis: Long): BreakSessionUiState {
         val type = BreakType.SHOULDERS
         val timer = SessionTimer.start(type.durationMinutes * MILLIS_PER_MINUTE, type.sessionSteps().size, now = 0L)
-        // The ring held still, so only the pet can differ between the two frames.
-        return sessionUiState(type, ActivePet.Default, timer, now = millis, result = null).copy(progress = 0f)
+        // The ring and the pet's colour held still, so only the pose can differ between the two frames.
+        return sessionUiState(type, ActivePet.Default, timer, now = millis, result = null).copy(progress = 0f, overallProgress = 0f)
     }
 
     /** The pet at the start of the step and 2.5 s later (third pose of the cycle). */

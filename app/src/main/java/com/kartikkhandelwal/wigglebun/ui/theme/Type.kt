@@ -112,8 +112,22 @@ object WigglebunTextStyles {
     /** Break session title (Fredoka 20). */
     val SessionTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 26.sp)
 
-    /** Break session countdown "0:11" (Fredoka 44). */
-    val Countdown = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 44.sp, lineHeight = 52.sp)
+    /** Break session countdown "0:12" in its white pill (Fredoka 22). */
+    val Countdown = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, lineHeight = 28.sp)
+
+    /** "STEP 2 OF 4" over the instruction (Nunito 13, 800, letter-spaced, set in capitals by the caller). */
+    val SessionStepLabel = TextStyle(
+        fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, lineHeight = 17.sp, letterSpacing = 0.06.em,
+    )
+
+    /** The instruction's title, "Reach up high" (Fredoka 30). */
+    val SessionInstructionTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 30.sp, lineHeight = 33.sp)
+
+    /** "You did it!" (Fredoka 36). */
+    val CelebrateTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 36.sp, lineHeight = 38.sp)
+
+    /** "+5 sparks" on the reward card (Fredoka 24). */
+    val RewardTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, lineHeight = 27.sp)
 
     /** Session button labels shrink to at most this (from 18) rather than being cut off. */
     val SessionButtonMinFontSize = 13.sp

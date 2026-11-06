@@ -11,6 +11,10 @@ import com.kartikkhandelwal.wigglebun.data.time.ElapsedClock
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import java.time.Instant
+import com.kartikkhandelwal.wigglebun.domain.model.SparkReason
+import com.kartikkhandelwal.wigglebun.domain.sitting.SittingEngine
+import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -47,11 +51,13 @@ class BreakSessionViewModelTest {
      * up to a couple of seconds in a cold test JVM). Wait for it, so that publish happens before
      * a test moves [now] and can't show a later step at an unexpected moment.
      */
-    private fun session(type: BreakType) = BreakSessionViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("type" to type.name)),
+    private fun session(type: BreakType, startDrained: Boolean = false) = BreakSessionViewModel(
+        savedStateHandle = SavedStateHandle(mapOf("type" to type.name, "startDrained" to startDrained)),
         recordBreakDone = app.recordBreakDone,
         elapsed = elapsed,
         petRepository = app.pets,
+        wallet = app.wallet,
+        sitRepository = app.sitRepository,
     ).also { vm ->
         viewModels += vm
         waitUntil { vm.state.value.pet != null }
@@ -100,6 +106,82 @@ class BreakSessionViewModelTest {
         val log = app.logs().single()
         assertEquals(BreakType.NECK, log.type)
         assertEquals(BreakOutcome.DONE, log.outcome)
+    }
+
+    @Test
+    fun theCelebrationSaysWhichPetToSaveUpFor() {
+        app.sittingFor(20)
+        val vm = session(BreakType.NECK)
+        repeat(3) { vm.nextStep() }
+        vm.done()
+        waitUntil { vm.state.value.result != null }
+
+        // 5 sparks: Pip (75) is the cheapest pet not adopted yet, and not affordable.
+        assertEquals(NextPetHint(PetId.PIP, price = 75, affordable = false), vm.state.value.nextPet)
+    }
+
+    @Test
+    fun theColourStartsFromWhatSittingDrainedAndFillsFromThere() {
+        app.sittingFor(30) // 30 of 45 minutes: energy 1 - 30 / 54
+        val vm = session(BreakType.NECK)
+        val expected = SittingEngine.energyFor(sitMinutes = 30f, interval = 45)
+        assertEquals(expected, vm.state.value.startEnergy, 0.02f)
+        assertEquals(expected, vm.state.value.energy, 0.02f)
+        assertTrue(vm.state.value.showColourChip)
+        repeat(3) { vm.nextStep() }
+        // Last step: not finished until its time is up, but most of the colour is back.
+        assertTrue(vm.state.value.energy > expected)
+    }
+
+    @Test
+    fun aPetThatBeganFullShowsNoColourChip() {
+        app.sittingFor(0) // just had a break: full energy
+        val vm = session(BreakType.NECK)
+        assertEquals(1f, vm.state.value.startEnergy, 0.001f)
+        assertFalse(vm.state.value.showColourChip)
+    }
+
+    @Test
+    fun onboardingsFirstStretchStartsDrainedEvenWithAFreshSitTimer() {
+        app.sittingFor(0) // the sit timer was just started: the pet is at full energy
+        val vm = session(BreakType.STAND_UP, startDrained = true)
+        assertEquals(SESSION_START_ENERGY, vm.state.value.startEnergy, 0.001f)
+        assertEquals(0.4f, vm.state.value.energy, 0.001f)
+        assertTrue(vm.state.value.showColourChip)
+        // A regular break from the same sit timer starts from the pet's real (full) energy.
+        val regular = session(BreakType.STAND_UP)
+        assertEquals(1f, regular.state.value.startEnergy, 0.001f)
+        assertFalse(regular.state.value.showColourChip)
+    }
+
+    @Test
+    fun withEveryPetAdoptedTheLineSavesUpForAccessories() {
+        app.sittingFor(20)
+        runBlocking {
+            app.wallet.award("break:test:all", 1_000, SparkReason.BREAK, Instant.now())
+            PetId.entries.filter { it != PetId.Starter }.forEach { app.pets.adopt(it) }
+        }
+        val vm = session(BreakType.NECK)
+        repeat(3) { vm.nextStep() }
+        vm.done()
+        waitUntil { vm.state.value.result != null }
+        assertEquals(NextPetHint(id = null), vm.state.value.nextPet)
+    }
+
+    @Test
+    fun aRepeatBreakThatPaysNothingHasNoSaveUpLine() {
+        app.sittingFor(20)
+        val first = session(BreakType.NECK)
+        repeat(3) { first.nextStep() }
+        first.done()
+        waitUntil { first.state.value.result != null }
+
+        val repeat = session(BreakType.NECK)
+        repeat(3) { repeat.nextStep() }
+        repeat.done()
+        waitUntil { repeat.state.value.result != null }
+        assertEquals(0, repeat.state.value.result!!.sparksEarned)
+        assertEquals(null, repeat.state.value.nextPet)
     }
 
     @Test
