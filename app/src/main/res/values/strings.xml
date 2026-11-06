@@ -323,6 +323,8 @@
     </plurals>
     <!-- Under "+5 sparks": %1$s is the next pet's name, %2$d its price -->
     <string name="celebrate_save_up">Save up to adopt %1$s at %2$d</string>
+    <!-- Once every pet is adopted -->
+    <string name="celebrate_save_up_accessories">Save up for new accessories</string>
     <string name="celebrate_can_adopt">You can adopt %1$s!</string>
     <!-- Under a streak bonus's sparks -->
     <plurals name="celebrate_bonus_reason">

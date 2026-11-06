@@ -200,6 +200,7 @@ private fun SessionContent(
             remainingMillis = state.remainingMillis,
             isPaused = state.isPaused,
             colourIsBack = state.colourIsBack,
+            showColourChip = state.showColourChip,
             timerAlpha = timerAlpha,
             modifier = timerModifier,
         )

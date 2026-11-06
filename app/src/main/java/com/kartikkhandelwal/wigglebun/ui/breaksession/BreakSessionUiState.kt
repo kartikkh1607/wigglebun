@@ -9,10 +9,13 @@ import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.session.SessionTimer
 import com.kartikkhandelwal.wigglebun.ui.pet.PoseSpec
 
-/** The line under "+5 sparks": the next pet to adopt and whether the sparks already cover it. */
-data class NextPetHint(val id: PetId, val price: Int, val affordable: Boolean)
+/**
+ * The line under "+5 sparks": the next pet to adopt and whether the sparks already cover it. With
+ * every pet adopted, [id] is null and the line points at the accessories instead.
+ */
+data class NextPetHint(val id: PetId?, val price: Int = 0, val affordable: Boolean = false)
 
-/** The pet starts a session this drained and its colour comes back over the session (design/ui_v2/Stretch.dc.html). */
+/** Used where the pet's real energy isn't known (previews, tests): the colour fills from here. */
 const val SESSION_START_ENERGY = 0.4f
 
 data class BreakSessionUiState(
@@ -41,12 +44,17 @@ data class BreakSessionUiState(
     val overallProgress: Float = 0f,
     /** Shown on the celebration when this break paid sparks. */
     val nextPet: NextPetHint? = null,
+    /** The pet's energy when the session began (what sitting had drained it to). */
+    val startEnergy: Float = SESSION_START_ENERGY,
 ) {
-    /** The pet's fill: [SESSION_START_ENERGY] at the start, full when the last step ends. */
-    val energy: Float get() = if (result != null) 1f else SESSION_START_ENERGY + (1f - SESSION_START_ENERGY) * overallProgress
+    /** The pet's fill: its energy at the start, full when the last step ends. */
+    val energy: Float get() = if (result != null) 1f else startEnergy + (1f - startEnergy) * overallProgress
 
     /** "Colour coming back!" until the colour is all back. */
     val colourIsBack: Boolean get() = overallProgress >= 1f
+
+    /** No chip about colour when there was none to bring back (a pet that began at full energy). */
+    val showColourChip: Boolean get() = startEnergy < 0.98f
 
     /** "Move gently. Stop if anything hurts." opens every session that moves the body. */
     val showSafetyNote: Boolean get() = stepIndex == 0 && type.hasSafetyNote
@@ -63,6 +71,7 @@ fun sessionUiState(
     now: Long,
     result: BreakDoneResult?,
     nextPet: NextPetHint? = null,
+    startEnergy: Float = SESSION_START_ENERGY,
 ): BreakSessionUiState {
     val step = type.sessionSteps()[timer.stepIndex]
     val pose = step.poses.getOrNull(timer.poseIndex(now, step.poses.size, POSE_HOLD_MILLIS))
@@ -84,5 +93,6 @@ fun sessionUiState(
         result = result,
         overallProgress = timer.overallProgress(now),
         nextPet = nextPet,
+        startEnergy = startEnergy,
     )
 }

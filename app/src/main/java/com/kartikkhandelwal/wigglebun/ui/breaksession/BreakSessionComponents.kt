@@ -208,6 +208,7 @@ internal fun TimerRow(
     remainingMillis: Long,
     isPaused: Boolean,
     colourIsBack: Boolean,
+    showColourChip: Boolean,
     modifier: Modifier = Modifier,
     timerAlpha: Float = 1f,
 ) {
@@ -225,10 +226,11 @@ internal fun TimerRow(
         }
         val chip = when {
             isPaused -> stringResource(R.string.session_paused)
+            !showColourChip -> null
             colourIsBack -> stringResource(R.string.session_colour_back)
             else -> stringResource(R.string.session_colour_coming)
         }
-        Text(
+        if (chip != null) Text(
             text = chip,
             style = WigglebunTextStyles.Count.copy(fontWeight = FontWeight.ExtraBold),
             color = Ink,

@@ -195,7 +195,8 @@ internal fun CelebrationContent(
 /** "Save up to adopt Pip at 75", or "You can adopt Pip!" once the sparks cover it. */
 @Composable
 private fun saveUpLine(hint: NextPetHint): String {
-    val name = stringResource(PetSpecs.of(hint.id).defaultName)
+    val id = hint.id ?: return stringResource(R.string.celebrate_save_up_accessories)
+    val name = stringResource(PetSpecs.of(id).defaultName)
     return if (hint.affordable) {
         stringResource(R.string.celebrate_can_adopt, name)
     } else {
