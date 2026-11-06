@@ -51,8 +51,8 @@ class BreakSessionViewModelTest {
      * up to a couple of seconds in a cold test JVM). Wait for it, so that publish happens before
      * a test moves [now] and can't show a later step at an unexpected moment.
      */
-    private fun session(type: BreakType) = BreakSessionViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("type" to type.name)),
+    private fun session(type: BreakType, startDrained: Boolean = false) = BreakSessionViewModel(
+        savedStateHandle = SavedStateHandle(mapOf("type" to type.name, "startDrained" to startDrained)),
         recordBreakDone = app.recordBreakDone,
         elapsed = elapsed,
         petRepository = app.pets,
@@ -139,6 +139,19 @@ class BreakSessionViewModelTest {
         val vm = session(BreakType.NECK)
         assertEquals(1f, vm.state.value.startEnergy, 0.001f)
         assertFalse(vm.state.value.showColourChip)
+    }
+
+    @Test
+    fun onboardingsFirstStretchStartsDrainedEvenWithAFreshSitTimer() {
+        app.sittingFor(0) // the sit timer was just started: the pet is at full energy
+        val vm = session(BreakType.STAND_UP, startDrained = true)
+        assertEquals(SESSION_START_ENERGY, vm.state.value.startEnergy, 0.001f)
+        assertEquals(0.4f, vm.state.value.energy, 0.001f)
+        assertTrue(vm.state.value.showColourChip)
+        // A regular break from the same sit timer starts from the pet's real (full) energy.
+        val regular = session(BreakType.STAND_UP)
+        assertEquals(1f, regular.state.value.startEnergy, 0.001f)
+        assertFalse(regular.state.value.showColourChip)
     }
 
     @Test

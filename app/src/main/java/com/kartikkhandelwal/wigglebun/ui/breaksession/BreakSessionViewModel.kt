@@ -44,7 +44,8 @@ class BreakSessionViewModel @Inject constructor(
     private val sitRepository: SitRepository,
 ) : ViewModel() {
 
-    val type: BreakType = savedStateHandle.toRoute<BreakSessionRoute>().breakType
+    private val route = savedStateHandle.toRoute<BreakSessionRoute>()
+    val type: BreakType = route.breakType
 
     private var timer = SessionTimer.start(
         totalMillis = type.durationMinutes * MILLIS_PER_MINUTE,
@@ -65,9 +66,15 @@ class BreakSessionViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             // What sitting has drained the pet to is where its colour starts to come back.
-            // Outside work hours that is full, so there is nothing to bring back.
-            startEnergy = withTimeoutOrNull(START_ENERGY_TIMEOUT_MILLIS) { sitRepository.status.filterNotNull().first().energy }
-                ?: SESSION_START_ENERGY
+            // Outside work hours that is full, so there is nothing to bring back. Onboarding's
+            // first stretch always starts drained: the wake-up has just said they sat too long,
+            // and the fill shows the core idea before the paywall.
+            startEnergy = if (route.startDrained) {
+                SESSION_START_ENERGY
+            } else {
+                withTimeoutOrNull(START_ENERGY_TIMEOUT_MILLIS) { sitRepository.status.filterNotNull().first().energy }
+                    ?: SESSION_START_ENERGY
+            }
             publish()
         }
         viewModelScope.launch {

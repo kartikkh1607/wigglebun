@@ -68,6 +68,9 @@ class BreakSessionScreenshotTest {
 
     // ---- The first stretch's celebration (design/ui_v2/Celebrate.dc.html): +5 sparks, 1 of 3 breaks ----
 
+    /** Sparks, a streak bonus and the streak card: all three cards on screen at once, no scrolling, at 390 x 844. */
+    @Test fun celebrateThreeCards() = capture("celebrate_three_cards", BreakSessionPreviewStates.CelebrateWithBadge)
+
     @Test fun celebrateFirst() = capture("celebrate_first", BreakSessionPreviewStates.CelebrateFirst)
 
     // ---- 360 × 640: nothing important cut off at normal font; 130% and 200% shrink the ring and scroll ----

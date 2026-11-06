@@ -414,8 +414,13 @@ object Dimens {
         // Celebration: the scene is drawn 390 × 400 and scaled
         val SceneHeight = 400.dp
         val SceneWidth = 390.dp
-        /** What the title, subtitle and cards need at normal font size; the scene gets the rest. */
-        val LowerHeight = 330.dp
+        /**
+         * What the title and subtitle, then each reward card and the streak card, need at normal
+         * font size; the scene (pet and glow) gets the rest, so three cards still fit on 390 x 844.
+         */
+        val LowerBase = 142.dp
+        val RewardCardSlot = 92.dp
+        val StreakCardSlot = 96.dp
         const val SceneMinScale = 0.45f
         /** Above this font scale Continue scrolls with the content instead of staying pinned. */
         const val CelebrateLargeFontScale = 1.15f

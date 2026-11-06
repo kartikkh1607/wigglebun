@@ -24,7 +24,11 @@ data object SettingsRoute
 
 /** Full-screen guided break (no tab bar). [type] is a BreakType name. */
 @Serializable
-data class BreakSessionRoute(val type: String) {
+data class BreakSessionRoute(
+    val type: String,
+    /** Onboarding's first stretch: the pet starts drained, whatever the sit timer says (CLAUDE.md §6.2). */
+    val startDrained: Boolean = false,
+) {
     val breakType: BreakType get() = BreakType.fromName(type) ?: BreakType.STAND_UP
 }
 

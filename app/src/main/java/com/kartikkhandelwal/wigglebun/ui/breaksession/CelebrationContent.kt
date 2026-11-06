@@ -129,7 +129,9 @@ internal fun CelebrationContent(
     BoxWithConstraints(modifier.fillMaxSize()) {
         // What the pinned Continue takes; the scene gets what is left once the text and cards have theirs.
         val pinned = if (buttonInContent) 0.dp else S.ButtonHeight + Dimens.ButtonEdge + S.CelebrateGap + S.CelebrateButtonBottom + bottomInset
-        val scale = ((maxHeight - pinned - topInset - S.LowerHeight * fontScale) / S.SceneHeight).coerceIn(S.SceneMinScale, 1f)
+        val rewardCards = (if (result.sparksEarned > 0) 1 else 0) + result.bonuses.size
+        val lower = S.LowerBase + S.RewardCardSlot * rewardCards + (if (result.streak.todayIsWorkDay) S.StreakCardSlot else 0.dp)
+        val scale = ((maxHeight - pinned - topInset - lower * fontScale) / S.SceneHeight).coerceIn(S.SceneMinScale, 1f)
         // The rays fill the whole screen, behind everything, from the halo's centre.
         Canvas(Modifier.fillMaxSize()) { drawRays(scale, topInset.toPx()) }
         Column(Modifier.fillMaxSize()) {
