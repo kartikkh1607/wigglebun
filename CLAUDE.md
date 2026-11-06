@@ -367,6 +367,11 @@ v1.0 build order (approved 2026-11-04): release foundations + cleanup → privac
 - Onboarding Interval at 200% font (360 dp): the "After 45 min sitting" chip is clipped by the panel's top edge.
 - Celebration subtitle at 390 dp (100% font): "does." is left alone on the last line ("Bun’s colour is back. That’s what every break / does."). Rebalance the break or the width.
 - Break session at 200% font on 360×640: the ring, timer and text scroll together, so the instruction is below the first screen and has to be scrolled to while the timer runs. A smaller ring or a one-line timer row would show more of it.
+- Celebration at 130% font on 360×640: the 3-card case (sparks, streak bonus, streak card) needs a scroll to reach Continue, because above 115% font Continue scrolls with the content.
+
+**Low-priority follow-ups (not blocking v1.0):**
+- `StreakRepository.history`: share it with `shareIn(scope, SharingStarted.WhileSubscribed(5_000), replay = 1)`, so several collectors (Home, Pet profile, Settings, the break session) don't each rebuild it.
+- `RecordBreakDone`: check crash recovery between `sitRepository.done()` and `wallet.award()`. A process death in between leaves a logged break with no reward. A missed reward is possible and acceptable; a double one isn't (the ledger keys already prevent it). Decide whether to retry the award on the next app start or leave it.
 
 ---
 
