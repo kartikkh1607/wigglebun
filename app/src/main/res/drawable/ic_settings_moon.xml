@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From design/ui_v2/icons/settings_moon.svg. Full colour: draw untinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M27 9 A17 17 0 1 0 40.5 35 A13.5 13.5 0 0 1 27 9 Z"
+        android:fillColor="#FFA08AE4" />
+    <path
+        android:pathData="M27 7 A17 17 0 1 0 40.5 33 A13.5 13.5 0 0 1 27 7 Z"
+        android:fillColor="#FFB9A3F0" />
+    <path
+        android:pathData="M12.5 17 C13.8 14.2 15.8 12 18.4 10.7"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeAlpha="0.65"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M15 25.5 Q17.6 28 20.2 25.5"
+        android:strokeColor="#FF2B2A3A"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M12.9,30.5 A2.6,1.6 0 1,0 18.1,30.5 A2.6,1.6 0 1,0 12.9,30.5 Z"
+        android:fillColor="#FFF7A58B" />
+    <path
+        android:pathData="M38 6 L39.4 9.6 L43 11 L39.4 12.4 L38 16 L36.6 12.4 L33 11 L36.6 9.6 Z"
+        android:fillColor="#FF7E66C9" />
+</vector>

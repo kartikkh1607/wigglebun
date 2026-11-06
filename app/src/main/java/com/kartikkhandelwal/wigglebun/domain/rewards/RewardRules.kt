@@ -9,10 +9,7 @@ data class Milestone(val days: Int, val bonus: Int)
 /** A bonus a streak has earned and the ledger key that pays it at most once. */
 data class StreakBonus(val milestone: Milestone, val key: String)
 
-/**
- * Reward numbers and ledger keys (CLAUDE.md §5.4). The milestone amounts are placeholders:
- * they are an open decision (CLAUDE.md §15).
- */
+/** Reward numbers and ledger keys (CLAUDE.md §5.4). */
 object RewardRules {
     /**
      * What a work day needs to count for the streak: 3 completed breaks, whichever types are on.
@@ -52,7 +49,20 @@ object RewardRules {
     }
 
     /** Only the first completion of a type each day pays. */
-    fun breakKey(date: LocalDate, type: BreakType): String = "break:$date:${type.name}"
+    fun breakKey(date: LocalDate, type: BreakType): String = "${breakKeysOn(date)}${type.name}"
+
+    /** What every [breakKey] of [date] starts with. */
+    fun breakKeysOn(date: LocalDate): String = "break:$date:"
+
+    /** What every [breakKey] starts with. */
+    const val BREAK_KEY_PREFIX = "break:"
+
+    /** The break day a [breakKey] was paid for; null for any other key. */
+    fun dayOfBreakKey(key: String): LocalDate? {
+        if (!key.startsWith(BREAK_KEY_PREFIX)) return null
+        val date = key.removePrefix(BREAK_KEY_PREFIX).substringBefore(':')
+        return runCatching { LocalDate.parse(date) }.getOrNull()
+    }
 
     /** A milestone pays once per lifetime. */
     fun milestoneKey(days: Int): String = "milestone:$days"

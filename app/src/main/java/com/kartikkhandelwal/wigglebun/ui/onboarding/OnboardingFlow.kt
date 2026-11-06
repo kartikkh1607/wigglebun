@@ -19,6 +19,8 @@ import com.kartikkhandelwal.wigglebun.domain.model.limitPetNameInput
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.ui.breaksession.BreakSessionScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.navigation.BreakSessionRoute
+import com.kartikkhandelwal.wigglebun.ui.navigation.navFadeIn
+import com.kartikkhandelwal.wigglebun.ui.navigation.navFadeOut
 import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallPlaceholderScreen
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -194,10 +196,10 @@ fun OnboardingFlow(
 ) {
     val defaultName = stringResource(PetSpecs.Bun.defaultName)
     val petName = cleanPetName(nameDraft) ?: defaultName
-    NavHost(navController = navController, startDestination = WakeUpRoute) {
+    NavHost(navController = navController, startDestination = WakeUpRoute, enterTransition = navFadeIn, exitTransition = navFadeOut) {
         composable<WakeUpRoute> {
             val next = dropUnlessResumed { navController.navigate(NamePetRoute) { launchSingleTop = true } }
-            WakeUpScreenRoute(petName = petName, onContinue = next, onSkip = next)
+            WakeUpScreenRoute(onContinue = next, onSkip = next)
         }
         composable<NamePetRoute> {
             val next = dropUnlessResumed { navController.navigate(WorkHoursRoute) { launchSingleTop = true } }
@@ -213,21 +215,26 @@ fun OnboardingFlow(
         }
         composable<WorkHoursRoute> {
             val next = dropUnlessResumed { navController.navigate(IntervalRoute) { launchSingleTop = true } }
+            val back = dropUnlessResumed { navController.popBackStack() }
             WorkHoursScreenRoute(
                 draft = workHours,
                 problem = hoursProblem,
+                petName = petName,
                 onToggleDay = actions.onToggleDay,
                 onTimePicked = actions.onTimePicked,
+                onBack = back,
                 onContinue = { if (actions.onSaveWorkHours()) next() },
                 onSkip = next,
             )
         }
         composable<IntervalRoute> {
             val next = dropUnlessResumed { navController.navigate(FirstStretchRoute) { launchSingleTop = true } }
+            val back = dropUnlessResumed { navController.popBackStack() }
             IntervalScreenRoute(
                 minutes = intervalMinutes,
                 petName = petName,
                 onPicked = actions.onIntervalPicked,
+                onBack = back,
                 onContinue = {
                     actions.onSaveInterval()
                     next()

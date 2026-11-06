@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.home
 
 import com.kartikkhandelwal.wigglebun.data.db.BreakLogEntity
+import com.kartikkhandelwal.wigglebun.data.repo.StreakSummary
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakOutcome
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
@@ -69,28 +70,62 @@ class HomeMapperTest {
         val state = map(status(mood = Mood.TIRED, sitMinutes = 45, reminderDue = now))
         val pill = state.pill as PillState.Sitting
         assertEquals(1f, pill.progress)
-        assertEquals(MoodChip.TIRED, pill.chip)
+        assertEquals(PetLine.TIRED, state.line)
         assertFalse(state.showBreakCta)
         assertTrue(state.reminderDue)
     }
 
     @Test
-    fun chipFollowsMoodAndCtaOnlyWhenStiff() {
-        assertEquals(MoodChip.GREAT, (map(status(Mood.HAPPY)).pill as PillState.Sitting).chip)
-        assertEquals(MoodChip.TIRED, (map(status(Mood.TIRED, 30)).pill as PillState.Sitting).chip)
-        assertEquals(MoodChip.GREAT, (map(status(Mood.CELEBRATE, 0)).pill as PillState.Sitting).chip)
+    fun lineFollowsMoodAndCtaOnlyWhenStiff() {
+        assertEquals(PetLine.HAPPY, map(status(Mood.HAPPY)).line)
+        assertEquals(PetLine.TIRED, map(status(Mood.TIRED, 30)).line)
+        assertEquals(PetLine.CELEBRATE, map(status(Mood.CELEBRATE, 0)).line)
 
         val stiff = map(status(Mood.STIFF, 52))
-        assertEquals(MoodChip.STIFF, (stiff.pill as PillState.Sitting).chip)
+        assertEquals(PetLine.STIFF, stiff.line)
         assertTrue(stiff.showBreakCta)
         assertFalse(map(status(Mood.TIRED, 30)).showBreakCta)
     }
 
     @Test
-    fun walkOverridesTheChipAndHidesTheCta() {
+    fun walkOverridesTheLineAndHidesTheCta() {
         val walking = map(status(Mood.STIFF, 52, isOnWalk = true))
-        assertEquals(MoodChip.WALK, (walking.pill as PillState.Sitting).chip)
+        assertEquals(PetLine.WALK, walking.line)
         assertFalse(walking.showBreakCta)
+    }
+
+    /** The z's say it: no bubble while asleep. */
+    @Test
+    fun noLineOutsideWorkHours() {
+        assertNull(map(status(Mood.SLEEPING, 0, isWorkTime = false, reminderDue = null)).line)
+    }
+
+    /** "Done · +5 sparks" shows what the ledger paid today; a done type it didn't pay shows just "Done". */
+    @Test
+    fun doneCardsShowTheSparksActuallyPaid() {
+        val state = toHomeUiState(
+            status(), SittingSettings(), ActivePet.Default, sparks = 0,
+            logsToday = listOf(log(BreakType.NECK, BreakOutcome.DONE), log(BreakType.WALK, BreakOutcome.DONE)),
+            focused = null, zone = zone,
+            paidToday = setOf(BreakType.NECK, BreakType.STAND_UP),
+        )
+        val byType = state.breaks.associateBy { it.type }
+        assertEquals(BreakType.NECK.defaultReward, byType.getValue(BreakType.NECK).sparksEarned)
+        assertEquals(0, byType.getValue(BreakType.WALK).sparksEarned)
+        // Paid but not in today's log (a different break day): not done, so nothing to show.
+        assertEquals(0, byType.getValue(BreakType.STAND_UP).sparksEarned)
+    }
+
+    @Test
+    fun streakGoalOnlyOnWorkDaysAndCapped() {
+        fun goal(summary: StreakSummary) = toHomeUiState(
+            status(), SittingSettings(), ActivePet.Default, sparks = 0, logsToday = emptyList(), focused = null, zone = zone,
+            streak = summary,
+        ).streakGoal
+        assertEquals(StreakGoalUi(done = 2, goal = 3, days = 5), goal(StreakSummary(5, 2, 3, todayIsWorkDay = true, totalBreaks = 40)))
+        // Repeats count toward the goal, but the row never shows more than it.
+        assertEquals(StreakGoalUi(done = 3, goal = 3, days = 6), goal(StreakSummary(6, 5, 3, todayIsWorkDay = true, totalBreaks = 40)))
+        assertNull(goal(StreakSummary(5, 0, 3, todayIsWorkDay = false, totalBreaks = 40)))
     }
 
     @Test

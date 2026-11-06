@@ -54,7 +54,8 @@
     <string name="action_skip">Skip</string>
 
     <!-- Home -->
-    <string name="home_time_since_break">Time since last break</string>
+    <!-- Under the minutes on the timer card: "32 min / since your last break" -->
+    <string name="home_since_last_break">since your last break</string>
     <plurals name="home_minutes">
         <item quantity="one">%d min</item>
         <item quantity="other">%d min</item>
@@ -62,11 +63,25 @@
     <!-- A pet name cut short so a sentence doesn't wrap, e.g. "Wigglebo…" -->
     <string name="pet_name_shortened">%1$s…</string>
 
-    <!-- Mood chip on the timer pill; %1$s is the pet's name -->
-    <string name="home_chip_great">%1$s feels great</string>
-    <string name="home_chip_tired">%1$s is getting tired</string>
-    <string name="home_chip_stiff">%1$s is stiff</string>
-    <string name="home_chip_walk">%1$s is out on a walk</string>
+    <!-- What the pet says in its speech bubble on Home, in its own voice -->
+    <string name="home_line_happy">Feeling bouncy!</string>
+    <string name="home_line_tired">Getting sleepy… stretch with me?</string>
+    <string name="home_line_stiff">So stiff… walk with me?</string>
+    <string name="home_line_walk">Ooh, a walk!</string>
+    <string name="home_line_celebrate">Ahh, much better!</string>
+    <!-- Timer card: today's progress toward the streak goal, e.g. "Streak goal ▬▬▭ 2 of 3" and "5 days" -->
+    <string name="home_streak_goal">Streak goal</string>
+    <string name="home_streak_progress">%1$d of %2$d</string>
+    <plurals name="home_streak_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <!-- TalkBack for the streak row: "Streak goal: 2 of 3 breaks today." then the streak if there is one -->
+    <string name="cd_home_streak_goal">Streak goal: %1$d of %2$d breaks today.</string>
+    <plurals name="cd_home_streak_days">
+        <item quantity="one">%d-day streak.</item>
+        <item quantity="other">%d-day streak.</item>
+    </plurals>
     <!-- Outside work hours (no timer, no guilt) -->
     <string name="home_asleep_title">%1$s is asleep</string>
     <!-- %1$s is a time like 9:00 -->
@@ -81,6 +96,12 @@
     <string name="home_breaks_title_last_shift">Last shift</string>
     <string name="home_breaks_done">%1$d of %2$d done</string>
     <string name="home_break_skipped">Skipped today</string>
+    <!-- A break card once done: the sparks it paid today, or just "Done" when it paid none -->
+    <string name="home_break_done">Done</string>
+    <plurals name="home_break_done_sparks">
+        <item quantity="one">Done · +%d spark</item>
+        <item quantity="other">Done · +%d sparks</item>
+    </plurals>
     <string name="home_reward">+%1$d</string>
 
     <!-- Focused break card -->
@@ -108,6 +129,7 @@
     <string name="cd_open_break">open break options</string>
     <string name="cd_snooze">Snooze 10 minutes</string>
     <string name="cd_close">Close</string>
+    <string name="cd_back">Back</string>
 
     <!-- Onboarding (WakeUp.dc.html) -->
     <string name="onboarding_continue">Continue</string>
@@ -116,12 +138,18 @@
     <string name="wake_title">Shh… someone’s\nstill asleep</string>
     <string name="wake_body">They’ve been sitting way too long.\nHelp them wake up and stretch.</string>
     <string name="wake_cta">Tap to wake them up</string>
-    <string name="intro_title">Hi!\nThat was some nap!</string>
-    <string name="intro_body">Thanks for waking me up.\nLet’s keep each other moving.</string>
-    <string name="intro_cta">Nice to meet you</string>
+    <string name="wake_z" translatable="false">z</string>
+    <string name="wake_blob_description">Your pet, fast asleep</string>
+    <string name="intro_title">Hi! That was some nap!</string>
+    <string name="intro_body">Thanks for waking me up.</string>
     <string name="name_title">What will you call me?</string>
-    <string name="name_body">Pick any name you like, up to %1$d characters.</string>
+    <string name="name_body">Any name you like, up to %1$d letters.</string>
     <string name="name_field_label">Your pet’s name</string>
+    <string name="name_suggestion_mochi">Mochi</string>
+    <string name="name_suggestion_peanut">Peanut</string>
+    <string name="name_suggestion_biscuit">Biscuit</string>
+    <string name="name_suggestion_noodle">Noodle</string>
+    <string name="name_cta">Nice to meet you!</string>
     <string name="name_counter" translatable="false">%1$d/%2$d</string>
     <string name="sheet_done">Done</string>
     <string name="hours_title">When do you work?</string>
@@ -134,8 +162,10 @@
     <string name="hours_sheet_start">Work starts at</string>
     <string name="hours_sheet_end">Work ends at</string>
     <string name="interval_title">How often should I nudge you?</string>
-    <string name="interval_body">After you’ve sat this long, I’ll nudge you to move.</string>
-    <string name="interval_every">Every</string>
+    <string name="interval_body">The longer you sit, the greyer I get. After this long, I’ll nudge you to move.</string>
+    <string name="interval_after_break">After a break</string>
+    <string name="interval_after_sitting">After %1$d min sitting</string>
+    <string name="interval_recommended">Recommended</string>
     <string name="interval_minutes">%1$d min</string>
     <string name="interval_sheet">Remind me every</string>
     <string name="stretch_title">Stretch with %1$s</string>
@@ -145,6 +175,28 @@
     <string name="paywall_placeholder_body">Plans and the free trial will show here.</string>
 
     <!-- Settings (CLAUDE.md §6.7) -->
+    <!-- "Bun & you" card at the top of Settings (design/ui_v2/Settings.dc.html). %1$s is the pet's name. -->
+    <string name="settings_pet_and_you">%1$s &amp; you</string>
+    <!-- "5-day streak · 42 breaks so far": the two parts joined -->
+    <string name="settings_pet_summary">%1$s · %2$s</string>
+    <plurals name="settings_streak_days">
+        <item quantity="one">%d-day streak</item>
+        <item quantity="other">%d-day streak</item>
+    </plurals>
+    <plurals name="settings_breaks_so_far">
+        <item quantity="one">%d break so far</item>
+        <item quantity="other">%d breaks so far</item>
+    </plurals>
+    <string name="settings_no_breaks_yet">No breaks yet</string>
+    <!-- TalkBack action on the card: it opens the Pet tab -->
+    <string name="settings_open_profile">open profile</string>
+    <string name="settings_your_setup">Your setup</string>
+    <!-- Under each setup row's name. %1$s is the pet's name. -->
+    <string name="settings_notifications_why">So %1$s can remind you</string>
+    <string name="settings_movement_why">Walking resets the timer</string>
+    <string name="settings_widget_why">%1$s on your home screen</string>
+    <!-- Small button on the Widget row while it isn't added -->
+    <string name="setup_add">Add</string>
     <string name="settings_work_hours">Work hours</string>
     <string name="settings_save_hours">Save work hours</string>
     <string name="settings_breaks">Breaks</string>
@@ -271,6 +323,24 @@
 
     <!-- Collection tab (Collection.dc.html) -->
     <string name="collection_subtitle">Earn sparks from breaks to adopt new friends.</string>
+    <!-- "Next pet" card above the grid (design/ui_v2/Collection.dc.html). %1$s is the pet's name. -->
+    <string name="next_pet_saving">Saving up for %1$s</string>
+    <string name="next_pet_almost">%1$s is almost yours</string>
+    <string name="next_pet_ready">You can adopt %1$s!</string>
+    <!-- Sparks saved / price, "30 / 75" -->
+    <string name="next_pet_count">%1$d / %2$d</string>
+    <!-- Days at the user's own pace (domain/rewards/SparksPace.kt); 2 or more. One day or less: next_pet_about_a_day -->
+    <plurals name="next_pet_days">
+        <item quantity="one">About %d more day of breaks</item>
+        <item quantity="other">About %d more days of breaks</item>
+    </plurals>
+    <string name="next_pet_about_a_day">About a day of breaks to go</string>
+    <string name="next_pet_tap">Tap to meet %1$s</string>
+    <!-- TalkBack: "30 of 75 sparks saved" -->
+    <plurals name="next_pet_count_cd">
+        <item quantity="one">%1$d of %2$d spark saved</item>
+        <item quantity="other">%1$d of %2$d sparks saved</item>
+    </plurals>
     <string name="collection_with_you">With you</string>
     <string name="collection_owned">Owned</string>
     <!-- Card labels for TalkBack; %1$s is the pet's name -->

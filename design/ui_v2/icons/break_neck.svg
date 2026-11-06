@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="96" height="96">
+  <!-- Neck stretch: a happy head tilting towards one shoulder. -->
+  <path d="M7 47 C7 38.5 13.5 34.5 24 34.5 C34.5 34.5 41 38.5 41 47 Z" fill="#5E9FE6"/>
+  <rect x="20" y="27" width="8" height="10" rx="3" fill="#5E9FE6"/>
+  <g transform="rotate(16 24 31)">
+    <circle cx="24" cy="20.5" r="12.5" fill="#5E9FE6"/>
+    <circle cx="24" cy="18.5" r="12.5" fill="#7FB8F5"/>
+    <path d="M15.5 14.5 C16.5 11.5 18.8 9.3 21.8 8.4" fill="none" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M17.4 19 Q19.7 16 22 19 M26 19 Q28.3 16 30.6 19" fill="none" stroke="#2B2A3A" stroke-width="2.4" stroke-linecap="round"/>
+    <ellipse cx="16.6" cy="23" rx="2.7" ry="1.7" fill="#F7A58B"/>
+    <ellipse cx="31.4" cy="23" rx="2.7" ry="1.7" fill="#F7A58B"/>
+    <path d="M22.4 23 Q24 24.8 25.6 23" fill="none" stroke="#2B2A3A" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <path d="M30.5 4.5 C37 5.5 41.3 9.6 42.4 16" fill="none" stroke="#2B2A3A" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M38.6 13.6 L42.5 17.2 L45.6 12.9" fill="none" stroke="#2B2A3A" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

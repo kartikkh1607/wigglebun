@@ -5,12 +5,15 @@ import androidx.compose.ui.graphics.Color
 // Design tokens from CLAUDE.md §11. Screens must use these, never raw hex values.
 
 // Core
+/** The window, the splash and the first-launch loading box; each screen paints its own surface. */
 val Cream = Color(0xFFFFF4E8)
 val Card = Color(0xFFFFFFFF)
+/** The chunky edge on Cream (onboarding until its UI v2 restyle, inactive buttons). */
 val CardEdge = Color(0xFFEFE3D4)
 val Ink = Color(0xFF2B2A3A)
 val InkEdge = Color(0xFF14131F)
-val InkMuted = Color(0xFF6B6A7B)
+/** Secondary text: 7.2:1 on Card, at least 5.8:1 on every screen surface below (lowest: HomeWall). */
+val InkMuted = Color(0xFF56556A)
 val Track = Color(0xFFF1EBE3)
 val DoneGreen = Color(0xFF3BAA6E)
 val DoneGreenEdge = Color(0xFF2C8655)
@@ -20,13 +23,84 @@ val Coral = Color(0xFFE5603A)
 val Night = Color(0xFF2F2E45)
 val BreakSky = Color(0xFFEAF3FD)
 
-// Onboarding sleep screen, on Night (WakeUp.dc.html)
-val NightStar = Color(0xFFB9B5D6)
-val NightMoon = Color(0xFFFFE3A3)
-val NightFloor = Color(0xFF3A3957)
-val NightLine = Color(0xFF59577A)
-val NightBody = Color(0xFFD6D3E8)
+// Screen surfaces (design/ui_v2/README.md). Each tab has its own background; the chunky edge
+// under its cards is a darker shade of it (see Surfaces.kt).
+val HomeWall = Color(0xFFD6EBDA)
+val HomeWallLower = Color(0xFFC8E2CF)
+/** Under things on the wall: the top buttons, the speech bubble, a panel's top edge. */
+val HomeWallEdge = Color(0xFFBCDAC4)
+val HomeFloor = Color(0xFFF4E8D6)
+val HomeFloorSeam = Color(0xFFEADCC6)
+val HomeFloorEdge = Color(0xFFE3D3BC)
+val Rug = Color(0xFFCFE3FB)
+val RugEdge = Color(0xFFB2D0F2)
+val CollectionMint = Color(0xFFDDF1E6)
+val CollectionEdge = Color(0xFFBFE0CE)
+val SettingsLilac = Color(0xFFECE9F7)
+val SettingsEdge = Color(0xFFD6D1EC)
+/** The paywall's top and the Pet profile tab (#30 direction B). */
+val Sky = Color(0xFFE2EEFB)
+val SkyEdge = Color(0xFFC7DAF1)
+/** Onboarding's night room (WakeUp.dc.html in design/ui_v2). */
+val NightRoomWall = Color(0xFF2F3352)
+val NightRoomFloor = Color(0xFF2A2C45)
+
+// Tab bar (design/ui_v2 nav): the selected tab's pill, and the bar's top border on that tab
+val TabHomeTint = Color(0xFFFFE3D8)
+val TabCollectionTint = Color(0xFFD3F0E1)
+val TabPetTint = Color(0xFFFFF0CC)
+val TabSettingsTint = Color(0xFFE6DDFB)
+val TabHomeBorder = Color(0xFFEFE6DA)
+val TabCollectionBorder = Color(0xFFCFE8DA)
+/** Not in ui_v2 (no Pet profile mockup): between Sky and SkyEdge, as the others are. */
+val TabPetBorder = Color(0xFFD5E5F7)
+val TabSettingsBorder = Color(0xFFDDD8EF)
+
+// Shared pieces (design/ui_v2)
+/** "On" / "Added" / "With you": 5.3:1. */
+val StatusOnChip = Color(0xFFD3F0E1)
+val StatusOnText = Color(0xFF1F6B48)
+/** Between the rows of a grouped Settings card. */
+val GroupDivider = Color(0xFFF1EEF8)
+/** Settings' "Bun & you" card on [Night] (design/ui_v2/Settings.dc.html): edge, pet tile, sub line (9.6:1). */
+val NightEdge = Color(0xFF1E1D30)
+val NightTile = Color(0xFF45445F)
+val NightSubtle = Color(0xFFD9D7EC)
+
+/** Onboarding steps still to come. */
+val StepDotIdle = Color(0xFFE3DCD2)
+
+// Onboarding's night room (WakeUp.dc.html in design/ui_v2), besides NightRoomWall and NightRoomFloor
+val NightRoomLowerWall = Color(0xFF2A2D4A)
+val NightRoomTrim = Color(0xFF3D4166)
+val NightRoomLedge = Color(0xFF45496F)
+val NightRoomFloorLine = Color(0xFF323454)
+val NightRoomWindowGlass = Color(0xFF1E2140)
+/** The stars, sparkles and glow in the night room, and the wake-up title on it. */
+val NightRoomStar = Color(0xFFFFFFFF)
+val NightRoomMoon = Color(0xFFFFF3C9)
+val NightRoomRugEdge = Color(0xFF3B4472)
+val NightRoomRug = Color(0xFF48548A)
+val NightRoomRugStitch = Color(0xFF6D79B0)
+/** Text on the night room: the line under the title (9.2:1) and the Skip link. */
+val NightBody = Color(0xFFCFCDE6)
 val NightLink = Color(0xFFE4E1F0)
+
+// Name screen (Name.dc.html): suggestion chips, the pet name field's edge
+val NameChipYellow = Color(0xFFFFF0CC)
+val NameChipMint = Color(0xFFDDF3E9)
+val NameChipLilac = Color(0xFFE6DDFB)
+val NameChipPink = Color(0xFFFCE1EC)
+val NameFieldEdge = Color(0xFFE8E0D5)
+
+// Hours and Interval (Hours.dc.html, Interval.dc.html): the cards on the white panel, the 24-hour bar, the slider
+val OnboardingCard = Color(0xFFF8F4EE)
+val OnboardingCardDivider = Color(0xFFEFE7DC)
+/** Hour labels and the dashed arrow on the green wall (5.6:1). */
+val OnboardingSceneInk = Color(0xFF3F5A47)
+val ClockSun = Color(0xFFFFF6DA)
+val IntervalHill = Color(0xFFC2DFC9)
+val SliderTrack = Color(0xFFE6DED2)
 
 // Pet
 val PetYellow = Color(0xFFF5DC8B)
@@ -73,7 +147,6 @@ val BreakWaterTint = Color(0xFFFCE1EC)
 // Mood chip backgrounds and timer bar colours
 val MoodHappyChip = Color(0xFFDDF3E9)
 val MoodTiredChip = Color(0xFFFFF0CC)
-val MoodStiffChip = Color(0xFFFDDCD2)
 val TimerHappy = Color(0xFF4DB88A)
 val TimerTired = Color(0xFFF2A93B)
 val TimerStiff = Color(0xFFE5603A)
@@ -83,12 +156,30 @@ val ButtonBorder = Color(0xFFE8E0D5)
 val ButtonEdge = Color(0xFFDDD3C6)
 val CheckIdle = Color(0xFFB5ADA3)
 val TopButtonEdge = Color(0xFFE8DCCD)
-val TabBarBorder = Color(0xFFF3E9DD)
-val TabActive = Color(0xFFFDE6CF)
 val SparkEdge = Color(0xFFE5A52A)
 
-// Home (Main.dc.html, FocusCard.dc.html)
-val PetShadow = Color(0xFFE6D9C8)
+// Home (design/ui_v2/Main.dc.html, FocusCard.dc.html)
+/** Behind a break card's spark reward. */
+val RewardChip = Color(0xFFFFF4D6)
+/** The streak's flame chip on the timer card: 7.8:1. */
+val FlameChip = Color(0xFFFFE9DF)
+val FlameChipText = Color(0xFF9A3D20)
+/** A streak-goal segment not reached yet. */
+val StreakSegmentIdle = Color(0xFFE9E1D6)
+// Collection (design/ui_v2/Collection.dc.html)
+/** The soft circles and dots behind the header. */
+val CollectionDecor = Color(0xFFD1ECDD)
+val CollectionDecorDot = CollectionEdge
+/** Pets | Accessories switch: the track, the selected half's edge, an unselected label (5.4:1). */
+val CollectionSwitchTrack = Color(0xFFC3E3D2)
+val CollectionSwitchEdge = Color(0xFFA9D3BD)
+val CollectionSwitchText = Color(0xFF2E5E48)
+/** "Next pet" card: the pet's tile and the progress bar's track. */
+val NextPetTile = Color(0xFFE6F6EE)
+val NextPetTrack = Color(0xFFE6F1EA)
+/** The warm glow behind the pet that is with you. */
+val ActivePetHalo = Color(0xFFFFF6DA)
+
 /** Focused card overlay backdrop: rgba(33, 32, 48, 0.72). */
 val Scrim = Color(0xB8212030)
 val ActionEdge = Color(0xFFCFC6BA)

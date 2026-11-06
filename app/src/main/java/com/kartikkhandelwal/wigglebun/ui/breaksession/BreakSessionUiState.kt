@@ -18,7 +18,10 @@ data class BreakSessionUiState(
     val remainingMillis: Long,
     /** 0..1 through the current step (the ring). */
     val progress: Float,
+    /** The step's poses in turn, each held [POSE_HOLD_MILLIS]. */
     val pose: PoseSpec?,
+    /** The step's first pose, held for the whole step when animations are removed. */
+    val stillPose: PoseSpec?,
     val mood: Mood,
     val isPaused: Boolean,
     val isLastStep: Boolean,
@@ -53,7 +56,8 @@ fun sessionUiState(
         remainingMillis = timer.remainingMillis(now),
         progress = timer.progress(now),
         pose = pose,
-        mood = if (result != null) Mood.CELEBRATE else type.sessionMood,
+        stillPose = step.poses.firstOrNull(),
+        mood =if (result != null) Mood.CELEBRATE else type.sessionMood,
         isPaused = !timer.isRunning,
         isLastStep = timer.isLastStep,
         isFinished = timer.isFinished(now),

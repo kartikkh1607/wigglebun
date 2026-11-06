@@ -118,15 +118,42 @@ object WigglebunTextStyles {
     /** Session button labels shrink to at most this (from 18) rather than being cut off. */
     val SessionButtonMinFontSize = 13.sp
 
-    /** Collection / Pet profile screen title (Collection.dc.html: Fredoka 30). */
+    /** Pet profile screen title (design/mockups_source/Collection.dc.html: Fredoka 30); ui_v2 tabs use [TabScreenTitle]. */
     val ScreenTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 30.sp, lineHeight = 36.sp)
 
-    /** Pet name on a Collection card (Fredoka 19). */
-    val PetCardName = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, lineHeight = 24.sp)
+    /** Pet name on a Collection card (design/ui_v2/Collection.dc.html: Fredoka 20). */
+    val PetCardName = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 25.sp)
+
+    /** A ui_v2 tab's title, "Collection" (design/ui_v2: Fredoka 34). */
+    val TabScreenTitle = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 40.sp)
+
+    /** Settings' "Bun & you" (design/ui_v2/Settings.dc.html: Fredoka 20). */
+    val HeaderCardTitle = PetCardName
+
+    /** The line under it, "5-day streak · 42 breaks so far" (Nunito 14, 700). */
+    val HeaderCardSub = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 14.sp, lineHeight = 19.sp)
+
+    /** A small card's title, "Pip is almost yours" (design/ui_v2: Nunito 16, 800). */
+    val SmallCardTitle = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, lineHeight = 21.sp)
+
+    /** A quiet line under a progress bar, "About 3 more days of breaks" (design/ui_v2: Nunito 13, 600). */
+    val Hint = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 17.sp)
 
     /** Big numbers on the Pet profile cards ("3 days", "128"). */
     val StatNumber = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 34.sp)
 
     /** Break session instruction (Nunito 18, 700, line height 1.45). */
     val Instruction = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 26.sp)
+
+    /** The pet's speech bubble (design/ui_v2/Main.dc.html: Nunito 14, 800, line height 1.3). */
+    val Bubble = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, lineHeight = 18.sp)
+
+    /** Short bold labels (design/ui_v2: Nunito 14, 800): "Streak goal", a card's spark reward. */
+    val StrongLabel = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, lineHeight = 19.sp)
+
+    /** "On" / "Added" status chip (design/ui_v2/Settings.dc.html). */
+    val Status = StrongLabel
+
+    /** The timer card's "32 min" (design/ui_v2/Main.dc.html: Fredoka 34, line height 1.1). */
+    val TimerMinutes = TextStyle(fontFamily = Fredoka, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 37.sp)
 }

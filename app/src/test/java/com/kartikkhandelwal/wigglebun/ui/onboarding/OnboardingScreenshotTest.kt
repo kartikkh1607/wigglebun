@@ -47,18 +47,33 @@ class OnboardingScreenshotTest {
     @Test
     fun wakeUpStretching() = capture("onboarding_wake_stretching") { WakeUpStretchingPreview() }
 
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     @Test
-    fun wakeUpAwake() = capture("onboarding_wake_awake") { WakeUpAwakePreview() }
+    fun wakeUpSmallPhone() = capture("onboarding_wake_small_phone") { WakeUpSmallPhonePreview() }
 
-    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
     @Test
-    fun wakeUpSmallPhoneLargeFont() = capture("onboarding_wake_small_font") { WakeUpSmallLargeFontPreview() }
+    fun wakeUpSmallPhoneHugeFont() = capture("onboarding_wake_small_font") { WakeUpSmallHugeFontPreview() }
 
     @Test
     fun nameEmpty() = capture("onboarding_name_empty") { NamePetEmptyPreview() }
 
     @Test
+    fun nameMockup() = capture("onboarding_name_mockup") { NamePetMockupPreview() }
+
+    @Test
     fun nameTyped() = capture("onboarding_name_typed") { NamePetTypedPreview() }
+
+    @Test
+    fun nameLong() = capture("onboarding_name_long") { NamePetLongNamePreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
+    @Test
+    fun nameSmallPhoneLargeFont() = capture("onboarding_name_small_font") { NamePetSmallLargeFontPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun nameSmallPhoneHugeFont() = capture("onboarding_name_small_font_2_0") { NamePetSmallHugeFontPreview() }
 
     @Test
     fun workHours() = capture("onboarding_hours") { WorkHoursPreview() }
@@ -80,6 +95,17 @@ class OnboardingScreenshotTest {
     @Test
     fun workHoursTimeSheet() = capture("onboarding_hours_time_sheet") { WorkHoursTimeSheetPreview() }
 
+    @Test
+    fun workHoursShort() = capture("onboarding_hours_short") { WorkHoursShortPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    @Test
+    fun workHoursSmallPhone() = capture("onboarding_hours_small_phone") { WorkHoursSmallPhonePreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun workHoursSmallPhoneHugeFont() = capture("onboarding_hours_small_font_2_0") { WorkHoursSmallHugeFontPreview() }
+
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test
     fun workHoursSmallPhoneLargeFont() = capture("onboarding_hours_small_font") { WorkHoursSmallLargeFontPreview() }
@@ -88,7 +114,18 @@ class OnboardingScreenshotTest {
     fun interval() = capture("onboarding_interval") { IntervalPreview() }
 
     @Test
-    fun intervalSheet() = capture("onboarding_interval_sheet") { IntervalSheetPreview() }
+    fun intervalShortest() = capture("onboarding_interval_shortest") { IntervalShortestPreview() }
+
+    @Test
+    fun intervalLongest() = capture("onboarding_interval_longest") { IntervalLongestPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    @Test
+    fun intervalSmallPhone() = capture("onboarding_interval_small_phone") { IntervalSmallPhonePreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun intervalSmallPhoneHugeFont() = capture("onboarding_interval_small_font_2_0") { IntervalSmallHugeFontPreview() }
 
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test

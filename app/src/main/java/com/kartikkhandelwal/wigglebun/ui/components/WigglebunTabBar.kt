@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,29 +32,49 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.domain.model.Mood
+import com.kartikkhandelwal.wigglebun.ui.pet.PetSpec
+import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
+import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
-import com.kartikkhandelwal.wigglebun.ui.theme.Coral
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
-import com.kartikkhandelwal.wigglebun.ui.theme.TabActive
-import com.kartikkhandelwal.wigglebun.ui.theme.TabBarBorder
+import com.kartikkhandelwal.wigglebun.ui.theme.TabCollectionBorder
+import com.kartikkhandelwal.wigglebun.ui.theme.TabCollectionTint
+import com.kartikkhandelwal.wigglebun.ui.theme.TabHomeBorder
+import com.kartikkhandelwal.wigglebun.ui.theme.TabHomeTint
+import com.kartikkhandelwal.wigglebun.ui.theme.TabPetBorder
+import com.kartikkhandelwal.wigglebun.ui.theme.TabPetTint
+import com.kartikkhandelwal.wigglebun.ui.theme.TabSettingsBorder
+import com.kartikkhandelwal.wigglebun.ui.theme.TabSettingsTint
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 
+/** A tab's colours: the selected pill, and the bar's top border while that tab is open. */
 @Immutable
-data class TabBarItem(
-    val label: String,
-    @DrawableRes val icon: Int,
-    /** Single-colour icons are tinted Coral/InkMuted; the pet icon keeps its own colours. */
-    val tintIcon: Boolean = true,
-)
+data class TabStyle(val tint: Color, val border: Color)
 
-/** Bottom tab bar, matching the `<nav>` in design/mockups_source/Main.dc.html. */
+/** What a tab shows above its label. */
+@Immutable
+sealed interface TabIcon {
+    /** A full-colour drawable, drawn untinted; [selected] swaps it while the tab is open. */
+    data class Drawable(@DrawableRes val icon: Int, val size: Dp, @DrawableRes val selected: Int = icon) : TabIcon
+
+    /** The pet that is with you, as a small still [PetView]; null while it loads (nothing drawn). */
+    data class Pet(val spec: PetSpec?) : TabIcon
+}
+
+@Immutable
+data class TabBarItem(val label: String, val icon: TabIcon, val style: TabStyle)
+
+/** Bottom tab bar, matching the `<nav>` in design/ui_v2 (Main, Collection, Settings). */
 @Composable
 fun WigglebunTabBar(
     items: List<TabBarItem>,
@@ -67,7 +87,7 @@ fun WigglebunTabBar(
             Modifier
                 .fillMaxWidth()
                 .height(Dimens.TabBarBorder)
-                .background(TabBarBorder),
+                .background(items[selectedIndex].style.border),
         )
         Row(
             modifier = Modifier
@@ -103,7 +123,7 @@ private fun TabBarButton(
     modifier: Modifier = Modifier,
 ) {
     val indicator by animateColorAsState(
-        targetValue = if (selected) TabActive else Color.Transparent,
+        targetValue = if (selected) item.style.tint else Color.Transparent,
         label = "tabIndicator",
     )
     Column(
@@ -122,19 +142,21 @@ private fun TabBarButton(
         Box(
             modifier = Modifier
                 .size(Dimens.TabIndicatorWidth, Dimens.TabIndicatorHeight)
-                .background(indicator, WigglebunShapes.Pill),
+                .background(indicator, WigglebunShapes.Pill)
+                // The label below describes the tab.
+                .clearAndSetSemantics {},
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                painter = painterResource(item.icon),
-                contentDescription = null, // the label below describes the tab
-                tint = when {
-                    !item.tintIcon -> Color.Unspecified
-                    selected -> Coral
-                    else -> InkMuted
-                },
-                modifier = Modifier.size(if (item.tintIcon) Dimens.TabIcon else Dimens.TabPetIcon),
-            )
+            when (val icon = item.icon) {
+                is TabIcon.Drawable -> Image(
+                    painter = painterResource(if (selected) icon.selected else icon.icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(icon.size),
+                )
+                is TabIcon.Pet -> icon.spec?.let { spec ->
+                    PetView(energy = 1f, mood = Mood.HAPPY, spec = spec, animated = false, modifier = Modifier.size(Dimens.TabPetIcon))
+                }
+            }
         }
         Text(
             text = item.label,
@@ -147,16 +169,28 @@ private fun TabBarButton(
     }
 }
 
+/** The four tabs' looks, shared by the app shell and the previews. */
+object TabStyles {
+    val Home = TabStyle(TabHomeTint, TabHomeBorder)
+    val Collection = TabStyle(TabCollectionTint, TabCollectionBorder)
+    val Pet = TabStyle(TabPetTint, TabPetBorder)
+    val Settings = TabStyle(TabSettingsTint, TabSettingsBorder)
+}
+
 @Preview(showBackground = true, widthDp = 390)
 @Composable
-internal fun WigglebunTabBarPreview() {
+internal fun WigglebunTabBarPreview(pet: PetSpec = PetSpecs.Bun) {
     WigglebunTheme {
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.ListGap)) {
             val items = listOf(
-                TabBarItem(stringResource(R.string.tab_home), R.drawable.ic_tab_home),
-                TabBarItem(stringResource(R.string.tab_collection), R.drawable.ic_tab_collection),
-                TabBarItem(stringResource(R.string.pet_default_name), R.drawable.ic_tab_pet, tintIcon = false),
-                TabBarItem(stringResource(R.string.tab_settings), R.drawable.ic_tab_settings),
+                TabBarItem(stringResource(R.string.tab_home), TabIcon.Drawable(R.drawable.ic_tab_home, Dimens.TabHomeIcon), TabStyles.Home),
+                TabBarItem(stringResource(R.string.tab_collection), TabIcon.Drawable(R.drawable.ic_tab_collection, Dimens.TabIcon), TabStyles.Collection),
+                TabBarItem(stringResource(pet.defaultName), TabIcon.Pet(pet), TabStyles.Pet),
+                TabBarItem(
+                    stringResource(R.string.tab_settings),
+                    TabIcon.Drawable(R.drawable.ic_tab_settings, Dimens.TabIcon, selected = R.drawable.ic_tab_settings_selected),
+                    TabStyles.Settings,
+                ),
             )
             items.indices.forEach { selected ->
                 WigglebunTabBar(items = items, selectedIndex = selected, onSelect = {})

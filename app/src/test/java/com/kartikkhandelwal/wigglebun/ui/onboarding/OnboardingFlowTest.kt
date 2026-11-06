@@ -96,14 +96,14 @@ class OnboardingFlowTest {
         composeRule.onNodeWithText("Tap to wake them up").assertIsDisplayed()
 
         tap("Tap to wake them up")
-        composeRule.onNodeWithText("Hi!\nThat was some nap!").assertIsDisplayed()
-
-        tap("Nice to meet you")
+        // The stretch plays out, then the pet says hello on the naming screen.
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.onNodeWithText("Hi! That was some nap!").assertIsDisplayed()
         composeRule.onNodeWithText("What will you call me?").assertIsDisplayed()
 
         composeRule.onNode(hasSetTextAction()).performTextInput("Biscuit")
         composeRule.onNodeWithText("7/12").assertIsDisplayed()
-        tap("Continue")
+        tap("Nice to meet you!")
 
         composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
         tap("Continue")
@@ -183,6 +183,24 @@ class OnboardingFlowTest {
         tap("Skip")
         composeRule.onNodeWithText("How often should I nudge you?").assertIsDisplayed()
         assertTrue(saved.isEmpty())
+    }
+
+    /** Back on Hours and Interval goes one step back, with what was answered still there. */
+    @Test
+    fun backGoesOneStepBack() {
+        start()
+        tap("Skip")
+        composeRule.onNode(hasSetTextAction()).performTextInput("Biscuit")
+        tap("Nice to meet you!")
+        composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
+
+        tap("Continue")
+        composeRule.onNodeWithText("How often should I nudge you?").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.onNodeWithText("When do you work?").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.onNodeWithText("What will you call me?").assertIsDisplayed()
+        composeRule.onNodeWithText("7/12").assertIsDisplayed()
     }
 
     /** "Skip" is on every step and keeps the default: nothing is saved. */

@@ -41,8 +41,8 @@ class ReminderNotifier @Inject constructor(
 
     /**
      * Whether a notification would actually be shown. On Android 13+ this needs the
-     * POST_NOTIFICATIONS runtime permission, which we only ask for just-in-time (M9);
-     * until then reminders silently no-op and the in-app timer keeps working (§10).
+     * POST_NOTIFICATIONS runtime permission, which we only ask for just-in-time (the Home and
+     * Settings cards); until then reminders silently no-op and the in-app timer keeps working (§10).
      */
     fun canPost(): Boolean {
         if (!manager.areNotificationsEnabled()) return false

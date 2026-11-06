@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kartikkhandelwal.wigglebun.data.repo.AdoptResult
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
+import com.kartikkhandelwal.wigglebun.data.repo.StreakRepository
 import com.kartikkhandelwal.wigglebun.data.repo.WalletRepository
 import com.kartikkhandelwal.wigglebun.domain.model.AccessoryId
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
@@ -12,6 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,7 +23,11 @@ import javax.inject.Inject
 class CollectionViewModel @Inject constructor(
     private val petRepository: PetRepository,
     walletRepository: WalletRepository,
+    streakRepository: StreakRepository,
 ) : ViewModel() {
+
+    /** Today's break day (night shifts included); the days estimate counts only the days before it. */
+    private val today = streakRepository.history.map { it.today }.distinctUntilChanged()
 
     private val selection = MutableStateFlow<SheetSelection?>(null)
     private val busy = MutableStateFlow(false)
@@ -36,9 +43,10 @@ class CollectionViewModel @Inject constructor(
         combine(petRepository.owned, petRepository.ownedAccessories, petRepository.outfits, ::Triple),
         petRepository.activePet,
         walletRepository.balance,
+        combine(walletRepository.breakRewardsByDay, today, ::Pair),
         ui,
-    ) { (owned, ownedAccessories, outfits), active, sparks, ui ->
-        toCollectionUiState(owned, active, sparks, ui.sheet, ui.busy, ownedAccessories, outfits, ui.tab, ui.accessory)
+    ) { (owned, ownedAccessories, outfits), active, sparks, (paceDays, today), ui ->
+        toCollectionUiState(owned, active, sparks, ui.sheet, ui.busy, ownedAccessories, outfits, ui.tab, ui.accessory, paceDays, today)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun selectTab(selected: CollectionTab) {

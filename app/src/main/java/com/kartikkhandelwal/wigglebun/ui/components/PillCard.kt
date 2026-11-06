@@ -16,14 +16,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
-import com.kartikkhandelwal.wigglebun.ui.theme.CardEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
+import com.kartikkhandelwal.wigglebun.ui.theme.LocalSurface
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 
 /**
- * White card with the chunky CardEdge below it. Pass [shape] = [WigglebunShapes.Pill]
+ * White card with the chunky edge of its surface ([LocalSurface]) below it. Pass [shape] = [WigglebunShapes.Pill]
  * for pill-shaped chips such as the sparks counter. Clickable cards press down like buttons.
  */
 @Composable
@@ -38,7 +38,6 @@ fun PillCard(
     ChunkySurface(
         shape = shape,
         faceColor = Card,
-        edgeColor = CardEdge,
         edgeHeight = edgeHeight,
         modifier = modifier,
         onClick = onClick,
