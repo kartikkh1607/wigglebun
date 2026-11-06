@@ -95,6 +95,17 @@ class OnboardingScreenshotTest {
     @Test
     fun workHoursTimeSheet() = capture("onboarding_hours_time_sheet") { WorkHoursTimeSheetPreview() }
 
+    @Test
+    fun workHoursShort() = capture("onboarding_hours_short") { WorkHoursShortPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    @Test
+    fun workHoursSmallPhone() = capture("onboarding_hours_small_phone") { WorkHoursSmallPhonePreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun workHoursSmallPhoneHugeFont() = capture("onboarding_hours_small_font_2_0") { WorkHoursSmallHugeFontPreview() }
+
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test
     fun workHoursSmallPhoneLargeFont() = capture("onboarding_hours_small_font") { WorkHoursSmallLargeFontPreview() }
@@ -103,7 +114,18 @@ class OnboardingScreenshotTest {
     fun interval() = capture("onboarding_interval") { IntervalPreview() }
 
     @Test
-    fun intervalSheet() = capture("onboarding_interval_sheet") { IntervalSheetPreview() }
+    fun intervalShortest() = capture("onboarding_interval_shortest") { IntervalShortestPreview() }
+
+    @Test
+    fun intervalLongest() = capture("onboarding_interval_longest") { IntervalLongestPreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    @Test
+    fun intervalSmallPhone() = capture("onboarding_interval_small_phone") { IntervalSmallPhonePreview() }
+
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun intervalSmallPhoneHugeFont() = capture("onboarding_interval_small_font_2_0") { IntervalSmallHugeFontPreview() }
 
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test

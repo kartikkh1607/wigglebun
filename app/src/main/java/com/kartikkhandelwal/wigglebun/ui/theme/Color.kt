@@ -93,6 +93,15 @@ val NameChipLilac = Color(0xFFE6DDFB)
 val NameChipPink = Color(0xFFFCE1EC)
 val NameFieldEdge = Color(0xFFE8E0D5)
 
+// Hours and Interval (Hours.dc.html, Interval.dc.html): the cards on the white panel, the 24-hour bar, the slider
+val OnboardingCard = Color(0xFFF8F4EE)
+val OnboardingCardDivider = Color(0xFFEFE7DC)
+/** Hour labels and the dashed arrow on the green wall (5.6:1). */
+val OnboardingSceneInk = Color(0xFF3F5A47)
+val ClockSun = Color(0xFFFFF6DA)
+val IntervalHill = Color(0xFFC2DFC9)
+val SliderTrack = Color(0xFFE6DED2)
+
 // Pet
 val PetYellow = Color(0xFFF5DC8B)
 val PetYellowEdge = Color(0xFFEBCB6A)
