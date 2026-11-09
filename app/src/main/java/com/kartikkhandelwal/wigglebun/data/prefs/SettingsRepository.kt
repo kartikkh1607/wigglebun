@@ -65,6 +65,18 @@ class SettingsRepository @Inject constructor(
     /** The streak's goal over time, so past days keep the goal they had (see [adoptDailyGoal]). */
     val dailyGoalHistory: Flow<DailyGoalHistory> = prefs.map { it.toDailyGoalHistory() }.distinctUntilChanged()
 
+    /** Sounds and haptics (CLAUDE.md §11 "Feel"); both default on. */
+    val soundsEnabled: Flow<Boolean> = prefs.map { it[PrefsKeys.SoundsEnabled] ?: true }.distinctUntilChanged()
+    val hapticsEnabled: Flow<Boolean> = prefs.map { it[PrefsKeys.HapticsEnabled] ?: true }.distinctUntilChanged()
+
+    suspend fun setSoundsEnabled(on: Boolean) {
+        dataStore.edit { it[PrefsKeys.SoundsEnabled] = on }
+    }
+
+    suspend fun setHapticsEnabled(on: Boolean) {
+        dataStore.edit { it[PrefsKeys.HapticsEnabled] = on }
+    }
+
     suspend fun current(): SittingSettings = settings.first()
 
     /**

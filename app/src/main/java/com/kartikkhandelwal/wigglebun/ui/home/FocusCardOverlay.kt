@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.home
 
+import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -337,7 +338,7 @@ private fun CloseButton(onClose: () -> Unit) {
             .size(H.CloseSize)
             .clip(CircleShape)
             .border(BorderStroke(H.CloseBorder, CloseBorder), CircleShape)
-            .clickable(role = Role.Button, onClick = onClose)
+            .tickClickable(onClick = onClose)
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {

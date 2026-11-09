@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -92,6 +93,7 @@ internal fun OnboardingPanelScreen(
         ChunkyButton(
             text = stringResource(R.string.onboarding_continue),
             onClick = onContinue,
+            sound = FeelSound.TapSoft,
             enabled = continueEnabled,
             modifier = Modifier.fillMaxWidth(),
         )
