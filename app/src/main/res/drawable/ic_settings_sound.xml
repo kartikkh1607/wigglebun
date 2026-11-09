@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From design/ui_v2/icons/settings_sound.svg. Full colour: draw untinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M9 21 H15.5 L24 13 V37 L15.5 29 H9 Z"
+        android:fillColor="#FF8468CF"
+        android:strokeColor="#FF8468CF"
+        android:strokeWidth="3"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M31 20 C34 23 34 29 31 32 M36.5 14 C42.5 20 42.5 32 36.5 38"
+        android:strokeColor="#FF8468CF"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M9 19 H15.5 L24 11 V35 L15.5 27 H9 Z"
+        android:fillColor="#FFB9A3F0"
+        android:strokeColor="#FFB9A3F0"
+        android:strokeWidth="3"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M31 18 C34 21 34 27 31 30 M36.5 12 C42.5 18 42.5 30 36.5 36"
+        android:strokeColor="#FFB9A3F0"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M12.5 22.5 H16.5 L21 18.5"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.4"
+        android:strokeAlpha="0.65"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

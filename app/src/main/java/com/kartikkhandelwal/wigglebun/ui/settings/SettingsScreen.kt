@@ -87,6 +87,7 @@ import com.kartikkhandelwal.wigglebun.ui.setup.SetupSettingsRow
 import com.kartikkhandelwal.wigglebun.ui.setup.SetupStatus
 import com.kartikkhandelwal.wigglebun.ui.tint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyesTint
+import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeckTint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakStandTint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakWalkTint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakWristTint
@@ -479,7 +480,7 @@ private fun FeelCard(state: SettingsUiState, actions: SettingsActions) {
     GroupedCard {
         row {
             SwitchRow(
-                icon = R.drawable.ic_settings_bell,
+                icon = R.drawable.ic_settings_sound,
                 tile = BreakEyesTint,
                 title = stringResource(R.string.settings_sounds),
                 subtitle = stringResource(R.string.settings_sounds_sub),
@@ -491,8 +492,8 @@ private fun FeelCard(state: SettingsUiState, actions: SettingsActions) {
         }
         row {
             SwitchRow(
-                icon = R.drawable.ic_settings_widget,
-                tile = BreakWristTint,
+                icon = R.drawable.ic_settings_haptics,
+                tile = BreakNeckTint,
                 title = stringResource(R.string.settings_haptics),
                 subtitle = stringResource(R.string.settings_haptics_sub),
                 isOn = state.hapticsOn,
@@ -628,7 +629,7 @@ internal fun SettingsSmallLargeFontPreview() {
 }
 
 /** The whole page, for reviewing what's below the fold. */
-@Preview(widthDp = 390, heightDp = 1500)
+@Preview(widthDp = 390, heightDp = 1700)
 @Composable
 internal fun SettingsFullPreview() {
     WigglebunTheme { SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.Mixed, SettingsActions()) }
