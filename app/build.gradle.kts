@@ -23,10 +23,11 @@ android {
         minSdk = 26
         targetSdk = 36
         // Play rejects an upload whose versionCode it has seen before, on any track. Add 1 for every
-        // AAB uploaded (closed test or production); never reuse or lower it. versionName is what
-        // people see; closed-test builds add "-closedtest" to it (below).
+        // AAB uploaded (internal, closed test or production); never reuse or lower it. versionName is
+        // what people see; this first AAB (internal testing, only to unlock Play Console's
+        // subscription setup) is "1.0.0-internal"; closed-test builds add "-closedtest" to it (below).
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "1.0.0-internal"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -35,15 +36,18 @@ android {
         buildConfigField("boolean", "PAYWALL_LOCKS", "true")
     }
 
-    // The upload key never goes into git. Put these four in ~/.gradle/gradle.properties (or pass
-    // -P...); without them the release builds come out unsigned, which is what CI builds.
-    val uploadStoreFile = providers.gradleProperty("WIGGLEBUN_UPLOAD_STORE_FILE").orNull
+    // The upload key never goes into git. Give the four values below in ~/.gradle/gradle.properties
+    // (or -P...) or as environment variables of the same names; a property wins over a variable.
+    // Without them the release builds come out unsigned, which is what CI builds.
+    fun signingValue(name: String): String? =
+        providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull
+    val uploadStoreFile = signingValue("WIGGLEBUN_UPLOAD_STORE_FILE")
     val uploadKey = uploadStoreFile?.let {
         signingConfigs.create("upload") {
             storeFile = file(it)
-            storePassword = providers.gradleProperty("WIGGLEBUN_UPLOAD_STORE_PASSWORD").get()
-            keyAlias = providers.gradleProperty("WIGGLEBUN_UPLOAD_KEY_ALIAS").get()
-            keyPassword = providers.gradleProperty("WIGGLEBUN_UPLOAD_KEY_PASSWORD").get()
+            storePassword = signingValue("WIGGLEBUN_UPLOAD_STORE_PASSWORD") ?: error("WIGGLEBUN_UPLOAD_STORE_PASSWORD is not set")
+            keyAlias = signingValue("WIGGLEBUN_UPLOAD_KEY_ALIAS") ?: error("WIGGLEBUN_UPLOAD_KEY_ALIAS is not set")
+            keyPassword = signingValue("WIGGLEBUN_UPLOAD_KEY_PASSWORD") ?: error("WIGGLEBUN_UPLOAD_KEY_PASSWORD is not set")
         }
     }
 

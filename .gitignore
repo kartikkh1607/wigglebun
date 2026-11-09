@@ -22,3 +22,9 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+*.p12
+# Play / Google API key files (not a blanket *.json: app/schemas/*.json is tracked).
+*service-account*.json
+*serviceaccount*.json
+play-*.json
+client_secret*.json

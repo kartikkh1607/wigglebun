@@ -313,11 +313,14 @@ Home's streak flame chip `#FFE9DF` / text `#9A3D20`, spark reward chip `#FFF4D6`
 ## 12. Play Store readiness checklist
 
 - [ ] Target SDK 36, Billing Library ≥ 8
-- [ ] Release signing: Play App Signing, with the upload key kept outside git. `app/build.gradle.kts` reads `WIGGLEBUN_UPLOAD_STORE_FILE`, `_STORE_PASSWORD`, `_KEY_ALIAS` and `_KEY_PASSWORD` from `~/.gradle/gradle.properties`; without them release builds are unsigned (as in CI). `./gradlew bundleRelease` makes the production AAB, `bundleClosedTest` the closed-test one
-- [ ] versionCode goes up by 1 for every AAB uploaded to Play, on any track; versionName is `1.0.0` (closed-test builds show `1.0.0-closedtest`)
+- [ ] Release signing: Play App Signing, with the upload key kept outside git. `app/build.gradle.kts` reads `WIGGLEBUN_UPLOAD_STORE_FILE`, `_STORE_PASSWORD`, `_KEY_ALIAS` and `_KEY_PASSWORD` from `~/.gradle/gradle.properties` or, failing that, from environment variables of the same names (never from a file in the repo; `.gitignore` covers `*.jks`, `*.keystore`, `*.p12` and Play/Google key JSONs); without them release builds are unsigned (as in CI). `./gradlew bundleRelease` makes the production AAB, `bundleClosedTest` the closed-test one
+- [ ] versionCode goes up by 1 for every AAB uploaded to Play, on any track; versionName is `1.0.0` for production (closed-test builds show `1.0.0-closedtest`). **The first AAB, versionCode 1, is the internal-testing build named `1.0.0-internal` (done in `claude/m10a-first-aab`): it exists only so Play Console unlocks subscription and in-app product creation (`com.android.vending.BILLING` is already in the manifest; no billing code, no RevenueCat yet). Because Play never accepts a versionCode twice, the next upload must be versionCode 2 or higher, and the versionName goes back to `1.0.0` (or a `-closedtest` variant) once the products exist.**
 - [ ] Privacy policy page (host free on GitHub Pages or Vercel)
 - [ ] Data safety form: activity data processed on device only, not collected/shared
 - [ ] **Health apps declaration** (Play Console → Policy → App content). Every app must fill it; this app likely falls under "Activity and Fitness"
+- [ ] **First internal-track AAB** (unlocks Play Console's subscription setup). Create the upload keystore once, outside the repo, and back it up (Play App Signing holds the real app-signing key; losing the upload key means a reset request to Play support):
+  `keytool -genkeypair -v -keystore C:\Users\<you>\wigglebun-upload.jks -alias wigglebun-upload -keyalg RSA -keysize 2048 -validity 10000`
+  then add the four `WIGGLEBUN_UPLOAD_*` lines to `~/.gradle/gradle.properties` and run `./gradlew bundleRelease` (output: `app/build/outputs/bundle/release/app-release.aab`, about 7.5 MB). Before uploading, run `./gradlew assembleRelease`, install `app-release.apk` on a phone and check the R8 build: start, finish onboarding, start a break.
 - [ ] Closed test with **12 testers for 14 continuous days** if the developer account is a personal account created after 13 Nov 2023
 - [ ] Store listing: icon, feature graphic 1024×500, screenshots, optional YouTube preview video
 
@@ -354,6 +357,7 @@ Home's streak flame chip `#FFE9DF` / text `#9A3D20`, spark reward chip `#FFF4D6`
 | M8b | Accessories: 4 v1 items, buy with sparks, wear on any pet (Home, break session, profile, Collection; not the widget) | Can buy and wear each item on all 4 pets; screenshots for every pet × item |
 | M9 | Onboarding (wake-up, naming, settings) + just-in-time permission cards | Fresh install flows end to end |
 | M10 | RevenueCat + paywall + restore + trial-end reminder | Test purchases work with license testers; entitlement survives offline restart |
+| M10-prep | First internal-track AAB (`1.0.0-internal`, versionCode 1, BILLING permission, upload-key signing from properties or env vars) | Uploaded to Play internal testing so subscription products can be created; no billing code yet |
 | M11 | Polish, accessibility (TalkBack labels, contrast), privacy policy, store assets | Ready for closed testing |
 | M12 | Release candidate: the full phone checklist on a real phone and on an Android 8 emulator, license-tester purchase / restore / cancel / lapse, OEM battery check | Closed-test AAB uploaded |
 
