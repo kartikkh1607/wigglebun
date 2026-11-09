@@ -26,7 +26,7 @@ android {
         // AAB uploaded (internal, closed test or production); never reuse or lower it. versionName is
         // what people see; this first AAB (internal testing, only to unlock Play Console's
         // subscription setup) is "1.0.0-internal"; closed-test builds add "-closedtest" to it (below).
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0.0-internal"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -127,6 +127,10 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.core)
 
+    // RevenueCat wraps Google Play Billing Library 8.x. For now it is only a dependency, so the merged
+    // manifest carries com.google.android.play.billingclient.version (Play rejects an AAB without it as
+    // legacy AIDL billing). Not configured and not called yet: that is M10a proper.
+    implementation(libs.revenuecat.purchases)
     implementation(libs.hilt.android)
     implementation(libs.play.services.base)
     ksp(libs.hilt.compiler)
