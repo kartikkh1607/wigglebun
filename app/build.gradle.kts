@@ -10,6 +10,19 @@ plugins {
     alias(libs.plugins.roborazzi)
 }
 
+// Secrets never go into git. The upload key and the RevenueCat SDK keys come from
+// ~/.gradle/gradle.properties (or -P...) or from environment variables of the same names; a property
+// wins over a variable.
+fun secretValue(name: String): String? =
+    providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull
+
+// RevenueCat public SDK keys are letters, digits and "_" (goog_…, test_…). Anything else is treated as
+// missing, so a typo can't break the generated BuildConfig.java.
+fun revenueCatKey(name: String): String =
+    secretValue(name)?.trim()?.takeIf { Regex("[A-Za-z0-9_]+").matches(it) }.orEmpty()
+
+fun buildConfigString(value: String): String = "\"$value\""
+
 android {
     namespace = "com.kartikkhandelwal.wigglebun"
     // Compile against 37 because current Compose / Navigation / core-ktx require it (minCompileSdk = 37).
@@ -34,24 +47,30 @@ android {
         // Closing the paywall leaves the app locked (CLAUDE.md §5.5). Only the closedTest build
         // turns this off; ReleaseBuildTest fails CI if release ever does.
         buildConfigField("boolean", "PAYWALL_LOCKS", "true")
-    }
 
-    // The upload key never goes into git. Give the four values below in ~/.gradle/gradle.properties
-    // (or -P...) or as environment variables of the same names; a property wins over a variable.
-    // Without them the release builds come out unsigned, which is what CI builds.
-    fun signingValue(name: String): String? =
-        providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull
-    val uploadStoreFile = signingValue("WIGGLEBUN_UPLOAD_STORE_FILE")
+        // RevenueCat's Google Play key (CLAUDE.md §5.5) for release and closedTest; debug overrides it
+        // with the Test Store key below. Empty when not set: Purchases is then not configured and
+        // premium reports Unavailable.
+        buildConfigField("String", "REVENUECAT_API_KEY", buildConfigString(revenueCatKey("WIGGLEBUN_RC_GOOGLE_KEY")))
+    }
+    // The upload key: the four WIGGLEBUN_UPLOAD_* values (see secretValue). Without them the release
+    // builds come out unsigned, which is what CI builds.
+    val uploadStoreFile = secretValue("WIGGLEBUN_UPLOAD_STORE_FILE")
     val uploadKey = uploadStoreFile?.let {
         signingConfigs.create("upload") {
             storeFile = file(it)
-            storePassword = signingValue("WIGGLEBUN_UPLOAD_STORE_PASSWORD") ?: error("WIGGLEBUN_UPLOAD_STORE_PASSWORD is not set")
-            keyAlias = signingValue("WIGGLEBUN_UPLOAD_KEY_ALIAS") ?: error("WIGGLEBUN_UPLOAD_KEY_ALIAS is not set")
-            keyPassword = signingValue("WIGGLEBUN_UPLOAD_KEY_PASSWORD") ?: error("WIGGLEBUN_UPLOAD_KEY_PASSWORD is not set")
+            storePassword = secretValue("WIGGLEBUN_UPLOAD_STORE_PASSWORD") ?: error("WIGGLEBUN_UPLOAD_STORE_PASSWORD is not set")
+            keyAlias = secretValue("WIGGLEBUN_UPLOAD_KEY_ALIAS") ?: error("WIGGLEBUN_UPLOAD_KEY_ALIAS is not set")
+            keyPassword = secretValue("WIGGLEBUN_UPLOAD_KEY_PASSWORD") ?: error("WIGGLEBUN_UPLOAD_KEY_PASSWORD is not set")
         }
     }
 
     buildTypes {
+        // RevenueCat's Test Store: simulated purchases, no Play account needed. The SDK refuses a
+        // test_ key in a non-debuggable build (it shows a dialog, then crashes), so only debug gets it.
+        debug {
+            buildConfigField("String", "REVENUECAT_API_KEY", buildConfigString(revenueCatKey("WIGGLEBUN_RC_TEST_STORE_KEY")))
+        }
         release {
             optimization {
                 enable = true
@@ -129,9 +148,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.core)
 
-    // RevenueCat wraps Google Play Billing Library 9.x (purchases 11.2.0 bundles 9.1.0). For now it is only a dependency, so the merged
-    // manifest carries com.google.android.play.billingclient.version (Play rejects an AAB without it as
-    // legacy AIDL billing). Not configured and not called yet: that is M10a proper.
+    // RevenueCat wraps Google Play Billing Library 9.x (purchases 11.2.0 bundles 9.1.0) and verifies and
+    // acknowledges purchases server-side, so there is no backend of our own (billing/).
     implementation(libs.revenuecat.purchases)
     implementation(libs.hilt.android)
     implementation(libs.play.services.base)
