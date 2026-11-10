@@ -56,6 +56,8 @@ android {
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                // Why the file exists: see the comment at its top.
+                keepRules { files.add(file("proguard-rules.pro")) }
             }
             signingConfig = uploadKey
         }
@@ -127,7 +129,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.core)
 
-    // RevenueCat wraps Google Play Billing Library 8.x. For now it is only a dependency, so the merged
+    // RevenueCat wraps Google Play Billing Library 9.x (purchases 11.2.0 bundles 9.1.0). For now it is only a dependency, so the merged
     // manifest carries com.google.android.play.billingclient.version (Play rejects an AAB without it as
     // legacy AIDL billing). Not configured and not called yet: that is M10a proper.
     implementation(libs.revenuecat.purchases)
