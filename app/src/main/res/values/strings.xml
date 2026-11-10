@@ -25,7 +25,6 @@
     <string name="pet_desc_celebrate">%1$s, celebrating</string>
     <string name="pet_desc_sleeping">%1$s, sleeping</string>
 
-    <string name="coming_soon">Coming soon</string>
 
     <!-- Break types (CLAUDE.md §5.3) -->
     <string name="break_stand_up">Stand up</string>
