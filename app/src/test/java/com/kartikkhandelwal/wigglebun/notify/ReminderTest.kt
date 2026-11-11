@@ -38,6 +38,26 @@ class ReminderTest {
         assertTrue(systemNotifications.allNotifications.isEmpty())
     }
 
+    /** CLAUDE.md §5.5: our own notice, on its own channel, saying when and how to cancel. */
+    @Test
+    fun trialEndingSaysTheDateAndHowToCancel() {
+        shadowOf(context).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        assertTrue(notifier.showTrialEnding(java.time.Instant.parse("2026-11-18T10:00:00Z")))
+        val n = systemNotifications.allNotifications.single()
+        assertEquals(ReminderNotifier.TRIAL_CHANNEL_ID, n.channelId)
+        assertTrue(n.extras.getCharSequence("android.title").toString().startsWith("Your free trial ends on "))
+        assertTrue(n.extras.getCharSequence("android.title").toString().contains("2026"))
+        assertTrue(n.extras.getCharSequence("android.text").toString().contains("Google Play"))
+        assertTrue(n.actions.isNullOrEmpty())
+    }
+
+    @Test
+    fun trialEndingNeedsThePermissionToo() {
+        shadowOf(context).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        assertFalse(notifier.showTrialEnding(java.time.Instant.parse("2026-11-18T10:00:00Z")))
+        assertTrue(systemNotifications.allNotifications.isEmpty())
+    }
+
     @Test
     fun reminderHasDoneSnoozeSkip() {
         shadowOf(context).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)

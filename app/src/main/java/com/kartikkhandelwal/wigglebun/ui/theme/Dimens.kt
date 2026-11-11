@@ -206,6 +206,8 @@ object Dimens {
 
     /** The Settings tab, measured from design/ui_v2/Settings.dc.html. */
     object Settings {
+        /** From this font scale the "Bun & you" card's Premium chip sits under its text. */
+        const val BadgeBelowFontScale = 1.3f
         /** Title, section headings and the about lines sit 4 dp in from the cards. */
         val TextInset = 4.dp
         val TitleBottom = 14.dp

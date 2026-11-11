@@ -52,6 +52,26 @@ class SettingsScreenshotTest {
     @Test
     fun mockup() = capture("settings_mockup") { SettingsMockupPreview() }
 
+    /** The chip on the "Bun & you" card: a plan, the trial, and the way to the plans while locked. */
+    @Config(qualifiers = "w390dp-h300dp-xxhdpi")
+    @Test
+    fun badgePremium() = capture("settings_badge_premium") { SettingsBadgePreview(PremiumBadge.Premium) }
+
+    @Config(qualifiers = "w390dp-h300dp-xxhdpi")
+    @Test
+    fun badgeTrial() = capture("settings_badge_trial") { SettingsBadgePreview(PremiumBadge.Trial) }
+
+    @Config(qualifiers = "w360dp-h300dp-xxhdpi")
+    @Test
+    fun badgeUnlockWidestName() = capture("settings_badge_unlock_widest_name") {
+        SettingsBadgePreview(PremiumBadge.Unlock, TestPetNames.WIDEST)
+    }
+
+    /** From 130% font the chip sits under the text. */
+    @Config(qualifiers = "w360dp-h400dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun badgeTrialFont2() = capture("settings_badge_trial_font_2_0") { SettingsBadgePreview(PremiumBadge.Trial, TestPetNames.LONG) }
+
     /** The widest 12-letter name: only the name shortens, the "& you" card keeps its height. */
     @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     @Test

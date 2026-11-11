@@ -18,6 +18,10 @@ import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.ui.labelRes
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
@@ -35,6 +39,13 @@ class ReminderNotifier @Inject constructor(
             NotificationChannelCompat.Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
                 .setName(context.getString(R.string.channel_break_reminders_name))
                 .setDescription(context.getString(R.string.channel_break_reminders_description))
+                .build(),
+        )
+        // Its own channel, so muting break reminders doesn't also hide the trial's end.
+        manager.createNotificationChannel(
+            NotificationChannelCompat.Builder(TRIAL_CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                .setName(context.getString(R.string.channel_trial_name))
+                .setDescription(context.getString(R.string.channel_trial_description))
                 .build(),
         )
     }
@@ -90,6 +101,32 @@ class ReminderNotifier @Inject constructor(
 
     fun cancel() = manager.cancel(NOTIFICATION_ID)
 
+    /**
+     * "Your free trial ends on 18 Nov 2026" (CLAUDE.md §5.5): Android sends no such notice itself.
+     * Returns true if it was posted; like every notification it needs the permission.
+     */
+    @SuppressLint("MissingPermission") // checked in canPost()
+    fun showTrialEnding(endsAt: Instant): Boolean {
+        if (!canPost()) return false
+        val date = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(endsAt.atZone(ZoneId.systemDefault()))
+        val text = context.getString(R.string.trial_reminder_text)
+        val notification = NotificationCompat.Builder(context, TRIAL_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setColor(ContextCompat.getColor(context, R.color.notification_accent))
+            .setContentTitle(context.getString(R.string.trial_reminder_title, date))
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent())
+            .build()
+        return try {
+            manager.notify(TRIAL_NOTIFICATION_ID, notification)
+            true
+        } catch (_: SecurityException) {
+            false
+        }
+    }
+
     private fun openAppIntent(): PendingIntent = PendingIntent.getActivity(
         context,
         0,
@@ -100,5 +137,7 @@ class ReminderNotifier @Inject constructor(
     companion object {
         const val CHANNEL_ID = "break_reminders"
         const val NOTIFICATION_ID = 1
+        const val TRIAL_CHANNEL_ID = "trial"
+        const val TRIAL_NOTIFICATION_ID = 2
     }
 }
