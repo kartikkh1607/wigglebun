@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Android 12+ always shows a system splash on a cold start: the launcher icon on a plain
-         background. Pin both, so it's the Wigglebun icon on cream (CLAUDE.md §6.1), not a guess
-         from the window background. Older versions show the cream window background only. -->
-    <style name="Theme.Wigglebun" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- Android 12+ always shows a system splash on a cold start. Pin all of it (CLAUDE.md §6.1):
+         cream, the pet without the launcher icon's night background (the icon's foreground layer:
+         its art sits inside the middle two thirds, as a splash icon must), and the name at the
+         bottom. Older versions get the same picture from drawable/splash_window. -->
+    <style name="Theme.Wigglebun.Launch">
         <item name="android:windowBackground">@color/cream</item>
         <item name="android:windowSplashScreenBackground">@color/cream</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/splash_wordmark</item>
     </style>
 </resources>

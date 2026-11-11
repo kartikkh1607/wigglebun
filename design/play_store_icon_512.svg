@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512"><rect width="108" height="108" fill="#FFF4E8"/>
-  <!-- Android adaptive icon FOREGROUND (108x108, transparent).
-       Everything sits inside the 66x66 safe zone (21..87) so circle/squircle masks never crop the ears.
-       Background layer: solid colour #FFF4E8.
-       Import: Android Studio > New > Image Asset > Launcher Icons (Adaptive) > Foreground: this SVG, Background: color #FFF4E8. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 18 72 72" width="512" height="512">
+  <!-- Play Store icon: both launcher layers, cropped to the 72 units a launcher shows. -->
+  <defs><radialGradient id="night" cx="54" cy="56" r="52" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4A4870"/><stop offset="1" stop-color="#252437"/></radialGradient></defs>
+  <rect width="108" height="108" fill="url(#night)"/>
+  <g transform="translate(54 54) scale(0.9) translate(-54 -54) translate(0 3.3333)">
+  <g transform="translate(0 3.2)" fill="#D9B450"><circle cx="33" cy="38" r="9"/><circle cx="75" cy="38" r="9"/><ellipse cx="54" cy="59" rx="27" ry="24"/></g>
   <circle cx="33" cy="38" r="9" fill="#F5DC8B"/>
   <circle cx="75" cy="38" r="9" fill="#F5DC8B"/>
   <circle cx="33.5" cy="38.5" r="5" fill="#F6A98A"/>
@@ -17,4 +18,7 @@
     <path d="M54 62.5 V68.5"/>
   </g>
   <path d="M51.2 60 L56.8 60 L54 63.2 Z" fill="#2B2A3A" stroke="#2B2A3A" stroke-width="1.2" stroke-linejoin="round"/>
+</g>
+  <path d="M54,21.2 Q55.4,24.8 59,26.2 Q55.4,27.6 54,31.2 Q52.6,27.6 49,26.2 Q52.6,24.8 54,21.2 Z" fill="#FFC857"/>
+  <path d="M63,22.4 Q63.62,23.98 65.2,24.6 Q63.62,25.22 63,26.8 Q62.38,25.22 60.8,24.6 Q62.38,23.98 63,22.4 Z" fill="#FFE9B0"/>
 </svg>

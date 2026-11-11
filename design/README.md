@@ -12,9 +12,11 @@ Everything the app needs visually. Vectors are the source of truth; PNGs are exp
 | `more_stretch_frames.svg` | Row 1 shoulder rolls, row 2 wrist stretch, row 3 march in place (2-min walk) | `PoseSpec` data |
 | `desk_scene.jpg` | Home screen background (1104×960) | Convert to WebP → `res/drawable-nodpi/desk_scene.webp` |
 | `pets/` | Collection pets Pip, Toast, Nimbus in Bun's layer system (see `pets/README.md`) | `ui/pet/PipSpec.kt`, `ToastSpec.kt`, `NimbusSpec.kt` |
-| `app_icon_foreground.svg` | Adaptive icon foreground (108×108, safe zone respected) | Android Studio → New → Image Asset → Launcher Icons (Adaptive), background colour `#FFF4E8` |
+| `app_icon_foreground.svg` | Adaptive icon foreground: Bun's head with a chunky edge and two sparks (108×108, safe zone respected). Also the splash's icon | Ported by hand to `res/drawable/ic_launcher_foreground.xml` |
+| `app_icon_background.svg` | Adaptive icon background: night-sky radial gradient | `res/drawable/ic_launcher_background.xml` |
+| `splash_wordmark.py` | Prints "Wigglebun" in Fredoka SemiBold as path data (needs `fonttools`) | `python design/splash_wordmark.py` → `res/drawable/splash_wordmark.xml` |
 | `launcher_monochrome.py` | Writes the themed-icon layer: the icon's silhouette with the face cut out (needs `shapely`) | `python design/launcher_monochrome.py` → `res/drawable/ic_launcher_monochrome.xml` |
-| `play_store_icon_512.png` / `.svg` | 512×512 Play Store listing icon | Play Console store listing |
+| `play_store_icon_512.png` / `.svg` | 512×512 Play Store listing icon: both launcher layers, cropped to what a launcher shows (`rsvg-convert` makes the PNG) | Play Console store listing |
 | `previews/*.png` | PNG renders of the SVGs above | Just for looking |
 | `ui_v2/*.dc.html` | The UI v2 refresh: Home, Collection, Settings, Locked Home, onboarding (wake-up, name, hours, interval, stretch, celebrate, paywall); palette in `ui_v2/README.md` | Layout reference, read as code. Wins over `mockups_source` where they differ |
 | `ui_v2/previews/*.png` | Headless-browser renders of the ui_v2 screens at 2× (390×844 artboards). `paywall.png` shows `{{ … }}` where the mockup's runtime fills in the plans and button | Just for looking, and for PR comparisons |

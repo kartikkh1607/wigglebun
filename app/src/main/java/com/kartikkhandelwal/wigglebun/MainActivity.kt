@@ -37,6 +37,9 @@ class MainActivity : ComponentActivity() {
     private var pendingBreak by mutableStateOf<BreakType?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // The manifest's launch theme carries the splash; on Android 8–11 that is the window
+        // background itself, so swap to the plain theme before anything is drawn.
+        setTheme(R.style.Theme_Wigglebun)
         super.onCreate(savedInstanceState)
         // Only on a fresh launch: after rotation/process restore the session is already on the back stack.
         if (savedInstanceState == null) pendingBreak = intent.startBreak()
