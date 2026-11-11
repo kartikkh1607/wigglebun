@@ -117,14 +117,14 @@ class FeelPlayer @Inject constructor(
     }
 
     /**
-     * Whether this phone's vibrator can play the prebaked ticks the toggle haptics are made of
-     * (the SDK only lets us ask about [VibrationEffect.EFFECT_TICK], the same family). Some phones
-     * can't (one reports no supported effects) and then drop the toggle haptic silently, so
+     * Whether this phone's vibrator can play the prebaked ticks the toggle and segment haptics are
+     * made of (the SDK only lets us ask about [VibrationEffect.EFFECT_TICK], the same family). Some
+     * phones can't (one reports no supported effects) and then drop those haptics silently, so
      * [vibrate] uses the light tick instead (see [resolveBuzz]). Asked once; "unknown" counts as
      * supported, so a phone that can't say keeps the system's own haptic. Below API 30 there is no
      * way to ask.
      */
-    private val toggleEffectSupported: Boolean by lazy {
+    private val tickEffectSupported: Boolean by lazy {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return@lazy true
         val vibrator = context.getSystemService(Vibrator::class.java) ?: return@lazy true
         vibrator.areAllEffectsSupported(VibrationEffect.EFFECT_TICK) != Vibrator.VIBRATION_EFFECT_SUPPORT_NO
@@ -133,7 +133,7 @@ class FeelPlayer @Inject constructor(
     internal fun vibrate(haptic: HapticFeedback, wanted: Buzz) {
         if (!policy.mayVibrate()) return
         // Still the system's haptic through the view, so the phone's touch-feedback setting applies.
-        val buzz = resolveBuzz(wanted, toggleEffectSupported)
+        val buzz = resolveBuzz(wanted, tickEffectSupported)
         when (buzz) {
             // ContextClick is the lighter of the two candidates on most phones; see the PR notes.
             Buzz.Tick -> haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
@@ -173,11 +173,14 @@ class FeelPlayer @Inject constructor(
 internal enum class Buzz { Tick, Segment, ToggleOn, ToggleOff, Confirm, Reject }
 
 /**
- * The buzz to perform: a toggle falls back to the light [Buzz.Tick] (a context click, never a long
- * buzz) when the phone can't play the toggle effect; everything else is left as asked.
+ * The buzz to perform: a toggle or a segment tick falls back to the light [Buzz.Tick] (a context
+ * click, never a long buzz) when the phone can't play the tick effects they are made of;
+ * everything else is left as asked.
  */
-internal fun resolveBuzz(buzz: Buzz, toggleEffectSupported: Boolean): Buzz =
-    if ((buzz == Buzz.ToggleOn || buzz == Buzz.ToggleOff) && !toggleEffectSupported) Buzz.Tick else buzz
+internal fun resolveBuzz(buzz: Buzz, tickEffectSupported: Boolean): Buzz =
+    if (buzz in NeedsTickEffect && !tickEffectSupported) Buzz.Tick else buzz
+
+private val NeedsTickEffect = setOf(Buzz.ToggleOn, Buzz.ToggleOff, Buzz.Segment)
 
 /**
  * What composables use. Previews and screenshot tests get [Silent], which does nothing.

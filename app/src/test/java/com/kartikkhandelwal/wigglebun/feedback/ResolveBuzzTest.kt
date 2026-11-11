@@ -3,27 +3,28 @@ package com.kartikkhandelwal.wigglebun.feedback
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** Which haptic a buzz becomes on a phone that can't (or can) play the toggle effect. */
+/** Which haptic a buzz becomes on a phone that can't (or can) play the tick effects. */
 class ResolveBuzzTest {
 
-    @Test
-    fun togglesFallBackToTheLightTickWhenUnsupported() {
-        assertEquals(Buzz.Tick, resolveBuzz(Buzz.ToggleOn, toggleEffectSupported = false))
-        assertEquals(Buzz.Tick, resolveBuzz(Buzz.ToggleOff, toggleEffectSupported = false))
-    }
+    private val needTickEffect = listOf(Buzz.ToggleOn, Buzz.ToggleOff, Buzz.Segment)
 
     @Test
-    fun togglesKeepTheirOwnHapticWhenSupported() {
-        assertEquals(Buzz.ToggleOn, resolveBuzz(Buzz.ToggleOn, toggleEffectSupported = true))
-        assertEquals(Buzz.ToggleOff, resolveBuzz(Buzz.ToggleOff, toggleEffectSupported = true))
+    fun togglesAndSegmentTicksFallBackToTheLightTickWhenUnsupported() {
+        needTickEffect.forEach { buzz -> assertEquals(Buzz.Tick, resolveBuzz(buzz, tickEffectSupported = false)) }
     }
 
-    /** Only toggles change; in particular Reject (two short ticks, not a long buzz) is left as it is. */
+    /** Supported, or unknown (Feel passes true for it): the system's own haptic stays. */
+    @Test
+    fun theyKeepTheirOwnHapticWhenSupported() {
+        needTickEffect.forEach { buzz -> assertEquals(buzz, resolveBuzz(buzz, tickEffectSupported = true)) }
+    }
+
+    /** Only those change; in particular Reject (two short ticks, not a long buzz) is left as it is. */
     @Test
     fun otherBuzzesAreNeverChanged() {
-        Buzz.entries.filterNot { it == Buzz.ToggleOn || it == Buzz.ToggleOff }.forEach { buzz ->
-            assertEquals(buzz, resolveBuzz(buzz, toggleEffectSupported = false))
-            assertEquals(buzz, resolveBuzz(buzz, toggleEffectSupported = true))
+        Buzz.entries.filterNot { it in needTickEffect }.forEach { buzz ->
+            assertEquals(buzz, resolveBuzz(buzz, tickEffectSupported = false))
+            assertEquals(buzz, resolveBuzz(buzz, tickEffectSupported = true))
         }
     }
 }
