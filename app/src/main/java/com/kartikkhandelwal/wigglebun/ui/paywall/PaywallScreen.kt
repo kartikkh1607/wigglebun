@@ -59,7 +59,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -174,8 +173,9 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
  * stay at the bottom. Close is top-left and always works; Restore is top-right.
  *
  * The sky shrinks on a short phone or with a bigger font (never below [Dimens.Paywall.MinScale])
- * so the plans stay on screen; above [Dimens.Paywall.LargeFontScale] the button and small print
- * scroll with the panel.
+ * so the plans stay on screen. On a screen shorter than [Dimens.Paywall.CompactHeight] only the
+ * button stays pinned and the small print sits right under the plans; above
+ * [Dimens.Paywall.LargeFontScale] the button scrolls with the panel too.
  */
 @Composable
 fun PaywallScreen(state: PaywallUiState, petName: String, actions: PaywallActions, modifier: Modifier = Modifier) {
@@ -183,7 +183,9 @@ fun PaywallScreen(state: PaywallUiState, petName: String, actions: PaywallAction
     val fontScale = LocalDensity.current.fontScale
     val footerInPanel = fontScale > D.LargeFontScale
     OnSurface(Surfaces.Profile) {
-        Box(modifier.fillMaxSize().background(Card)) {
+        BoxWithConstraints(modifier.fillMaxSize().background(Card)) {
+            // Where the small print goes: with the pinned button, or in the panel under the plans.
+            val smallPrintInPanel = footerInPanel || maxHeight < D.CompactHeight
             Column(Modifier.fillMaxSize()) {
                 BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
                     val viewport = maxHeight
@@ -204,8 +206,8 @@ fun PaywallScreen(state: PaywallUiState, petName: String, actions: PaywallAction
                             }
                             Benefits()
                             PlansSection(state, actions)
-                            if (footerInPanel) {
-                                Footer(state, actions, Modifier.padding(bottom = D.FooterBottom))
+                            if (smallPrintInPanel) {
+                                Footer(state, actions, Modifier.padding(bottom = D.FooterBottom), button = footerInPanel, smallPrint = true)
                             } else {
                                 Spacer(Modifier.height(D.PanelBottom))
                             }
@@ -221,6 +223,8 @@ fun PaywallScreen(state: PaywallUiState, petName: String, actions: PaywallAction
                             .background(Card)
                             .navigationBarsPadding()
                             .padding(start = D.FooterHorizontal, end = D.FooterHorizontal, top = D.FooterTop, bottom = D.FooterBottom),
+                        button = true,
+                        smallPrint = !smallPrintInPanel,
                     )
                 }
             }
@@ -537,9 +541,12 @@ private fun paywallCopy(option: PlanOption): PaywallCopy {
     }
 }
 
-/** A notice if the last try didn't work, the button, the small print and the legal links. */
+/**
+ * A notice if the last try didn't work and the button ([button]); the small print and the legal
+ * links ([smallPrint]). Usually one block at the bottom; a short screen shows the two apart.
+ */
 @Composable
-private fun Footer(state: PaywallUiState, actions: PaywallActions, modifier: Modifier = Modifier) {
+private fun Footer(state: PaywallUiState, actions: PaywallActions, modifier: Modifier, button: Boolean, smallPrint: Boolean) {
     val option = state.selectedOption
     val copy = option?.let { paywallCopy(it) }
     Column(
@@ -547,7 +554,8 @@ private fun Footer(state: PaywallUiState, actions: PaywallActions, modifier: Mod
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(D.FooterGap),
     ) {
-        state.notice?.let { notice ->
+        val notice = state.notice
+        if (button && notice != null) {
             Text(
                 stringResource(notice.text),
                 style = MaterialTheme.typography.bodyMedium,
@@ -557,7 +565,7 @@ private fun Footer(state: PaywallUiState, actions: PaywallActions, modifier: Mod
             )
         }
         // With no plans there is nothing to buy: "Try again" in the panel is the way on.
-        if (state.plans != PlansState.Problem) {
+        if (button && state.plans != PlansState.Problem) {
             ChunkyButton(
                 text = copy?.cta ?: stringResource(R.string.paywall_cta_loading),
                 onClick = actions.onPurchase,
@@ -567,7 +575,7 @@ private fun Footer(state: PaywallUiState, actions: PaywallActions, modifier: Mod
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        if (copy != null) {
+        if (smallPrint && copy != null) {
             Text(
                 copy.finePrint,
                 style = MaterialTheme.typography.labelSmall.copy(
@@ -579,9 +587,11 @@ private fun Footer(state: PaywallUiState, actions: PaywallActions, modifier: Mod
                 textAlign = TextAlign.Center,
             )
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(D.LinkGap)) {
-            LegalLink(stringResource(R.string.paywall_terms), actions.onOpenTerms)
-            LegalLink(stringResource(R.string.paywall_privacy), actions.onOpenPrivacy)
+        if (smallPrint) {
+            Row(horizontalArrangement = Arrangement.spacedBy(D.LinkGap)) {
+                LegalLink(stringResource(R.string.paywall_terms), actions.onOpenTerms)
+                LegalLink(stringResource(R.string.paywall_privacy), actions.onOpenPrivacy)
+            }
         }
     }
 }

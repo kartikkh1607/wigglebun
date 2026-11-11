@@ -633,6 +633,11 @@ object Dimens {
         const val LargeFontScale = 1.15f
         /** What the panel needs at normal font size (title, benefits, timeline, plans): the scene leaves room for it. */
         val PanelNeed = 446.dp
+        /**
+         * A screen shorter than this pins only the button: the small print and the links go right
+         * under the plans, so the plans are not hidden behind a tall footer.
+         */
+        val CompactHeight = 760.dp
         val HaloY = 168.dp
         val HaloOuter = 112.dp
         val HaloInner = 80.dp
@@ -647,7 +652,8 @@ object Dimens {
         val RestoreSize = 14.sp
 
         val PanelBottom = 12.dp
-        val TitleSize = 27.sp
+        /** The mockup has 27 sp in a wider panel; 25 keeps "Keep Bun moving with you" on one line down to 360 dp. */
+        val TitleSize = 25.sp
         val BenefitGap = 8.dp
         val BenefitTile = 34.dp
         val BenefitTileRadius = 11.dp
