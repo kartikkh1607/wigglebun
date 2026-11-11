@@ -193,6 +193,8 @@ object Dimens {
         val QuestionGap = 12.dp
         val QuestionAnswerTop = 4.dp
         val DayChip = 40.dp
+        /** The least space between two day circles; narrower cells shrink the circles. */
+        val DayChipGap = 6.dp
         val DayChipTouch = 48.dp
         val IntervalPetSize = 170.dp
         val SheetHorizontal = 24.dp
@@ -397,6 +399,9 @@ object Dimens {
         const val LargeFontScale = 1.3f
         /** The ring's size in that layout, as a fraction of [RingSize]. */
         const val LargeFontRingScale = 0.5f
+        /** From this font scale the ring is smaller still, so the step's title and text start on the first screen. */
+        const val HugeFontScale = 1.6f
+        const val HugeFontRingScale = 0.3f
         /** The timer pill overlaps the ring's box by this much at full size (it sits on the ring's foot). */
         val TimerOverlap = 20.dp
         val TimerGap = 8.dp
@@ -607,6 +612,7 @@ object Dimens {
         val IntervalArrowDrop = 64.dp
         val IntervalLabelPaddingHorizontal = 12.dp
         val IntervalLabelPaddingVertical = 4.dp
+        val IntervalLabelsBottomLargeFont = 14.dp
         val IntervalHillRadiusX = 78.dp
         val IntervalHillRadiusY = 14.dp
         val IntervalHillOffset = 20.dp

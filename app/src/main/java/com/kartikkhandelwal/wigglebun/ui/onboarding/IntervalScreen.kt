@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
@@ -139,7 +140,8 @@ private fun IntervalScene(minutes: Int, petName: String, scale: Float) {
         Row(
             Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = top)
+                // Once the labels wrap (a big font) they reach the panel: keep them clear of its edge.
+                .padding(top = top, bottom = if (fontScale > P.LargeFontScale) P.IntervalLabelsBottomLargeFont else 0.dp)
                 .drawBehind {
                     // Two hills under the pets, centred under each (the columns sit 94 dp either side of the middle).
                     val radiusX = P.IntervalHillRadiusX.toPx() * scale
