@@ -2,9 +2,6 @@ package com.kartikkhandelwal.wigglebun.ui.settings
 
 import androidx.compose.ui.graphics.Color
 import android.Manifest
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,6 +57,7 @@ import com.kartikkhandelwal.wigglebun.feedback.ConsumeFeel
 import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.components.GroupedCard
+import com.kartikkhandelwal.wigglebun.ui.components.LegalLinks
 import com.kartikkhandelwal.wigglebun.ui.components.SettingsRow
 import com.kartikkhandelwal.wigglebun.ui.home.formatTime
 import com.kartikkhandelwal.wigglebun.ui.home.minuteOfDay
@@ -112,12 +110,6 @@ import java.time.DayOfWeek
 
 private val S = Dimens.Settings
 
-/**
- * Not hosted yet (CLAUDE.md §12). Until it is, the row says "Coming soon"; the Play Store requires
- * a real one before release.
- */
-private val PRIVACY_POLICY_URL: String? = null
-
 /** What previews and screenshot tests show, so a version bump doesn't change reference images. */
 private const val PREVIEW_VERSION = "1.0.0"
 
@@ -130,7 +122,8 @@ class SettingsActions(
     val onBreakToggled: (BreakType, Boolean) -> Unit = { _, _ -> },
     val onSoundsToggled: (Boolean) -> Unit = {},
     val onHapticsToggled: (Boolean) -> Unit = {},
-    val onOpenPrivacy: (() -> Unit)? = null,
+    val onOpenPrivacy: () -> Unit = {},
+    val onOpenTerms: () -> Unit = {},
     /** The "Bun & you" card opens the Pet tab. */
     val onOpenPet: () -> Unit = {},
 )
@@ -166,15 +159,8 @@ fun SettingsScreenRoute(
                 onPickInterval = { pickingInterval = true },
                 onBreakToggled = viewModel::onBreakToggled,
                 onOpenPet = onOpenPet,
-                onOpenPrivacy = PRIVACY_POLICY_URL?.let { url ->
-                    {
-                        try {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                        } catch (_: ActivityNotFoundException) {
-                            // No browser on the phone: nothing else to try.
-                        }
-                    }
-                },
+                onOpenPrivacy = { LegalLinks.open(context, LegalLinks.PRIVACY_URL) },
+                onOpenTerms = { LegalLinks.open(context, LegalLinks.TERMS_URL) },
             ),
             modifier = modifier,
         )
@@ -267,11 +253,15 @@ private fun SettingsContent(
                     tile = BreakWalkTint,
                     title = stringResource(R.string.settings_privacy),
                     onClick = actions.onOpenPrivacy,
-                ) {
-                    if (actions.onOpenPrivacy == null) {
-                        Text(stringResource(R.string.coming_soon), style = MaterialTheme.typography.labelMedium, color = InkMuted)
-                    }
-                }
+                )
+            }
+            row {
+                SettingsRow(
+                    icon = R.drawable.ic_settings_terms,
+                    tile = BreakNeckTint,
+                    title = stringResource(R.string.settings_terms),
+                    onClick = actions.onOpenTerms,
+                )
             }
         }
         Column(

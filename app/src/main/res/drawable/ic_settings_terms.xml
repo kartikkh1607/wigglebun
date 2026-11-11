@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From design/ui_v2/icons/settings_terms.svg. Full colour: draw untinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M12 8 H30 L38 16 V42 H12 Z"
+        android:fillColor="#FF5E9FE6" />
+    <path
+        android:pathData="M12 6 H30 L38 14 V40 H12 Z"
+        android:fillColor="#FF7FB8F5" />
+    <path
+        android:pathData="M30 6 V14 H38 Z"
+        android:fillColor="#FFCFE3FB" />
+    <path
+        android:pathData="M18 22 H32 M18 28 H32 M18 34 H26"
+        android:strokeColor="#FF2B2A3A"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+</vector>

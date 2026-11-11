@@ -25,7 +25,6 @@
     <string name="pet_desc_celebrate">%1$s, celebrating</string>
     <string name="pet_desc_sleeping">%1$s, sleeping</string>
 
-    <string name="coming_soon">Coming soon</string>
 
     <!-- Break types (CLAUDE.md §5.3) -->
     <string name="break_stand_up">Stand up</string>
@@ -210,6 +209,8 @@
     <string name="cd_pet_the_pet">Pet %1$s</string>
     <string name="settings_about">About</string>
     <string name="settings_privacy">Privacy policy</string>
+    <string name="settings_terms">Terms of use</string>
+    <string name="legal_no_browser">Couldn’t open the link. Install a web browser to read this page.</string>
     <string name="settings_made_in">Made with love in India</string>
     <string name="settings_version">Version %1$s</string>
 
