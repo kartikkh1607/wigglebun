@@ -141,7 +141,9 @@ fun SetupSettingsRow(ui: SetupCardUi, petName: String, onOpen: () -> Unit, modif
             if (ui.status == SetupStatus.BLOCKED) {
                 Text(stringResource(R.string.setup_blocked))
             } else {
-                PetNameSentence(ui.card.settingsWhy, petName)
+                // Plain text: the row grows to fit, so the name is never shortened here ("So Bun can
+                // remind you" must not read "So B… can remind you").
+                Text(stringResource(ui.card.settingsWhy, petName))
             }
         },
     ) {

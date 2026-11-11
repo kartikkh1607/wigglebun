@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -53,8 +53,13 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
@@ -125,24 +130,32 @@ fun WakeUpScreenRoute(onContinue: () -> Unit, onSkip: () -> Unit, modifier: Modi
 
 /** The first thing a new user sees (CLAUDE.md §6.2). */
 @Composable
-fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
+fun WakeUpScreen(
+    phase: WakePhase,
+    onWake: () -> Unit,
+    onSkip: () -> Unit,
+    modifier: Modifier = Modifier,
+    // The system bars' heights; parameters so a screenshot can show a phone that has them.
+    statusTop: Dp = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+    navBottom: Dp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+) {
     val asleep = phase == WakePhase.ASLEEP
     // The room is dark, and the app forces dark status-bar icons otherwise.
     StatusBarIcons(dark = true)
-    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     BoxWithConstraints(modifier.fillMaxSize().background(NightRoomFloor)) {
         // The mockup is 844 tall below the status bar; a shorter phone squeezes its positions.
         // The title, the line under it and the button must be whole on screen, so the scene gets what
         // they leave: everything above the title (556 units) and the button's bottom gap (44) scale
-        // with it. A bigger font means more text, hence a smaller scene.
-        // Bigger letters also wrap onto more lines, so the text grows faster than the font does.
-        val fontScale = LocalDensity.current.fontScale
-        val textHeight = S.WakeTextHeight * fontScale * (1f + (fontScale - 1f).coerceAtLeast(0f) * S.WakeTextWrapGrowth)
-        val room = maxHeight - statusTop - textHeight - S.WakeCtaHeight - S.WakeCtaPaddingShort
+        // with it. The text is measured as it will be drawn (font size, wrapping, width), and the
+        // navigation bar under the button is room the scene can't use.
+        val textHeight = wakeTextHeight(maxWidth - S.WakeTextHorizontal * 2)
+        // A big font wraps the button's label onto a second line, which makes the button taller too.
+        val buttonHeight = wakeButtonHeight(maxWidth - S.WakeCtaHorizontal * 2)
+        val room = maxHeight - statusTop - navBottom - textHeight - buttonHeight - S.WakeCtaPaddingShort
         val k = (room / (S.WakeTitleTop + S.WakeCtaBottom)).coerceIn(S.WakeMinSqueeze, 1f)
         NightRoomScene(Modifier.fillMaxSize(), squeeze = k, topInset = statusTop)
         Column(
-            Modifier.fillMaxSize().padding(top = statusTop).navigationBarsPadding(),
+            Modifier.fillMaxSize().padding(top = statusTop, bottom = navBottom),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             OnboardingTopBar(onSkip = onSkip, skipFace = NightPill, skipText = NightLink, skipEdge = NightPillEdge)
@@ -168,6 +181,50 @@ fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modif
 }
 
 @Composable
+private fun wakeTitleStyle(): TextStyle = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeTitleSize).balanced()
+
+@Composable
+private fun wakeBodyStyle(): TextStyle =
+    MaterialTheme.typography.bodyLarge.copy(fontSize = S.WakeBodySize, lineHeight = S.WakeBodyLineHeight).balanced()
+
+/**
+ * The height [WakeText] takes in [width], measured with the same styles, text and font scale, plus
+ * the gap that keeps its last line clear of the button. Estimating it (as a share of a fixed
+ * height) let the second line of the body slip behind the button on a tall phone.
+ */
+@Composable
+private fun wakeTextHeight(width: Dp): Dp {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val title = stringResource(R.string.wake_title)
+    val body = stringResource(R.string.wake_body)
+    val titleStyle = wakeTitleStyle()
+    val bodyStyle = wakeBodyStyle()
+    return remember(measurer, density, width, title, body, titleStyle, bodyStyle) {
+        val constraints = Constraints(maxWidth = with(density) { width.roundToPx() })
+        val titleHeight = measurer.measure(title, titleStyle, constraints = constraints, density = density).size.height
+        val bodyHeight = measurer.measure(body, bodyStyle, constraints = constraints, density = density).size.height
+        with(density) { (titleHeight + bodyHeight).toDp() } + S.WakeTextGap + S.TextGap
+    }
+}
+
+/** The button's height in [width] (its full width): the usual one, or taller when the label wraps. */
+@Composable
+private fun wakeButtonHeight(width: Dp): Dp {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val label = stringResource(R.string.wake_cta)
+    val style = MaterialTheme.typography.labelLarge
+    return remember(measurer, density, width, label, style) {
+        // The label's room: the button's side padding, the hand icon and the gap after it.
+        val labelWidth = width - Dimens.ButtonHorizontalPadding * 2 - S.WakeCtaIcon - S.WakeCtaIconGap
+        val constraints = Constraints(maxWidth = with(density) { labelWidth.roundToPx() })
+        val labelHeight = measurer.measure(label, style, constraints = constraints, density = density).size.height
+        maxOf(S.WakeCtaHeight, with(density) { labelHeight.toDp() } + ChunkyButtonStyle.Highlight.edgeHeight)
+    }
+}
+
+@Composable
 private fun WakeText() {
     Column(
         Modifier.fillMaxWidth().padding(horizontal = S.WakeTextHorizontal),
@@ -176,14 +233,14 @@ private fun WakeText() {
     ) {
         Text(
             stringResource(R.string.wake_title),
-            style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeTitleSize).balanced(),
+            style = wakeTitleStyle(),
             color = NightRoomStar,
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
         Text(
             stringResource(R.string.wake_body),
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = S.WakeBodySize, lineHeight = S.WakeBodyLineHeight).balanced(),
+            style = wakeBodyStyle(),
             color = NightBody,
             textAlign = TextAlign.Center,
         )
@@ -291,6 +348,19 @@ internal fun WakeUpAsleepPreview() {
 @Composable
 internal fun WakeUpStretchingPreview() {
     WigglebunTheme { WakeUpScreen(WakePhase.STRETCHING, {}, {}) }
+}
+
+/** A tall phone with a status bar and a 3-button navigation bar (about 411 x 914 dp). */
+@Preview(widthDp = 411, heightDp = 914)
+@Composable
+internal fun WakeUpTallPhonePreview() {
+    WigglebunTheme { WakeUpScreen(WakePhase.ASLEEP, {}, {}, statusTop = 32.dp, navBottom = 48.dp) }
+}
+
+@Preview(widthDp = 411, heightDp = 914, fontScale = 2f)
+@Composable
+internal fun WakeUpTallPhoneHugeFontPreview() {
+    WigglebunTheme { WakeUpScreen(WakePhase.ASLEEP, {}, {}, statusTop = 32.dp, navBottom = 48.dp) }
 }
 
 @Preview(widthDp = 360, heightDp = 640)

@@ -60,7 +60,9 @@ fun PetNameSentence(
  * [template] filled with [name], the name cut short with [shortenedTemplate] ("%1$s…") just
  * enough that the sentence takes no more lines in [maxWidth] px than with a one-letter name
  * (and no more than [maxLines]). Cuts fall between characters as the user sees them, so an
- * emoji or accented letter is never split.
+ * emoji or accented letter is never split. A name is never cut below [MIN_SHOWN_LETTERS] letters,
+ * and a name that short is shown whole: "B…" tells the user nothing. If even that many letters
+ * don't fit, the sentence takes the extra line instead.
  */
 internal fun fitPetName(
     measurer: TextMeasurer,
@@ -74,15 +76,17 @@ internal fun fitPetName(
     val full = template.format(name)
     if (maxWidth == Constraints.Infinity) return full
     val ends = characterEnds(name)
-    if (ends.size <= 1) return full
+    if (ends.size <= MIN_SHOWN_LETTERS) return full
 
     fun lines(text: String) = measurer.measure(text, style, constraints = Constraints(maxWidth = maxWidth)).lineCount
     fun shortenedTo(index: Int) = template.format(shortenedTemplate.format(name.substring(0, ends[index]).trimEnd()))
 
+    val shortest = MIN_SHOWN_LETTERS - 1 // index of the end of the first MIN_SHOWN_LETTERS letters
     val allowed = minOf(lines(shortenedTo(0)), maxLines)
     if (lines(full) <= allowed) return full
-    // Longest prefix that still fits; the last end is the whole name, which didn't.
-    var low = 0
+    // Longest prefix that still fits (at least the shortest allowed); the last end is the whole
+    // name, which didn't.
+    var low = shortest
     var high = ends.size - 2
     while (low < high) {
         val mid = (low + high + 1) / 2
@@ -90,6 +94,9 @@ internal fun fitPetName(
     }
     return shortenedTo(low)
 }
+
+/** The fewest letters of a pet's name [fitPetName] shows when it has to cut one short. */
+internal const val MIN_SHOWN_LETTERS = 4
 
 /** End index of each character the user sees (grapheme), in order. */
 private fun characterEnds(text: String): List<Int> {

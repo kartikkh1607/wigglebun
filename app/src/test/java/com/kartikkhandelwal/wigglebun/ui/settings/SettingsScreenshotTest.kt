@@ -86,6 +86,23 @@ class SettingsScreenshotTest {
         }
     }
 
+    /** 411 dp phone: "Your setup" rows wrap their subtitle and never shorten the name ("So Bun can remind you"). */
+    @Config(qualifiers = "w411dp-h914dp-xxhdpi")
+    @Test
+    fun setupRowsNameBun() = capture("settings_setup_rows_bun_411") {
+        WigglebunTheme {
+            SettingsScreen(SettingsPreviewStates.named("Bun"), SettingsPreviewStates.AllOff, SettingsActions())
+        }
+    }
+
+    @Config(qualifiers = "w411dp-h914dp-xxhdpi")
+    @Test
+    fun setupRowsLongName() = capture("settings_setup_rows_long_name_411") {
+        WigglebunTheme {
+            SettingsScreen(SettingsPreviewStates.named(TestPetNames.LONG), SettingsPreviewStates.AllOff, SettingsActions())
+        }
+    }
+
     /** 200% font on a small phone: rows wrap, the buttons and chips stay whole. */
     @Config(qualifiers = "w360dp-h3100dp-xxhdpi", fontScale = 2.0f)
     @Test

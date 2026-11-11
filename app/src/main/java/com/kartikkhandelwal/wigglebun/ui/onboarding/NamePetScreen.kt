@@ -18,10 +18,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -48,8 +50,11 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.MAX_PET_NAME_LENGTH
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
@@ -100,6 +105,8 @@ fun NamePetScreen(
     onContinue: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
+    // The system bar's height; a parameter so a screenshot can show a phone that has one.
+    statusTop: Dp = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
 ) {
     val defaultName = stringResource(PetSpecs.Bun.defaultName)
     // A big font needs the question more than the room: the room shrinks, the bubble keeps one line
@@ -123,7 +130,12 @@ fun NamePetScreen(
                     val viewport = maxHeight
                     // Room and panel scroll together when a big font or the keyboard leaves little room.
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                        Room(petName = name.ifBlank { defaultName }, roomScale = roomScale, hello = fontScale < S.NameHugeFontScale)
+                        Room(
+                            petName = name.ifBlank { defaultName },
+                            roomScale = roomScale,
+                            hello = fontScale < S.NameHugeFontScale,
+                            statusTop = statusTop,
+                        )
                         SheetPanel(Modifier.fillMaxWidth().heightIn(min = viewport - S.NamePanelTop * roomScale)) {
                             StepDots(step = 1, count = ONBOARDING_STEPS)
                             Column(verticalArrangement = Arrangement.spacedBy(S.NameTextGap)) {
@@ -156,17 +168,18 @@ fun NamePetScreen(
                     ) { cta() }
                 }
             }
-            OnboardingTopBar(onSkip = onSkip, modifier = Modifier.align(Alignment.TopStart).statusBarsPadding())
+            OnboardingTopBar(onSkip = onSkip, modifier = Modifier.align(Alignment.TopStart).padding(top = statusTop))
         }
     }
 }
 
 /**
  * The day room with the pet on its rug and the greeting above. The room grows with the greeting
- * (a big font), so the pet always stands on the rug.
+ * (a big font), so the pet always stands on the rug. The bubble starts below the top bar, which
+ * sits under the system bar ([statusTop]): beside the Skip pill it would run under it.
  */
 @Composable
-private fun Room(petName: String, roomScale: Float, hello: Boolean) {
+private fun Room(petName: String, roomScale: Float, hello: Boolean, statusTop: Dp) {
     Box(Modifier.fillMaxWidth().background(Surfaces.Home.background)) {
         Column {
             Box(Modifier.fillMaxWidth().heightIn(min = S.NameRoomHeight * roomScale)) {
@@ -175,7 +188,8 @@ private fun Room(petName: String, roomScale: Float, hello: Boolean) {
                     Modifier.fillMaxWidth().padding(bottom = S.NamePetFloorGap * roomScale),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(if (roomScale < 1f) S.NameBubbleTopBelowSkip else S.NameBubbleTop))
+                    val artboardTop = if (roomScale < 1f) S.NameBubbleTopBelowSkip else S.NameBubbleTop
+                    Spacer(Modifier.height(maxOf(artboardTop, statusTop + S.TopBarTop + S.TopBarButton)))
                     SpeechBubble(Modifier.widthIn(max = S.NameBubbleWidth)) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -209,6 +223,13 @@ private fun Room(petName: String, roomScale: Float, hello: Boolean) {
 private fun NameField(name: String, placeholder: String, onNameChange: (String) -> Unit, onDone: () -> Unit) {
     val label = stringResource(R.string.name_field_label)
     val textStyle = MaterialTheme.typography.titleLarge.copy(color = Ink)
+    // InkMuted alone still read as a typed name next to the counter's 0/12, so the placeholder also
+    // takes the body font: same words, clearly not the user's.
+    val placeholderStyle = textStyle.copy(
+        fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
+        fontWeight = FontWeight.SemiBold,
+        color = InkMuted,
+    )
     Column(verticalArrangement = Arrangement.spacedBy(S.NameFieldGap)) {
         Text(label, style = MaterialTheme.typography.labelMedium, color = InkMuted)
         Row(
@@ -235,7 +256,7 @@ private fun NameField(name: String, placeholder: String, onNameChange: (String) 
                 keyboardActions = KeyboardActions(onDone = { onDone() }),
                 modifier = Modifier.weight(1f).semantics { contentDescription = label },
                 decorationBox = { field ->
-                    if (name.isEmpty()) Text(placeholder, style = textStyle, color = InkMuted)
+                    if (name.isEmpty()) Text(placeholder, style = placeholderStyle)
                     field()
                 },
             )
@@ -281,6 +302,13 @@ internal fun NamePetEmptyPreview() {
 }
 
 /** The state Name.dc.html draws: "Bun" typed, 3/12. */
+/** A tall phone with a status bar: the bubble starts below the Skip pill, not beside it. */
+@Preview(widthDp = 411, heightDp = 914)
+@Composable
+internal fun NamePetTallPhonePreview() {
+    WigglebunTheme { NamePetScreen("", {}, {}, {}, statusTop = 32.dp) }
+}
+
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 internal fun NamePetMockupPreview() {

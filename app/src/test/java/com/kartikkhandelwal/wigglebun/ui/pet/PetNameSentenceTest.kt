@@ -35,8 +35,8 @@ class PetNameSentenceTest {
     private val template = "%1\$s is getting tired"
     private val shortened = "%1\$s…"
 
-    /** 150 dp at xxhdpi: a narrow card on a small phone. */
-    private val width = 450
+    /** 200 dp at xxhdpi: wide enough that more than the four letters a cut keeps still fit on a line. */
+    private val width = 600
 
     private fun measurer(): TextMeasurer {
         lateinit var measurer: TextMeasurer
@@ -73,6 +73,26 @@ class PetNameSentenceTest {
             if (c.isHighSurrogate()) assertTrue("unpaired at $i in $shown", shown.getOrNull(i + 1)?.isLowSurrogate() == true)
             if (c.isLowSurrogate()) assertTrue("unpaired at $i in $shown", shown.getOrNull(i - 1)?.isHighSurrogate() == true)
         }
+    }
+
+    /** "B…" tells the user nothing: a name of four letters or fewer is never cut, however narrow. */
+    @Test
+    fun aShortNameIsNeverCut() {
+        val measurer = measurer()
+        val narrow = 120
+        assertEquals("Bun is getting tired", fitPetName(measurer, template, shortened, "Bun", style, narrow))
+        assertEquals("Mimi is getting tired", fitPetName(measurer, template, shortened, "Mimi", style, narrow))
+    }
+
+    /** A longer name keeps at least four letters, even where the sentence then needs another line. */
+    @Test
+    fun aCutKeepsAtLeastFourLetters() {
+        val measurer = measurer()
+        val shown = fitPetName(measurer, template, shortened, TestPetNames.WIDEST, style, 120)
+        assertTrue(shown, shown.matches(Regex("W{4,}… is getting tired")))
+        assertEquals("WWWW… is getting tired", fitPetName(measurer, template, shortened, TestPetNames.WIDEST, style, 1))
+        // Five letters that don't fit become four and the ellipsis, not one.
+        assertEquals("Mimi… is getting tired", fitPetName(measurer, template, shortened, "Mimis", style, 1))
     }
 
     @Test
