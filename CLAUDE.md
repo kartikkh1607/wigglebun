@@ -387,7 +387,7 @@ One entry point: `feedback/Feel.kt`. `FeelPlayer` (app-scoped `@Singleton`: Soun
 v1.0 build order (approved 2026-11-04): release foundations + cleanup → privacy policy + terms → UI v2 (`design/ui_v2`, one PR each: respect "Remove animations" → foundations (palette, surfaces, icons, tab bar, shared pieces) → Home → Collection → Settings → onboarding wake-up + name → onboarding hours + interval → break session + celebration) → M10a RevenueCat layer (only once the Play Console app and products exist) → M10b paywall (`design/ui_v2/Paywall.dc.html`) → M10c gating (Locked Home) → M10d trial-end reminder → M11 accessibility + large fonts → M11 store listing → M12.
 
 **M11 accessibility list** (fixed in the M11 accessibility PR unless noted):
-- Day circles (`DayChips`, Settings and onboarding's Hours): a fixed 40 dp circle, so at 200% font on 360 dp they keep a gap. Their cells are still 44.5 dp wide on a 360 dp phone (under the 48 dp target; 48 dp tall).
+- Day circles (`DayChips`, Settings and onboarding's Hours): 40 dp, but never wider than their cell less a 6 dp gap, so on a 360 dp phone (where they all but touched at any font size) they shrink to about 36–38 dp. Their cells are still 44.5 dp wide on a 360 dp phone (under the 48 dp target; 48 dp tall).
 - Naming screen's bubble and the celebration subtitle: `balanced()`, no word alone on the last line.
 - Onboarding Interval at a big font: the wrapped labels stop clear of the panel's edge.
 - Wake-up at 200% font on 360×640: still needs a scroll to read the last line; scrolled to its end it now stops clear of the button.

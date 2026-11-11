@@ -193,6 +193,8 @@ object Dimens {
         val QuestionGap = 12.dp
         val QuestionAnswerTop = 4.dp
         val DayChip = 40.dp
+        /** The least space between two day circles; narrower cells shrink the circles. */
+        val DayChipGap = 6.dp
         val DayChipTouch = 48.dp
         val IntervalPetSize = 170.dp
         val SheetHorizontal = 24.dp
