@@ -72,10 +72,16 @@ fun TopIconButton(
 
 /** "Skip" as a white pill on a tinted background (Hours.dc.html); always visible (CLAUDE.md §6.2). */
 @Composable
-fun SkipPill(onClick: () -> Unit, modifier: Modifier = Modifier, edgeColor: Color = LocalSurface.current.edge) {
+fun SkipPill(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    edgeColor: Color = LocalSurface.current.edge,
+    faceColor: Color = Card,
+    textColor: Color = Ink,
+) {
     ChunkySurface(
         shape = WigglebunShapes.Pill,
-        faceColor = Card,
+        faceColor = faceColor,
         edgeHeight = S.SkipEdge,
         edgeColor = edgeColor,
         onClick = onClick,
@@ -84,7 +90,7 @@ fun SkipPill(onClick: () -> Unit, modifier: Modifier = Modifier, edgeColor: Colo
         Text(
             stringResource(R.string.onboarding_skip),
             style = MaterialTheme.typography.titleSmall,
-            color = Ink,
+            color = textColor,
             modifier = Modifier.padding(horizontal = S.SkipPaddingHorizontal, vertical = S.SkipPaddingVertical),
         )
     }

@@ -32,10 +32,7 @@ import androidx.compose.ui.unit.Dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.SheetPanel
-import com.kartikkhandelwal.wigglebun.ui.components.SkipPill
 import com.kartikkhandelwal.wigglebun.ui.components.StepDots
-import com.kartikkhandelwal.wigglebun.ui.components.TopIcon
-import com.kartikkhandelwal.wigglebun.ui.components.TopIconButton
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Coral
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
@@ -44,6 +41,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
 import com.kartikkhandelwal.wigglebun.ui.theme.LocalSurface
 import com.kartikkhandelwal.wigglebun.ui.theme.OnSurface
 import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
+import com.kartikkhandelwal.wigglebun.ui.theme.balanced
 
 private val P = Dimens.OnboardingPanel
 
@@ -116,11 +114,11 @@ internal fun OnboardingPanelScreen(
                             Column(verticalArrangement = Arrangement.spacedBy(P.BodyGap)) {
                                 Text(
                                     title,
-                                    style = MaterialTheme.typography.displayMedium.copy(fontSize = P.TitleSize),
+                                    style = MaterialTheme.typography.displayMedium.copy(fontSize = P.TitleSize).balanced(),
                                     color = Ink,
                                     modifier = Modifier.semantics { heading() },
                                 )
-                                Text(body, style = MaterialTheme.typography.bodyLarge, color = InkMuted)
+                                Text(body, style = MaterialTheme.typography.bodyLarge.balanced(), color = InkMuted)
                             }
                             answer()
                             if (buttonInPanel) {
@@ -146,14 +144,7 @@ internal fun OnboardingPanelScreen(
                     }
                 }
             }
-            TopIconButton(
-                TopIcon.Back,
-                onClick = onBack,
-                modifier = Modifier.align(Alignment.TopStart).statusBarsPadding().padding(start = P.TopButtonsInset, top = P.TopButtonsInset),
-            )
-            Box(Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(top = P.SkipTop, end = P.SkipEnd)) {
-                SkipPill(onClick = onSkip)
-            }
+            OnboardingTopBar(onSkip = onSkip, onBack = onBack, modifier = Modifier.align(Alignment.TopStart).statusBarsPadding())
         }
     }
 }

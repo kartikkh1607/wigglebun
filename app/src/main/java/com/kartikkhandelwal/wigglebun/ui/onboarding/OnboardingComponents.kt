@@ -1,54 +1,56 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
-import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import android.app.Activity
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.core.view.WindowCompat
-import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.ui.components.SkipPill
+import com.kartikkhandelwal.wigglebun.ui.components.TopIcon
+import com.kartikkhandelwal.wigglebun.ui.components.TopIconButton
+import com.kartikkhandelwal.wigglebun.ui.theme.Card
 import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
-import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
+import com.kartikkhandelwal.wigglebun.ui.theme.Ink
+import com.kartikkhandelwal.wigglebun.ui.theme.LocalSurface
 
 private val S = Dimens.Onboarding
 
 /** Wake-up, name, work hours, interval (the mockup's "Step 1 of 4"). */
 internal const val ONBOARDING_STEPS = 4
 
-/** The top row every onboarding screen shares: "Skip" is always visible (CLAUDE.md §6.2). */
+/**
+ * The top row every onboarding screen shares: Back on the left where there is a step to go back
+ * to, and "Skip" on the right, always visible (CLAUDE.md §6.2). Both sit on one centre line and
+ * the same distance from their edge on every screen, so nothing jumps from step to step.
+ * [skipFace], [skipText] and [skipEdge] restyle the pill for the night room.
+ */
 @Composable
-internal fun SkipRow(color: Color, onSkip: () -> Unit, modifier: Modifier = Modifier) {
+internal fun OnboardingTopBar(
+    onSkip: () -> Unit,
+    modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
+    skipFace: Color = Card,
+    skipText: Color = Ink,
+    skipEdge: Color = LocalSurface.current.edge,
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = S.SkipRowTop, start = S.SkipRowHorizontal, end = S.SkipRowHorizontal),
-        horizontalArrangement = Arrangement.End,
+            .padding(top = S.TopBarTop, start = S.TopBarStart, end = S.TopBarEnd)
+            .heightIn(min = S.TopBarButton),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .defaultMinSize(minWidth = S.SkipMinSize, minHeight = S.SkipMinSize)
-                .clip(WigglebunShapes.Pill)
-                .tickClickable(onClick = onSkip)
-                .padding(horizontal = S.SkipPaddingHorizontal, vertical = S.SkipPaddingVertical),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(stringResource(R.string.onboarding_skip), style = MaterialTheme.typography.titleSmall, color = color)
-        }
+        if (onBack != null) TopIconButton(TopIcon.Back, onClick = onBack)
+        Spacer(Modifier.weight(1f))
+        SkipPill(onClick = onSkip, edgeColor = skipEdge, faceColor = skipFace, textColor = skipText)
     }
 }
 

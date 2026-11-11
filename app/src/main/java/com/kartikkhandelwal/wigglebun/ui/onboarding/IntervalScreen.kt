@@ -238,6 +238,7 @@ private fun IntervalCard(minutes: Int, onPicked: (Int) -> Unit) {
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalArrangement = Arrangement.spacedBy(P.IntervalChipGap),
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             Text(minutesText, style = MaterialTheme.typography.displayMedium.copy(fontSize = P.IntervalValueSize), color = Ink)
             if (minutes == SittingSettings.DEFAULT_INTERVAL_MINUTES) StatusChip(stringResource(R.string.interval_recommended))

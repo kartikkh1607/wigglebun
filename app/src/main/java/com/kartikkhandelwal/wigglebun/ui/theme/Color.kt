@@ -85,6 +85,9 @@ val NightRoomRugStitch = Color(0xFF6D79B0)
 /** Text on the night room: the line under the title (9.2:1) and the Skip link. */
 val NightBody = Color(0xFFCFCDE6)
 val NightLink = Color(0xFFE4E1F0)
+/** The Skip pill in the night room: the same pill as every onboarding screen, in the room's own colours. */
+val NightPill = Color(0xFF45496F)
+val NightPillEdge = Color(0xFF1E2140)
 
 // Name screen (Name.dc.html): suggestion chips, the pet name field's edge
 val NameChipYellow = Color(0xFFFFF0CC)

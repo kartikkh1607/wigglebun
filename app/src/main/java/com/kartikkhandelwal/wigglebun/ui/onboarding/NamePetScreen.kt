@@ -15,10 +15,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +30,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +55,6 @@ import com.kartikkhandelwal.wigglebun.domain.model.MAX_PET_NAME_LENGTH
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.SheetPanel
-import com.kartikkhandelwal.wigglebun.ui.components.SkipPill
 import com.kartikkhandelwal.wigglebun.ui.components.SpeechBubble
 import com.kartikkhandelwal.wigglebun.ui.components.StepDots
 import com.kartikkhandelwal.wigglebun.ui.home.RoomScene
@@ -75,6 +74,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Surfaces
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
+import com.kartikkhandelwal.wigglebun.ui.theme.balanced
 
 private val S = Dimens.Onboarding
 
@@ -129,13 +129,13 @@ fun NamePetScreen(
                             Column(verticalArrangement = Arrangement.spacedBy(S.NameTextGap)) {
                                 Text(
                                     stringResource(R.string.name_title),
-                                    style = MaterialTheme.typography.displayMedium.copy(fontSize = S.NameTitleSize),
+                                    style = MaterialTheme.typography.displayMedium.copy(fontSize = S.NameTitleSize).balanced(),
                                     color = Ink,
                                     modifier = Modifier.semantics { heading() },
                                 )
                                 Text(
                                     stringResource(R.string.name_body, MAX_PET_NAME_LENGTH),
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    style = MaterialTheme.typography.bodyLarge.balanced(),
                                     color = InkMuted,
                                 )
                             }
@@ -156,9 +156,7 @@ fun NamePetScreen(
                     ) { cta() }
                 }
             }
-            Box(Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(top = S.SkipRowTop, end = S.SkipRowHorizontal)) {
-                SkipPill(onClick = onSkip)
-            }
+            OnboardingTopBar(onSkip = onSkip, modifier = Modifier.align(Alignment.TopStart).statusBarsPadding())
         }
     }
 }
@@ -182,7 +180,7 @@ private fun Room(petName: String, roomScale: Float, hello: Boolean) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 stringResource(R.string.intro_title),
-                                style = WigglebunTextStyles.Bubble.copy(fontSize = S.NameBubbleTitleSize),
+                                style = WigglebunTextStyles.Bubble.copy(fontSize = S.NameBubbleTitleSize).balanced(),
                                 color = Ink,
                                 textAlign = TextAlign.Center,
                             )
@@ -190,7 +188,7 @@ private fun Room(petName: String, roomScale: Float, hello: Boolean) {
                             if (hello) {
                                 Text(
                                     stringResource(R.string.intro_body),
-                                    style = MaterialTheme.typography.labelMedium,
+                                    style = MaterialTheme.typography.labelMedium.balanced(),
                                     color = InkMuted,
                                     textAlign = TextAlign.Center,
                                 )

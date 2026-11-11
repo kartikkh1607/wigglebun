@@ -68,14 +68,17 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.NightBody
 import com.kartikkhandelwal.wigglebun.ui.theme.NightLink
+import com.kartikkhandelwal.wigglebun.ui.theme.NightPill
+import com.kartikkhandelwal.wigglebun.ui.theme.NightPillEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomFloor
 import com.kartikkhandelwal.wigglebun.ui.theme.NightRoomStar
 import com.kartikkhandelwal.wigglebun.ui.theme.PetBlush
 import com.kartikkhandelwal.wigglebun.ui.theme.PetPink
 import com.kartikkhandelwal.wigglebun.ui.theme.PetYellow
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
-import kotlinx.coroutines.delay
+import com.kartikkhandelwal.wigglebun.ui.theme.balanced
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 
 private val S = Dimens.Onboarding
 
@@ -85,8 +88,8 @@ private const val STRETCH_MILLIS = 1_600L
 /** The sleeping blob's own drawing space (the mockup's viewBox is 200 x 170). */
 private const val BLOB_VIEW_WIDTH = 200f
 
-/** Height of [SkipRow] at normal font size: the Skip link's top gap plus its touch target. */
-private val SkipRowHeight = S.SkipRowTop + S.SkipMinSize
+/** Height of [OnboardingTopBar] at normal font size: its top gap plus the Skip pill's touch target. */
+private val SkipRowHeight = S.TopBarTop + S.TopBarButton
 
 enum class WakePhase {
     ASLEEP,
@@ -140,7 +143,7 @@ fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modif
             Modifier.fillMaxSize().padding(top = statusTop).navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SkipRow(color = NightLink, onSkip = onSkip)
+            OnboardingTopBar(onSkip = onSkip, skipFace = NightPill, skipText = NightLink, skipEdge = NightPillEdge)
             // Everything above the button scrolls if a large font needs it; Skip and the button stay.
             Column(
                 Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
@@ -169,14 +172,14 @@ private fun WakeText() {
     ) {
         Text(
             stringResource(R.string.wake_title),
-            style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeTitleSize),
+            style = MaterialTheme.typography.displayMedium.copy(fontSize = S.WakeTitleSize).balanced(),
             color = NightRoomStar,
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
         Text(
             stringResource(R.string.wake_body),
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = S.WakeBodySize, lineHeight = S.WakeBodyLineHeight),
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = S.WakeBodySize, lineHeight = S.WakeBodyLineHeight).balanced(),
             color = NightBody,
             textAlign = TextAlign.Center,
         )
