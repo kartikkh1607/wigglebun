@@ -1,5 +1,8 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvents
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvent
+import com.kartikkhandelwal.wigglebun.feedback.ConsumeFeel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
@@ -57,6 +60,10 @@ private val FirstBreak = BreakType.STAND_UP
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(private val settings: SettingsRepository) : ViewModel() {
+    /** The blocked Continue's reject tick, played once by the route ([ConsumeFeel]). */
+    private val feelEvents = FeelEvents()
+    val feel = feelEvents.flow
+
     private val _nameDraft = MutableStateFlow("")
 
     /** What's in the name field; starts with the saved name if onboarding was interrupted. */
@@ -119,7 +126,10 @@ class OnboardingViewModel @Inject constructor(private val settings: SettingsRepo
         val draft = _workHours.value
         if (!draft.canSave) return false
         _hoursProblem.value = draft.problem
-        if (draft.problem != null) return false
+        if (draft.problem != null) {
+            feelEvents.send(FeelEvent.Rejected)
+            return false
+        }
         viewModelScope.launch { settings.setSchedule(draft.toSchedule()) }
         return true
     }
@@ -141,6 +151,7 @@ class OnboardingViewModel @Inject constructor(private val settings: SettingsRepo
 
 @Composable
 fun OnboardingFlowRoute(viewModel: OnboardingViewModel = hiltViewModel()) {
+    ConsumeFeel(viewModel.feel)
     val nameDraft by viewModel.nameDraft.collectAsStateWithLifecycle()
     val workHours by viewModel.workHours.collectAsStateWithLifecycle()
     val hoursProblem by viewModel.hoursProblem.collectAsStateWithLifecycle()

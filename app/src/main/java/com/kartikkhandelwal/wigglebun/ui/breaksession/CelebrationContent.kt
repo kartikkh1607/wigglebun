@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.breaksession
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -118,6 +119,7 @@ internal fun CelebrationContent(
     val button: @Composable () -> Unit = {
         ChunkyButton(
             onClick = onContinue,
+            sound = FeelSound.TapSoft,
             shape = WigglebunShapes.SessionButton,
             modifier = Modifier.fillMaxWidth().heightIn(min = S.ButtonHeight + Dimens.ButtonEdge),
         ) {

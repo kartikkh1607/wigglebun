@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.setup
 
+import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -188,7 +189,7 @@ fun SetupHomePrompt(ui: SetupCardUi, onOpen: () -> Unit, onNotNow: () -> Unit, m
                 Modifier
                     .defaultMinSize(minWidth = S.NotNowMinSize, minHeight = S.NotNowMinSize)
                     .clip(WigglebunShapes.Pill)
-                    .clickable(role = Role.Button, onClick = onNotNow),
+                    .tickClickable(onClick = onNotNow),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(stringResource(R.string.setup_not_now), style = MaterialTheme.typography.labelMedium, color = InkMuted)

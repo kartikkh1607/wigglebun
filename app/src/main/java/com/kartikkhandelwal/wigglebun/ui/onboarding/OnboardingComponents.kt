@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import android.app.Activity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,7 +43,7 @@ internal fun SkipRow(color: Color, onSkip: () -> Unit, modifier: Modifier = Modi
             modifier = Modifier
                 .defaultMinSize(minWidth = S.SkipMinSize, minHeight = S.SkipMinSize)
                 .clip(WigglebunShapes.Pill)
-                .clickable(role = Role.Button, onClick = onSkip)
+                .tickClickable(onClick = onSkip)
                 .padding(horizontal = S.SkipPaddingHorizontal, vertical = S.SkipPaddingVertical),
             contentAlignment = Alignment.Center,
         ) {

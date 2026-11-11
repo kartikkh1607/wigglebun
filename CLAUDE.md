@@ -191,7 +191,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 **Not in v1:** friends, seasons/events, outfits beyond the 4 v1 accessories, furniture, adventure map, AI coach, iOS.
 
-**Moved to v1.1 (decided 2026-11-04, to ship sooner):** richer break routines (4–6 steps for every type, cup art for Drink water, a body pose for Eyes rest), haptics and sounds on Done and the celebration, 2.0× font screenshots for Break session, Collection, Onboarding and Pet profile (v1.0 fixes only what the accessibility pass finds), a custom splash or the core-splashscreen library. Also later: the 4 post-launch accessories, localisation, the large widget, a store video, an in-app review prompt.
+**Moved to v1.1 (decided 2026-11-04, to ship sooner; haptics and sounds moved back into v1.0 on 2026-11-09, see §11 "Feel"):** richer break routines (4–6 steps for every type, cup art for Drink water, a body pose for Eyes rest), 2.0× font screenshots for Break session, Collection, Onboarding and Pet profile (v1.0 fixes only what the accessibility pass finds), a custom splash or the core-splashscreen library. Also later: the 4 post-launch accessories, localisation, the large widget, a store video, an in-app review prompt.
 
 ---
 
@@ -307,6 +307,17 @@ Home's streak flame chip `#FFE9DF` / text `#9A3D20`, spark reward chip `#FFF4D6`
 **Motion:** no linear easing; pop-ins with slight overshoot; Home list items stagger in (40 ms apart); energy changes tween ≥ 600 ms. With the phone's "Remove animations" on (animator duration scale 0, `LocalReducedMotion` in `ui/motion/ReducedMotion.kt`), the app's own motion stops too: the pet holds its still pose (no frame loop), Home cards show at once, the wake-up tap skips the stretch and each break step holds its first pose. Compose's springs and tweens already follow the scale; timings that aren't motion (the celebration's 3 s) stay. New motion that runs on its own loop or delay reads `animationsEnabled()`.
 
 **Pet names in text:** a name never changes a card's height. A sentence with the name in it ("Bun is getting tired", "Choose Bun") uses `PetNameSentence`, which shortens only the name with "…" when it would add a line ("Wigglebo… is getting tired"); the words around it still wrap at large font sizes, and TalkBack reads the whole name. A name shown alone (titles, collection cards, tab label) uses `maxLines = 1` with `TextOverflow.Ellipsis`. Screenshot tests use `TestPetNames.LONG` / `WIDEST` (12 letters).
+
+### Feel (haptics + sound)
+
+One entry point: `feedback/Feel.kt`. `FeelPlayer` (app-scoped `@Singleton`: SoundPool + policy) and `LocalFeel` (CompositionLocal that also wraps `LocalHapticFeedback`). No other file calls `performHapticFeedback` or `SoundPool`.
+
+- **Haptics** need no assets and no `VIBRATE` permission. `ChunkySurface` gives a light tick on click, never when disabled. Switches: ToggleOn / ToggleOff. Interval slider: SegmentTick once per step change, never per frame. DayChips and tab bar: SegmentTick. Confirm: exactly once, only after the repository call succeeded (break Done, celebration appears, pet adopted, accessory bought, later purchase success). Reject: a blocked action (e.g. Save with no work days). On API < 30 the fallback is a short tick, never a long buzz.
+- **Sounds** (SoundPool, `USAGE_ASSISTANCE_SONIFICATION`, 3 streams, preloaded at app start; skipped silently if not loaded or play fails) play only when ALL hold: app in the foreground (`ProcessLifecycleOwner` ≥ STARTED), the Settings "Sounds" switch is on, and `AudioManager.ringerMode == RINGER_MODE_NORMAL`. Never from workers, receivers, the widget or notifications. `tap_soft` only on primary CTAs (`ChunkySurface(sound = …)`, default none). Never play `celebrate` and `success` together; `sparks` only when sparks granted > 0.
+- **Settings:** "Sounds" and "Haptics" switches, default on, in DataStore, applied immediately.
+- **Bun tap:** 3–5% squash and tilt, ~380 ms, `graphicsLayer` only, light haptic and a mood-based chirp; 800 ms cooldown; TalkBack action "Pet <name>". With "Remove animations": no squash, haptic and sound still work.
+- **Integrity:** feedback fires only from consumed one-shot events, never from state or recomposition (no repeat on rotation, process restore, back navigation or a repeated Flow emission). It never touches reward, ledger, streak or billing logic.
+- Sources and licences: `design/sounds/LICENSES.md`.
 
 ---
 

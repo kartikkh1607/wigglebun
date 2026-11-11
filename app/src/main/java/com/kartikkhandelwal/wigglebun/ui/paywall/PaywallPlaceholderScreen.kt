@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.paywall
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -68,6 +69,7 @@ fun PaywallPlaceholderScreen(petName: String, onContinue: () -> Unit, modifier: 
         ChunkyButton(
             text = stringResource(R.string.onboarding_continue),
             onClick = onContinue,
+            sound = FeelSound.TapSoft,
             modifier = Modifier.fillMaxWidth().padding(horizontal = S.NameButtonHorizontal, vertical = S.StretchButtonBottom),
         )
     }

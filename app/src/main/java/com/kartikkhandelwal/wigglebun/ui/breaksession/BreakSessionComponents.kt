@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.breaksession
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -362,6 +363,7 @@ private fun SessionButton(
         style = style,
         shape = WigglebunShapes.SessionButton,
         enabled = enabled,
+        sound = if (style == ChunkyButtonStyle.Done) FeelSound.TapSoft else null, // the last step's Done only
         contentPadding = PaddingValues(horizontal = S.ButtonPaddingHorizontal),
         modifier = modifier.heightIn(min = S.ButtonHeight + style.edgeHeight),
     ) {

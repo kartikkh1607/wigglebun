@@ -1,5 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.breaksession
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvents
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvent
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,10 +35,11 @@ import javax.inject.Inject
 private const val TICK_MILLIS = 100L
 private const val MILLIS_PER_MINUTE = 60_000L
 private const val START_ENERGY_TIMEOUT_MILLIS = 2_000L
+private const val KEY_START_FELT = "start_felt"
 
 @HiltViewModel
 class BreakSessionViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val recordBreakDone: RecordBreakDone,
     private val elapsed: ElapsedClock,
     private val petRepository: PetRepository,
@@ -63,7 +66,17 @@ class BreakSessionViewModel @Inject constructor(
     private val _state = MutableStateFlow(sessionUiState(type, null, timer, elapsed.nowMillis(), result, nextPet))
     val state: StateFlow<BreakSessionUiState> = _state.asStateFlow()
 
+    /** Start and celebration feedback, played once by the route ([ConsumeFeel]). */
+    private val feelEvents = FeelEvents()
+    val feel = feelEvents.flow
+
     init {
+        // Once per session, even across process restore: the flag lives in the SavedStateHandle,
+        // so a recreated ViewModel does not announce the start again.
+        if (savedStateHandle.get<Boolean>(KEY_START_FELT) != true) {
+            savedStateHandle[KEY_START_FELT] = true
+            feelEvents.send(FeelEvent.BreakStarted)
+        }
         viewModelScope.launch {
             // What sitting has drained the pet to is where its colour starts to come back.
             // Outside work hours that is full, so there is nothing to bring back. Onboarding's
@@ -140,6 +153,8 @@ class BreakSessionViewModel @Inject constructor(
             nextPet = if (done.sparksEarned > 0) nextPetHint() else null
             result = done
             publish()
+            // After the break is logged and paid, once (completing is guarded above).
+            feelEvents.send(FeelEvent.Celebrated(Any(), done.sparksEarned + done.bonuses.sumOf { it.bonus }))
         }
     }
 

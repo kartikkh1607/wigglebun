@@ -29,6 +29,8 @@ class SettingsScreenshotTest {
         composeRule.onRoot().captureRoboImage("$name.png")
     }
 
+    /** Tall enough for the whole page, down to the end of "Sound and touch". */
+    @Config(qualifiers = "w390dp-h1700dp-xxhdpi")
     @Test
     fun full() = capture("settings_full") { SettingsFullPreview() }
 
@@ -60,7 +62,7 @@ class SettingsScreenshotTest {
     }
 
     /** 200% font on a small phone: rows wrap, the buttons and chips stay whole. */
-    @Config(qualifiers = "w360dp-h1500dp-xxhdpi", fontScale = 2.0f)
+    @Config(qualifiers = "w360dp-h3100dp-xxhdpi", fontScale = 2.0f)
     @Test
     fun smallPhoneFont2() = capture("settings_small_phone_font_2_0") {
         WigglebunTheme {

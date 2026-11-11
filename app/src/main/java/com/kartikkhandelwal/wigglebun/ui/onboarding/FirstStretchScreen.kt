@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -71,6 +72,7 @@ fun FirstStretchScreen(petName: String, onStart: () -> Unit, onSkip: () -> Unit,
         ChunkyButton(
             text = stringResource(R.string.stretch_start),
             onClick = onStart,
+            sound = FeelSound.TapSoft,
             style = ChunkyButtonStyle.Highlight,
             modifier = Modifier.fillMaxWidth().padding(horizontal = S.NameButtonHorizontal, vertical = S.StretchButtonBottom),
         )

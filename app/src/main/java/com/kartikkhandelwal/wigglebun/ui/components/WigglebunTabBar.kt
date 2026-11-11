@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.components
 
+import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
@@ -122,6 +123,7 @@ private fun TabBarButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val feel = LocalFeel.current
     val indicator by animateColorAsState(
         targetValue = if (selected) item.style.tint else Color.Transparent,
         label = "tabIndicator",
@@ -131,7 +133,10 @@ private fun TabBarButton(
             .fillMaxHeight()
             .selectable(
                 selected = selected,
-                onClick = onClick,
+                onClick = {
+                    if (!selected) feel.segment() // re-tapping the open tab changes nothing
+                    onClick()
+                },
                 role = Role.Tab,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
