@@ -66,6 +66,7 @@ import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.billing.FakePremiumRepository
 import com.kartikkhandelwal.wigglebun.billing.PaywallOptions
 import com.kartikkhandelwal.wigglebun.billing.PlanKind
+import com.kartikkhandelwal.wigglebun.billing.displayPrice
 import com.kartikkhandelwal.wigglebun.billing.PlanOption
 import com.kartikkhandelwal.wigglebun.billing.Trial
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
@@ -449,7 +450,7 @@ private fun PlanCard(option: PlanOption, selected: Boolean, enabled: Boolean, on
                 )
                 // The store's own price text: other currencies are longer, so it shrinks to fit one line.
                 Text(
-                    option.price,
+                    displayPrice(option.price),
                     style = MaterialTheme.typography.displayMedium.copy(fontSize = D.PlanPriceSize),
                     color = Ink,
                     maxLines = 1,
@@ -515,15 +516,16 @@ private class PaywallCopy(val cta: String, val finePrint: String)
 
 @Composable
 private fun paywallCopy(option: PlanOption): PaywallCopy {
+    val price = displayPrice(option.price)
     val priceLine = when (option.kind) {
-        PlanKind.YEARLY -> stringResource(R.string.paywall_price_yearly, option.price)
-        PlanKind.MONTHLY -> stringResource(R.string.paywall_price_monthly, option.price)
-        PlanKind.LIFETIME -> option.price
+        PlanKind.YEARLY -> stringResource(R.string.paywall_price_yearly, price)
+        PlanKind.MONTHLY -> stringResource(R.string.paywall_price_monthly, price)
+        PlanKind.LIFETIME -> price
     }
     val trial = option.freeTrial
     return when {
         option.kind == PlanKind.LIFETIME ->
-            PaywallCopy(stringResource(R.string.paywall_cta_lifetime), stringResource(R.string.paywall_fine_lifetime, option.price))
+            PaywallCopy(stringResource(R.string.paywall_cta_lifetime), stringResource(R.string.paywall_fine_lifetime, price))
         // "Start free trial" only when the store's offer really has a free phase (CLAUDE.md §5.5).
         trial != null -> {
             val daysFree = pluralStringResource(R.plurals.paywall_days_free, trial.days, trial.days)

@@ -21,16 +21,19 @@ enum class PremiumBadge {
     /** In the free trial. */
     Trial,
 
-    /** The app is locked: the chip is the way to the plans. */
+    /** Not premium in a build that sells, locked or not: the chip is the way to the plans. */
     Unlock,
 }
 
 /**
  * Null shows no chip: nothing known yet, or a build that neither sells nor locks (a debug build
- * without a RevenueCat key, the closed test before a tester buys).
+ * without a RevenueCat key). [PremiumState.NotEntitled] only comes from a build with a
+ * RevenueCat key, so it offers the way in even while the app is open: a closed-test build doesn't
+ * lock, and a tester who closed the paywall must be able to reopen it.
  */
 fun premiumBadge(premium: PremiumState, access: AppAccess): PremiumBadge? = when {
     premium is PremiumState.Entitled -> if (premium.isTrial) PremiumBadge.Trial else PremiumBadge.Premium
+    premium is PremiumState.NotEntitled -> PremiumBadge.Unlock
     access == AppAccess.Locked -> PremiumBadge.Unlock
     else -> null
 }

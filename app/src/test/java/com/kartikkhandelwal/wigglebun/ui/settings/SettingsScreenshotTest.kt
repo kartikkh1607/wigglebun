@@ -61,6 +61,11 @@ class SettingsScreenshotTest {
     @Test
     fun badgeTrial() = capture("settings_badge_trial") { SettingsBadgePreview(PremiumBadge.Trial) }
 
+    /** The chip an unlocked build (closed test) shows someone who hasn't bought: same chip as when locked. */
+    @Config(qualifiers = "w390dp-h300dp-xxhdpi")
+    @Test
+    fun badgeUnlockOpen() = capture("settings_badge_unlock_open") { SettingsBadgePreview(PremiumBadge.Unlock) }
+
     @Config(qualifiers = "w360dp-h300dp-xxhdpi")
     @Test
     fun badgeUnlockWidestName() = capture("settings_badge_unlock_widest_name") {
@@ -78,6 +83,23 @@ class SettingsScreenshotTest {
     fun widestNameSmallPhone() = capture("settings_widest_name_small_phone") {
         WigglebunTheme {
             SettingsScreen(SettingsPreviewStates.named(TestPetNames.WIDEST), SettingsPreviewStates.Mockup, SettingsActions())
+        }
+    }
+
+    /** 411 dp phone: "Your setup" rows wrap their subtitle and never shorten the name ("So Bun can remind you"). */
+    @Config(qualifiers = "w411dp-h914dp-xxhdpi")
+    @Test
+    fun setupRowsNameBun() = capture("settings_setup_rows_bun_411") {
+        WigglebunTheme {
+            SettingsScreen(SettingsPreviewStates.named("Bun"), SettingsPreviewStates.AllOff, SettingsActions())
+        }
+    }
+
+    @Config(qualifiers = "w411dp-h914dp-xxhdpi")
+    @Test
+    fun setupRowsLongName() = capture("settings_setup_rows_long_name_411") {
+        WigglebunTheme {
+            SettingsScreen(SettingsPreviewStates.named(TestPetNames.LONG), SettingsPreviewStates.AllOff, SettingsActions())
         }
     }
 

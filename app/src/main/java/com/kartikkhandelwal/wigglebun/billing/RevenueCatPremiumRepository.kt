@@ -36,6 +36,9 @@ import javax.inject.Singleton
 
 private const val TAG = "Billing"
 
+/** Release-safe lines for testers: prices and entitlement state only, never keys or user ids. */
+private const val INFO_TAG = "WigglebunBilling"
+
 /**
  * Premium through RevenueCat (CLAUDE.md §5.5): it verifies and acknowledges Play purchases
  * server-side, so the app has no backend. Users are anonymous (no login); RevenueCat makes up an
@@ -132,8 +135,9 @@ class RevenueCatPremiumRepository @Inject constructor(
         val offerings = try {
             purchases.awaitOfferings()
         } catch (e: PurchasesException) {
-            Log.w(TAG, "Couldn't load offerings: ${e.code}")
-            return OfferingsResult.Failed(billingFailureOf(e.code, userCancelled = false, message = e.message))
+            val failure = billingFailureOf(e.code, userCancelled = false, message = e.message)
+            Log.w(INFO_TAG, "Offerings failed: ${failure.logName()} (${e.code})")
+            return OfferingsResult.Failed(failure)
         }
         val current = offerings.current
         packages = current?.availablePackages.orEmpty().associateBy { it.identifier }
@@ -143,6 +147,7 @@ class RevenueCatPremiumRepository @Inject constructor(
             return OfferingsResult.Empty
         }
         options.trialMismatch()?.let { Log.w(TAG, it) }
+        Log.i(INFO_TAG, "Offerings loaded: ${options.logSummary()}")
         return OfferingsResult.Loaded(options)
     }
 
@@ -179,6 +184,7 @@ class RevenueCatPremiumRepository @Inject constructor(
     }
 
     private fun succeeded(state: PremiumState): BillingResult {
+        Log.i(INFO_TAG, "Entitlement after the call: ${state.logSummary()}")
         if (state !is PremiumState.Entitled) {
             // A completed purchase that doesn't unlock means the product isn't attached to the
             // "premium" entitlement in the RevenueCat dashboard. (After a restore it just means
@@ -191,6 +197,34 @@ class RevenueCatPremiumRepository @Inject constructor(
     private fun failed(what: String, e: PurchasesException, userCancelled: Boolean): BillingResult.Failure {
         Log.w(TAG, "$what failed: ${e.code}")
         return billingFailureOf(e.code, userCancelled, e.message)
+    }
+
+    /** Named by hand: R8 renames classes in release, so `simpleName` would read "a" or "b". */
+    private fun BillingResult.Failure.logName(): String = when (this) {
+        BillingResult.Cancelled -> "Cancelled"
+        BillingResult.Pending -> "Pending"
+        BillingResult.NotAllowed -> "NotAllowed"
+        BillingResult.NetworkError -> "NetworkError"
+        BillingResult.StoreProblem -> "StoreProblem"
+        is BillingResult.Error -> "Error"
+    }
+
+    private fun PaywallOptions.logSummary(): String {
+        val plans = all.joinToString("; ") { plan ->
+            val trial = plan.freeTrial?.let { ", free trial ${it.days} days" }.orEmpty()
+            "${plan.kind} ${plan.price}$trial"
+        }
+        val yearly = yearly
+            ?: return "$plans; no yearly package"
+        return "$plans; yearly has free trial: ${yearly.freeTrial != null}"
+    }
+
+    private fun PremiumState.logSummary(): String = when (this) {
+        is PremiumState.Entitled ->
+            "active=true isTrial=$isTrial willRenew=$willRenew isLifetime=$isLifetime expires=${expiresAt ?: "never"}"
+        PremiumState.NotEntitled -> "active=false"
+        PremiumState.Unknown -> "unknown"
+        PremiumState.Unavailable -> "unavailable"
     }
 
     private companion object {

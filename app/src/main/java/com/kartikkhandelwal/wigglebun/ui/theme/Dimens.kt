@@ -124,11 +124,8 @@ object Dimens {
         val DotsBottomShort = 16.dp
 
         // Wake-up: the artboard's positions, which a short phone or a big font squeezes
-        const val WakeMinSqueeze = 0.4f
-        /** The title and body at normal font size, with a margin: what the scene must leave room for. */
-        val WakeTextHeight = 140.dp
-        /** Extra text height per unit of font scale above 1, for the lines that wrapping adds. */
-        const val WakeTextWrapGrowth = 0.3f
+        /** The scene never shrinks below this share of the artboard; the text then scrolls instead. */
+        const val WakeMinSqueeze = 0.45f
         /** Space above and below the button on a short phone. */
         val WakeCtaPaddingShort = 16.dp
         val WakeBlobTop = 318.dp

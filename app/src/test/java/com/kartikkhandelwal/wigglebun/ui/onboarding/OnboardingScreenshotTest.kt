@@ -46,6 +46,15 @@ class OnboardingScreenshotTest {
     @Test
     fun wakeUpStretching() = capture("onboarding_wake_stretching") { WakeUpStretchingPreview() }
 
+    /** A tall phone with its status and navigation bars: the body's second line is whole above the button. */
+    @Config(qualifiers = "w411dp-h914dp-xxhdpi")
+    @Test
+    fun wakeUpTallPhone() = capture("onboarding_wake_tall_phone_411") { WakeUpTallPhonePreview() }
+
+    @Config(qualifiers = "w411dp-h914dp-xxhdpi", fontScale = 2.0f)
+    @Test
+    fun wakeUpTallPhoneHugeFont() = capture("onboarding_wake_tall_phone_411_font_2_0") { WakeUpTallPhoneHugeFontPreview() }
+
     @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     @Test
     fun wakeUpSmallPhone() = capture("onboarding_wake_small_phone") { WakeUpSmallPhonePreview() }
@@ -56,6 +65,11 @@ class OnboardingScreenshotTest {
 
     @Test
     fun nameEmpty() = capture("onboarding_name_empty") { NamePetEmptyPreview() }
+
+    /** 411 x 914 with a status bar: the speech bubble stays clear of the Skip pill. */
+    @Config(qualifiers = "w411dp-h914dp-xxhdpi")
+    @Test
+    fun nameTallPhone() = capture("onboarding_name_tall_phone_411") { NamePetTallPhonePreview() }
 
     @Test
     fun nameMockup() = capture("onboarding_name_mockup") { NamePetMockupPreview() }

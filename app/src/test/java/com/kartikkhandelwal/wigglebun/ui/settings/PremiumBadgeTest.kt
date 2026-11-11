@@ -24,10 +24,16 @@ class PremiumBadgeTest {
         assertEquals(PremiumBadge.Unlock, premiumBadge(PremiumState.Unavailable, AppAccess.Locked))
     }
 
-    /** A build that doesn't lock (closed test, debug without a key) shows nothing to someone who hasn't bought. */
+    /** A build that sells but doesn't lock (closed test): someone who closed the paywall can reopen it. */
+    @Test
+    fun notEntitledOffersTheWayInWhetherLockedOrOpen() {
+        assertEquals(PremiumBadge.Unlock, premiumBadge(PremiumState.NotEntitled, AppAccess.Open))
+        assertEquals(PremiumBadge.Unlock, premiumBadge(PremiumState.NotEntitled, AppAccess.Locked))
+    }
+
+    /** A build without a RevenueCat key can't sell, so an open app has nothing to offer. */
     @Test
     fun nothingToSayShowsNoChip() {
-        assertNull(premiumBadge(PremiumState.NotEntitled, AppAccess.Open))
         assertNull(premiumBadge(PremiumState.Unavailable, AppAccess.Open))
         assertNull(premiumBadge(PremiumState.Unknown, AppAccess.Checking))
     }
