@@ -13,15 +13,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kartikkhandelwal.wigglebun.billing.AppAccess
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.feedback.FeelPlayer
+import com.kartikkhandelwal.wigglebun.feedback.ProvideFeel
 import com.kartikkhandelwal.wigglebun.ui.motion.ProvideReducedMotion
 import com.kartikkhandelwal.wigglebun.ui.navigation.AppShellViewModel
 import com.kartikkhandelwal.wigglebun.ui.navigation.WigglebunNavHost
 import com.kartikkhandelwal.wigglebun.ui.onboarding.AppGate
 import com.kartikkhandelwal.wigglebun.ui.onboarding.OnboardingFlowRoute
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
-import com.kartikkhandelwal.wigglebun.feedback.FeelPlayer
-import com.kartikkhandelwal.wigglebun.feedback.ProvideFeel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val activePet by shell.activePet.collectAsStateWithLifecycle()
             val onboardingDone by shell.onboardingDone.collectAsStateWithLifecycle()
+            val access by shell.access.collectAsStateWithLifecycle()
             // The phone's "Remove animations" setting stills the app's own motion too.
             ProvideReducedMotion {
                 ProvideFeel(feel) {
@@ -53,8 +55,14 @@ class MainActivity : ComponentActivity() {
                             onboardingDone = onboardingDone,
                             onboarding = { OnboardingFlowRoute() },
                             app = {
-                                WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
+                                WigglebunNavHost(
+                                    activePet = activePet,
+                                    startBreak = pendingBreak,
+                                    onStartBreakHandled = { pendingBreak = null },
+                                    locked = access == AppAccess.Locked,
+                                )
                             },
+                            accessKnown = access != null,
                         )
                     }
                 }

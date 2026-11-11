@@ -624,6 +624,22 @@ object Dimens {
         val SliderThumbDrop = 4.dp
     }
 
+    /** Home while the app is locked (design/ui_v2/Locked.dc.html); the room itself uses [Home]'s sizes. */
+    object LockedHome {
+        val CardTop = 10.dp
+        val CardBottom = 16.dp
+        val CardRadius = 28.dp
+        val CardEdge = 5.dp
+        val CardPadding = 20.dp
+        val CardPaddingTop = 22.dp
+        val Gap = 10.dp
+        val TitleSize = 26.sp
+        val ChipsVertical = 2.dp
+        val ChipGap = 8.dp
+        val ChipPaddingHorizontal = 11.dp
+        val ChipPaddingVertical = 5.dp
+    }
+
     /** The paywall (design/ui_v2/Paywall.dc.html, a 390 x 844 artboard). */
     object Paywall {
         // The sky with the pet; the panel's rounded top covers the pet's feet.

@@ -153,6 +153,11 @@ private fun DrawScope.drawWindow(p: RoomPalette, paths: RoomPaths) {
         drawCircle(p.cloud, 7f, Offset(290f, 114f))
         drawCircle(p.cloud, 9f, Offset(300f, 110f))
         rect(p.cloud, 282f, 113f, 28f, 9f, 4.5f)
+        // A crescent: the moon with a sky-coloured bite out of it.
+        p.moon?.let { moon ->
+            drawCircle(moon, 13f, Offset(336f, 110f))
+            drawCircle(p.sky, 11f, Offset(342f, 106f))
+        }
     }
     rect(p.windowFrame, 311f, 66f, 6f, 122f)
     rect(p.windowFrame, 271f, 132f, 86f, 5f)

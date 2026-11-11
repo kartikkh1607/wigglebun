@@ -22,6 +22,10 @@ data object PetRoute
 @Serializable
 data object SettingsRoute
 
+/** The paywall opened from the locked Home (the one at the end of onboarding is onboarding's own). */
+@Serializable
+data object PremiumPaywallRoute
+
 /** Full-screen guided break (no tab bar). [type] is a BreakType name. */
 @Serializable
 data class BreakSessionRoute(
