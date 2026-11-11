@@ -1,5 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import androidx.compose.runtime.remember
+import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -259,9 +261,19 @@ private fun IntervalCard(minutes: Int, onPicked: (Int) -> Unit) {
 private fun IntervalSlider(minutes: Int, minutesText: String, onPicked: (Int) -> Unit) {
     val range = SittingSettings.MIN_INTERVAL_MINUTES.toFloat()..SittingSettings.MAX_INTERVAL_MINUTES.toFloat()
     val thumbSize = P.SliderThumb + P.SliderThumbRing * 2
+    val feel = LocalFeel.current
+    val lastStep = remember { intArrayOf(minutes) }
     Slider(
         value = minutes.toFloat(),
-        onValueChange = { onPicked(it.roundToInt()) },
+        onValueChange = {
+            val step = it.roundToInt()
+            // One tick per step change, never per frame of the drag.
+            if (step != lastStep[0]) {
+                lastStep[0] = step
+                feel.segment()
+            }
+            onPicked(step)
+        },
         valueRange = range,
         steps = SliderSteps,
         modifier = Modifier.fillMaxWidth().height(P.SliderHeight).semantics { stateDescription = minutesText },
@@ -301,6 +313,7 @@ private fun IntervalSlider(minutes: Int, minutesText: String, onPicked: (Int) ->
 @Composable
 internal fun IntervalSheetContent(initial: Int, onDone: (Int) -> Unit, modifier: Modifier = Modifier) {
     var minutes by rememberSaveable { mutableIntStateOf(initial) }
+    val feel = LocalFeel.current
     Column(
         modifier
             .fillMaxWidth()
@@ -313,7 +326,11 @@ internal fun IntervalSheetContent(initial: Int, onDone: (Int) -> Unit, modifier:
         Text(stringResource(R.string.interval_minutes, minutes), style = MaterialTheme.typography.displayMedium, color = Ink)
         Slider(
             value = minutes.toFloat(),
-            onValueChange = { minutes = it.roundToInt() },
+            onValueChange = {
+                val step = it.roundToInt()
+                if (step != minutes) feel.segment()
+                minutes = step
+            },
             valueRange = SittingSettings.MIN_INTERVAL_MINUTES.toFloat()..SittingSettings.MAX_INTERVAL_MINUTES.toFloat(),
             steps = SliderSteps,
             colors = SliderDefaults.colors(

@@ -154,7 +154,9 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 - **Trial-end reminder:** Android does not send one. Schedule our own local notification 2 days before trial ends (`Trial.END_REMINDER_DAYS_BEFORE`): 5 days after the trial starts, i.e. on day 6 counting install day as day 1 (the trial ends at the same time of day on day 8) ("Your free trial ends on …"). Honest and reduces refunds/1-star reviews.
 - Paywall must show: price after trial, billing period, how to cancel (Play Store → Subscriptions), restore purchases, terms + privacy links.
 - If the user closes the paywall: show a calm "locked" home with the sleeping pet and a single "Start free trial" button. No dark patterns, no fake timers.
-- Entitlement checks go through RevenueCat (`CustomerInfo`), cached for offline use.
+- Entitlement checks go through RevenueCat (`CustomerInfo`), cached for offline use. The RevenueCat layer (M10a) is `billing/`: `PremiumRepository` (`RevenueCatPremiumRepository`, bound by Hilt; `FakePremiumRepository` for tests and previews) gives `premium: Flow<PremiumState>` (`Unknown` / `Entitled(isTrial, expiresAt, willRenew, isLifetime)` / `NotEntitled` / `Unavailable`), `offerings()` (yearly / monthly / lifetime picked by package type ANNUAL / MONTHLY / LIFETIME, never by product id, with the store's localised price and the yearly offer's real free phase; a trial length other than `FREE_TRIAL_DAYS` is logged), and `purchase` / `restore` returning `BillingResult` (Success / Cancelled / Pending / NotAllowed / NetworkError / StoreProblem / Error; every RevenueCat error code is mapped by name in `PremiumMapping.kt`). The entitlement id is `Entitlements.PREMIUM` = `"premium"`. Users are anonymous (no login). `WigglebunApp` calls `start()`, which configures `Purchases` once (verbose logs in debug only) and follows `UpdatedCustomerInfoListener` plus one initial fetch.
+- **Offline cache** (`PremiumCache`, the device-only DataStore, not backed up): the last entitled / not-entitled answer with its expiry and save time. A cold start shows it until RevenueCat answers; a cached subscription counts only until its expiry, judged by `max(now, savedAt)` so winding the clock back can't stretch it; lifetime never expires; nothing cached is `Unknown`. Live answers are trusted as RevenueCat gives them (judged on its server clock).
+- **SDK keys** never go into git. `app/build.gradle.kts` reads `WIGGLEBUN_RC_TEST_STORE_KEY` (debug: RevenueCat's Test Store, simulated purchases) and `WIGGLEBUN_RC_GOOGLE_KEY` (release and closedTest) like the upload key: `~/.gradle/gradle.properties` first, then environment variables, into `BuildConfig.REVENUECAT_API_KEY`. A missing or malformed key builds fine: `Purchases` is not configured and premium is `Unavailable` (CI builds this way). The SDK crashes a non-debug build that uses a `test_` key, so only debug gets it, `start()` refuses one outside debug, and `ReleaseBuildTest` fails if release has one.
 - **Closed test:** Play's test subscriptions lapse within hours (a 3-minute trial, then at most 6 renewals), so the `closedTest` build type shows the paywall and lets testers buy with test accounts, but closing it doesn't lock (`BuildConfig.PAYWALL_LOCKS = false`). `release` (production) always locks: `ReleaseBuildTest` (`src/testRelease`) fails CI otherwise. Never promote a closedTest release to production in Play Console; upload a release build.
 
 ---
@@ -191,7 +193,7 @@ Stand up · 2-min walk · Neck stretch · Shoulder rolls · Wrist stretch · Eye
 
 **Not in v1:** friends, seasons/events, outfits beyond the 4 v1 accessories, furniture, adventure map, AI coach, iOS.
 
-**Moved to v1.1 (decided 2026-11-04, to ship sooner):** richer break routines (4–6 steps for every type, cup art for Drink water, a body pose for Eyes rest), haptics and sounds on Done and the celebration, 2.0× font screenshots for Break session, Collection, Onboarding and Pet profile (v1.0 fixes only what the accessibility pass finds), a custom splash or the core-splashscreen library. Also later: the 4 post-launch accessories, localisation, the large widget, a store video, an in-app review prompt.
+**Moved to v1.1 (decided 2026-11-04, to ship sooner; haptics and sounds moved back into v1.0 on 2026-11-09, see §11 "Feel"):** richer break routines (4–6 steps for every type, cup art for Drink water, a body pose for Eyes rest), 2.0× font screenshots for Break session, Collection, Onboarding and Pet profile (v1.0 fixes only what the accessibility pass finds), a custom splash or the core-splashscreen library. Also later: the 4 post-launch accessories, localisation, the large widget, a store video, an in-app review prompt.
 
 ---
 
@@ -309,6 +311,17 @@ Home's streak flame chip `#FFE9DF` / text `#9A3D20`, spark reward chip `#FFF4D6`
 
 **Pet names in text:** a name never changes a card's height. A sentence with the name in it ("Bun is getting tired", "Choose Bun") uses `PetNameSentence`, which shortens only the name with "…" when it would add a line ("Wigglebo… is getting tired"); the words around it still wrap at large font sizes, and TalkBack reads the whole name. A name shown alone (titles, collection cards, tab label) uses `maxLines = 1` with `TextOverflow.Ellipsis`. Screenshot tests use `TestPetNames.LONG` / `WIDEST` (12 letters).
 
+### Feel (haptics + sound)
+
+One entry point: `feedback/Feel.kt`. `FeelPlayer` (app-scoped `@Singleton`: SoundPool + policy) and `LocalFeel` (CompositionLocal that also wraps `LocalHapticFeedback`). No other file calls `performHapticFeedback` or `SoundPool`.
+
+- **Haptics** need no assets and no `VIBRATE` permission. `ChunkySurface` gives a light tick on click, never when disabled. Switches: ToggleOn / ToggleOff. Interval slider: SegmentTick once per step change, never per frame. DayChips and tab bar: SegmentTick. Confirm: exactly once, only after the repository call succeeded (break Done, celebration appears, pet adopted, accessory bought, later purchase success). Reject: a blocked action (e.g. Save with no work days). On API < 30 the fallback is a short tick, never a long buzz.
+- **Sounds** (SoundPool, `USAGE_ASSISTANCE_SONIFICATION`, 3 streams, preloaded at app start; skipped silently if not loaded or play fails) play only when ALL hold: app in the foreground (`ProcessLifecycleOwner` ≥ STARTED), the Settings "Sounds" switch is on, and `AudioManager.ringerMode == RINGER_MODE_NORMAL`. Never from workers, receivers, the widget or notifications. `tap_soft` only on primary CTAs (`ChunkySurface(sound = …)`, default none). Never play `celebrate` and `success` together; `sparks` only when sparks granted > 0.
+- **Settings:** "Sounds" and "Haptics" switches, default on, in DataStore, applied immediately.
+- **Bun tap:** 3–5% squash and tilt, ~380 ms, `graphicsLayer` only, light haptic and a mood-based chirp; 800 ms cooldown; TalkBack action "Pet <name>". With "Remove animations": no squash, haptic and sound still work.
+- **Integrity:** feedback fires only from consumed one-shot events, never from state or recomposition (no repeat on rotation, process restore, back navigation or a repeated Flow emission). It never touches reward, ledger, streak or billing logic.
+- Sources and licences: `design/sounds/LICENSES.md`.
+
 ---
 
 ## 12. Play Store readiness checklist
@@ -359,6 +372,7 @@ Home's streak flame chip `#FFE9DF` / text `#9A3D20`, spark reward chip `#FFF4D6`
 | M9 | Onboarding (wake-up, naming, settings) + just-in-time permission cards | Fresh install flows end to end |
 | M10 | RevenueCat + paywall + restore + trial-end reminder | Test purchases work with license testers; entitlement survives offline restart |
 | M10-prep | First internal-track AAB (`1.0.0-internal`, versionCode 2, BILLING permission, RevenueCat `purchases` 11.2.0 as a dependency only so the manifest declares Play Billing Library 9.1.0, upload-key signing from properties or env vars) | Accepted by Play internal testing so subscription products can be created; no `Purchases.configure` and no purchase code yet |
+| M10a | RevenueCat layer, no UI: keys from properties / env vars into BuildConfig, `Purchases` configured in the Application, `PremiumRepository` (premium flow, offline cache, offerings by package type, purchase / restore with mapped errors), `FakePremiumRepository`, unit tests | Debug build configures with the Test Store key and fetches CustomerInfo without an API-key error; release R8 dex scan clean |
 | M11 | Polish, accessibility (TalkBack labels, contrast), privacy policy, store assets | Ready for closed testing |
 | M12 | Release candidate: the full phone checklist on a real phone and on an Android 8 emulator, license-tester purchase / restore / cancel / lapse, OEM battery check | Closed-test AAB uploaded |
 

@@ -27,6 +27,8 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
+import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import com.kartikkhandelwal.wigglebun.ui.theme.LocalSurface
 
 /**
@@ -49,6 +51,8 @@ internal fun ChunkySurface(
     enabled: Boolean = true,
     role: Role = Role.Button,
     interactionSource: MutableInteractionSource? = null,
+    /** Played with the click's haptic tick; null (the default) is silent. Only primary CTAs set it. */
+    sound: FeelSound? = null,
     contentAlignment: Alignment = Alignment.TopStart,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -65,6 +69,7 @@ internal fun ChunkySurface(
         label = "chunkyPress",
     )
 
+    val feel = LocalFeel.current
     val clickModifier = if (onClick != null) {
         Modifier.clickable(
             interactionSource = source,
@@ -72,7 +77,11 @@ internal fun ChunkySurface(
             enabled = enabled,
             onClickLabel = onClickLabel,
             role = role,
-            onClick = onClick,
+            // A disabled surface never delivers a click, so it never ticks.
+            onClick = {
+                feel.tick(sound)
+                onClick()
+            },
         )
     } else {
         Modifier

@@ -7,6 +7,8 @@ import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
 import com.kartikkhandelwal.wigglebun.data.repo.StreakRepository
 import com.kartikkhandelwal.wigglebun.domain.model.ActivePet
 import com.kartikkhandelwal.wigglebun.domain.model.BreakType
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvent
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvents
 import com.kartikkhandelwal.wigglebun.ui.onboarding.WorkHoursDraft
 import com.kartikkhandelwal.wigglebun.ui.onboarding.WorkHoursProblem
 import com.kartikkhandelwal.wigglebun.ui.onboarding.WorkTime
@@ -35,6 +37,9 @@ data class SettingsUiState(
     /** Work days in a row that met the goal, and every break so far ("5-day streak · 42 breaks so far"). */
     val streakDays: Int = 0,
     val totalBreaks: Int = 0,
+    /** The "Sound and touch" switches (CLAUDE.md §11 "Feel"); both default on. */
+    val soundsOn: Boolean = true,
+    val hapticsOn: Boolean = true,
 ) {
     /** Save is off while no work day is ticked. */
     val canSaveHours: Boolean get() = hours.canSave
@@ -63,8 +68,8 @@ class SettingsViewModel @Inject constructor(
         settings.enabledBreaks,
         combine(hoursEdit, hoursProblem, ::Pair),
         petRepository.activePet,
-        streakRepository.summary,
-    ) { stored, breaks, (edit, problem), pet, streak ->
+        combine(streakRepository.summary, settings.soundsEnabled, settings.hapticsEnabled, ::Triple),
+    ) { stored, breaks, (edit, problem), pet, (streak, sounds, haptics) ->
         val saved = WorkHoursDraft.of(stored.schedule)
         val hours = edit ?: saved
         SettingsUiState(
@@ -76,8 +81,22 @@ class SettingsViewModel @Inject constructor(
             pet,
             streakDays = streak.days,
             totalBreaks = streak.totalBreaks,
+            soundsOn = sounds,
+            hapticsOn = haptics,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
+
+    /** Blocked-action feedback; the route plays each event once ([ConsumeFeel]). */
+    private val feelEvents = FeelEvents()
+    val feel = feelEvents.flow
+
+    fun onSoundsToggled(on: Boolean) {
+        viewModelScope.launch { settings.setSoundsEnabled(on) }
+    }
+
+    fun onHapticsToggled(on: Boolean) {
+        viewModelScope.launch { settings.setHapticsEnabled(on) }
+    }
 
     fun onToggleDay(day: DayOfWeek) = editHours { it.toggled(day) }
 
@@ -99,7 +118,10 @@ class SettingsViewModel @Inject constructor(
         val hours = hoursEdit.value ?: return
         if (!hours.canSave) return
         hoursProblem.value = hours.problem
-        if (hours.problem != null) return
+        if (hours.problem != null) {
+            feelEvents.send(FeelEvent.Rejected)
+            return
+        }
         viewModelScope.launch {
             settings.setSchedule(hours.toSchedule())
             // Only if nothing was edited while saving: a newer edit stays on screen, unsaved.

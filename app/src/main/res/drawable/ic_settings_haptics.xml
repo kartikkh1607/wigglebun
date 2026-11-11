@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From design/ui_v2/icons/settings_haptics.svg. Full colour: draw untinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M19 8 H29 A4 4 0 0 1 33 12 V40 A4 4 0 0 1 29 44 H19 A4 4 0 0 1 15 40 V12 A4 4 0 0 1 19 8 Z M9 19 V33 M4.5 22.5 V29.5 M39 19 V33 M43.5 22.5 V29.5"
+        android:fillColor="#FF4A86CC"
+        android:strokeColor="#FF4A86CC"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M19 6 H29 A4 4 0 0 1 33 10 V38 A4 4 0 0 1 29 42 H19 A4 4 0 0 1 15 38 V10 A4 4 0 0 1 19 6 Z"
+        android:fillColor="#FF7FB8F5" />
+    <path
+        android:pathData="M9 17 V31 M4.5 20.5 V27.5 M39 17 V31 M43.5 20.5 V27.5"
+        android:strokeColor="#FF7FB8F5"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M19.5 11 H28.5 A1.5 1.5 0 0 1 30 12.5 V31.5 A1.5 1.5 0 0 1 28.5 33 H19.5 A1.5 1.5 0 0 1 18 31.5 V12.5 A1.5 1.5 0 0 1 19.5 11 Z"
+        android:fillColor="#FFFFFFFF" />
+    <path
+        android:pathData="M22 37.5 H26"
+        android:strokeColor="#FF4A86CC"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round" />
+</vector>

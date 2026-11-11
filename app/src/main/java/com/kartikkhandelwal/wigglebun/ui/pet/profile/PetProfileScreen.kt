@@ -54,6 +54,7 @@ import com.kartikkhandelwal.wigglebun.domain.rewards.WeeklyChart
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.ui.chartColor
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
+import com.kartikkhandelwal.wigglebun.ui.pet.bunTap
 import com.kartikkhandelwal.wigglebun.ui.labelRes
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
@@ -123,7 +124,7 @@ private fun PetProfileContent(state: PetProfileUiState, modifier: Modifier) {
                 spec = state.pet.spec,
                 name = name,
                 accessories = state.pet.wearing,
-                modifier = Modifier.size(P.PetSize),
+                modifier = Modifier.size(P.PetSize).bunTap(state.mood, name),
             )
         }
         // The name alone: one line, cut with "…" if it must be (TalkBack reads it whole).

@@ -17,6 +17,12 @@ class ReleaseBuildTest {
         assertTrue("release must lock when the paywall is closed", BuildConfig.PAYWALL_LOCKS)
     }
 
+    /** RevenueCat's Test Store key is for debug only; the SDK crashes a release build that uses it. */
+    @Test
+    fun usesNoTestStoreKey() {
+        assertFalse(BuildConfig.REVENUECAT_API_KEY.startsWith("test_"))
+    }
+
     @Test
     fun isNotADebugOrClosedTestBuild() {
         assertFalse(BuildConfig.DEBUG)

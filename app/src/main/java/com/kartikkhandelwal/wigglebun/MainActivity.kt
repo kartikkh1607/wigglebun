@@ -20,12 +20,17 @@ import com.kartikkhandelwal.wigglebun.ui.navigation.WigglebunNavHost
 import com.kartikkhandelwal.wigglebun.ui.onboarding.AppGate
 import com.kartikkhandelwal.wigglebun.ui.onboarding.OnboardingFlowRoute
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
+import com.kartikkhandelwal.wigglebun.feedback.FeelPlayer
+import com.kartikkhandelwal.wigglebun.feedback.ProvideFeel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val shell: AppShellViewModel by viewModels()
+
+    @Inject lateinit var feel: FeelPlayer
 
     /** A break the widget asked to start; cleared once the nav host has opened it. */
     private var pendingBreak by mutableStateOf<BreakType?>(null)
@@ -42,14 +47,16 @@ class MainActivity : ComponentActivity() {
             val onboardingDone by shell.onboardingDone.collectAsStateWithLifecycle()
             // The phone's "Remove animations" setting stills the app's own motion too.
             ProvideReducedMotion {
-                WigglebunTheme {
-                    AppGate(
-                        onboardingDone = onboardingDone,
-                        onboarding = { OnboardingFlowRoute() },
-                        app = {
-                            WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
-                        },
-                    )
+                ProvideFeel(feel) {
+                    WigglebunTheme {
+                        AppGate(
+                            onboardingDone = onboardingDone,
+                            onboarding = { OnboardingFlowRoute() },
+                            app = {
+                                WigglebunNavHost(activePet = activePet, startBreak = pendingBreak, onStartBreakHandled = { pendingBreak = null })
+                            },
+                        )
+                    }
                 }
             }
         }

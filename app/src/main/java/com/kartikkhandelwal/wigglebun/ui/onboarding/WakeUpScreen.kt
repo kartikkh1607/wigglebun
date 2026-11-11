@@ -1,5 +1,8 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
+import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -188,12 +191,13 @@ private fun WakeText() {
 private fun Sleeper(asleep: Boolean, k: Float, onWake: () -> Unit) {
     val tapToWake = stringResource(R.string.wake_cta)
     val description = stringResource(R.string.wake_blob_description)
+    val feel = LocalFeel.current
     Box(
         Modifier
             .size(S.WakeBlobWidth * k, S.WakeBlobHeight * k)
             .then(
                 if (asleep) {
-                    Modifier.clickable(onClickLabel = tapToWake, onClick = onWake).semantics { contentDescription = description }
+                    Modifier.tickClickable(onClickLabel = tapToWake, onClick = { feel.play(FeelSound.BunChirpBright); onWake() }).semantics { contentDescription = description }
                 } else {
                     Modifier
                 },
@@ -262,6 +266,7 @@ private fun WakeButton(asleep: Boolean, onWake: () -> Unit, modifier: Modifier =
     // Hidden, not gone, while the pet stretches: nothing moves and nothing can be tapped twice.
     ChunkyButton(
         onClick = onWake,
+        sound = FeelSound.BunChirpBright, // the wake-up moment: Bun's first chirp
         enabled = asleep,
         style = ChunkyButtonStyle.Highlight,
         modifier = modifier.fillMaxWidth().heightIn(min = S.WakeCtaHeight).alpha(if (asleep) 1f else 0f),

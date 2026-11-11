@@ -21,6 +21,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvent
+import com.kartikkhandelwal.wigglebun.feedback.FeelPolicy
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -51,8 +55,12 @@ class BreakSessionViewModelTest {
      * up to a couple of seconds in a cold test JVM). Wait for it, so that publish happens before
      * a test moves [now] and can't show a later step at an unexpected moment.
      */
-    private fun session(type: BreakType, startDrained: Boolean = false) = BreakSessionViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("type" to type.name, "startDrained" to startDrained)),
+    private fun session(
+        type: BreakType,
+        startDrained: Boolean = false,
+        handle: SavedStateHandle = SavedStateHandle(mapOf("type" to type.name, "startDrained" to startDrained)),
+    ) = BreakSessionViewModel(
+        savedStateHandle = handle,
         recordBreakDone = app.recordBreakDone,
         elapsed = elapsed,
         petRepository = app.pets,
@@ -71,6 +79,58 @@ class BreakSessionViewModelTest {
             Thread.sleep(WAIT_MILLIS)
         }
         error("Timed out")
+    }
+
+    /** What the route would play: everything the view model has sent so far, each delivered once. */
+    private fun drainFeel(vm: BreakSessionViewModel): List<FeelEvent> = runBlocking {
+        val events = mutableListOf<FeelEvent>()
+        withTimeoutOrNull(300) { vm.feel.collect { events += it } }
+        events
+    }
+
+    private fun sparksSounds(event: FeelEvent.Celebrated) =
+        FeelPolicy({ true }, { true }, { true }, { true }, { 0L })
+            .celebrationCues(event.breakKey, event.sparksGranted).map { it.sound }
+
+    @Test
+    fun completingABreakCelebratesOnceAndSparksOnlyWhenPaid() {
+        app.sittingFor(20)
+        val first = session(BreakType.NECK)
+        repeat(3) { first.nextStep() }
+        first.done()
+        first.done() // a double tap
+        waitUntil { first.state.value.result != null }
+
+        val events = drainFeel(first)
+        assertEquals(listOf(FeelEvent.BreakStarted), events.filterIsInstance<FeelEvent.BreakStarted>())
+        val celebrated = events.filterIsInstance<FeelEvent.Celebrated>().single()
+        assertEquals(BreakType.NECK.defaultReward, celebrated.sparksGranted)
+        assertEquals(listOf(FeelSound.Celebrate, FeelSound.Sparks), sparksSounds(celebrated))
+        assertTrue(drainFeel(first).isEmpty()) // consumed: nothing is replayed
+
+        // The same type again today pays nothing: still celebrates, but no sparks sound.
+        val second = session(BreakType.NECK)
+        repeat(3) { second.nextStep() }
+        second.done()
+        waitUntil { second.state.value.result != null }
+        val again = drainFeel(second).filterIsInstance<FeelEvent.Celebrated>().single()
+        assertEquals(0, again.sparksGranted)
+        assertEquals(listOf(FeelSound.Celebrate), sparksSounds(again))
+    }
+
+    @Test
+    fun recreatingTheViewModelFromTheSameStateDoesNotReplayFeedback() {
+        app.sittingFor(20)
+        val handle = SavedStateHandle(mapOf("type" to BreakType.NECK.name, "startDrained" to false))
+        val first = session(BreakType.NECK, handle = handle)
+        repeat(3) { first.nextStep() }
+        first.done()
+        waitUntil { first.state.value.result != null }
+        assertEquals(2, drainFeel(first).size) // started + celebrated
+
+        // Process restore / recreation: same SavedStateHandle, new view model.
+        val restored = session(BreakType.NECK, handle = handle)
+        assertTrue(drainFeel(restored).isEmpty())
     }
 
     @Test
