@@ -38,6 +38,10 @@
     <!-- Break reminder notification -->
     <string name="channel_break_reminders_name">Break reminders</string>
     <string name="channel_break_reminders_description">Gentle nudges from your pet to stand up and stretch</string>
+    <string name="channel_trial_name">Free trial</string>
+    <string name="channel_trial_description">A heads-up two days before your free trial ends</string>
+    <string name="trial_reminder_title">Your free trial ends on %1$s</string>
+    <string name="trial_reminder_text">Your plan starts then. To cancel before that, open Google Play › Subscriptions.</string>
     <string name="reminder_title">Time for a Bun Break</string>
     <!-- %1$s is the pet's name -->
     <string-array name="reminder_texts">
@@ -252,6 +256,10 @@
     <string name="settings_no_breaks_yet">No breaks yet</string>
     <!-- TalkBack action on the card: it opens the Pet tab -->
     <string name="settings_open_profile">open profile</string>
+    <string name="settings_badge_premium">Premium</string>
+    <string name="settings_badge_trial">Free trial</string>
+    <string name="settings_badge_unlock">Unlock</string>
+    <string name="settings_badge_unlock_label">see plans</string>
     <string name="settings_your_setup">Your setup</string>
     <!-- Under each setup row's name. %1$s is the pet's name. -->
     <string name="settings_notifications_why">So %1$s can remind you</string>

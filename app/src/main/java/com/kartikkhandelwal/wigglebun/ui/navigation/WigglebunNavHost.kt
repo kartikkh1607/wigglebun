@@ -55,7 +55,9 @@ fun WigglebunNavHost(
     collectionContent: @Composable () -> Unit = { CollectionScreenRoute() },
     petContent: @Composable () -> Unit = { PetProfileScreenRoute() },
     /** Gets what opens the Pet tab (Settings' "Bun & you" card). */
-    settingsContent: @Composable (onOpenPet: () -> Unit) -> Unit = { SettingsScreenRoute(onOpenPet = it) },
+    settingsContent: @Composable (onOpenPet: () -> Unit, onOpenPaywall: () -> Unit) -> Unit = { onOpenPet, onOpenPaywall ->
+        SettingsScreenRoute(onOpenPet = onOpenPet, onOpenPaywall = onOpenPaywall)
+    },
     /** Names the pet tab; null (still loading) leaves the label blank rather than show the wrong pet. */
     activePet: ActivePet? = ActivePet.Default,
     /** A break to open straight away (from the widget); [onStartBreakHandled] clears it. */
@@ -140,7 +142,12 @@ fun WigglebunNavHost(
             }
             composable<CollectionRoute> { collectionContent() }
             composable<PetRoute> { petContent() }
-            composable<SettingsRoute> { settingsContent { openTab(TopLevelTab.Pet) } }
+            composable<SettingsRoute> {
+                settingsContent(
+                    { openTab(TopLevelTab.Pet) },
+                    { navController.navigate(PremiumPaywallRoute) { launchSingleTop = true } },
+                )
+            }
             composable<BreakSessionRoute> { BreakSessionScreenRoute(onExit = { navController.popBackStack() }) }
             composable<PremiumPaywallRoute> {
                 // Closed or bought, the way out is the same: back to Home, which is open by then if it was bought.
@@ -159,7 +166,7 @@ internal fun WigglebunNavHostPreview() {
             homeContent = { HomeScreen(HomePreviewStates.Tired, debugEntry = it.debugEntry) },
             collectionContent = { CollectionScreen(CollectionPreviewStates.OnlyBun) },
             petContent = { PetProfileScreen(PetProfilePreviewStates.EmptyWeek) },
-            settingsContent = { SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.AllOff, SettingsActions()) },
+            settingsContent = { _, _ -> SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.AllOff, SettingsActions()) },
         )
     }
 }

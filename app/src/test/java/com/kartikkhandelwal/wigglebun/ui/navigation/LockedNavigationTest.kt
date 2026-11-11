@@ -38,7 +38,7 @@ class LockedNavigationTest {
                         homeContent = { Text("open home") },
                         collectionContent = { Text("collection") },
                         petContent = { Text("pet page") },
-                        settingsContent = { Text("settings") },
+                        settingsContent = { _, _ -> Text("settings") },
                         startBreak = startBreak,
                         onStartBreakHandled = { breakRequestsHandled++ },
                         locked = locked,

@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -50,6 +51,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.model.PetId
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
+import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import com.kartikkhandelwal.wigglebun.ui.collection.PetSheet
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import androidx.annotation.DrawableRes
@@ -59,6 +61,7 @@ import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.components.GroupedCard
 import com.kartikkhandelwal.wigglebun.ui.components.LegalLinks
 import com.kartikkhandelwal.wigglebun.ui.components.SettingsRow
+import com.kartikkhandelwal.wigglebun.ui.components.StatusChip
 import com.kartikkhandelwal.wigglebun.ui.home.formatTime
 import com.kartikkhandelwal.wigglebun.ui.home.minuteOfDay
 import com.kartikkhandelwal.wigglebun.ui.iconRes
@@ -83,6 +86,7 @@ import com.kartikkhandelwal.wigglebun.ui.setup.SetupCardsViewModel
 import com.kartikkhandelwal.wigglebun.ui.setup.SetupExplainContent
 import com.kartikkhandelwal.wigglebun.ui.setup.SetupSettingsRow
 import com.kartikkhandelwal.wigglebun.ui.setup.SetupStatus
+import com.kartikkhandelwal.wigglebun.ui.theme.Sun
 import com.kartikkhandelwal.wigglebun.ui.tint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakEyesTint
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeckTint
@@ -126,14 +130,18 @@ class SettingsActions(
     val onOpenTerms: () -> Unit = {},
     /** The "Bun & you" card opens the Pet tab. */
     val onOpenPet: () -> Unit = {},
+    /** Its "Unlock" chip, shown while the app is locked, opens the plans. */
+    val onOpenPaywall: () -> Unit = {},
 )
 
 @Composable
 fun SettingsScreenRoute(
     modifier: Modifier = Modifier,
     onOpenPet: () -> Unit = {},
+    onOpenPaywall: () -> Unit = {},
     setupViewModel: SetupCardsViewModel = hiltViewModel(),
     viewModel: SettingsViewModel = hiltViewModel(),
+    badgeViewModel: PremiumBadgeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val loaded = state
@@ -142,6 +150,7 @@ fun SettingsScreenRoute(
         return
     }
     ConsumeFeel(viewModel.feel)
+    val badge by badgeViewModel.badge.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var pickingTime by rememberSaveable { mutableStateOf<WorkTime?>(null) }
     var pickingInterval by rememberSaveable { mutableStateOf(false) }
@@ -159,10 +168,12 @@ fun SettingsScreenRoute(
                 onPickInterval = { pickingInterval = true },
                 onBreakToggled = viewModel::onBreakToggled,
                 onOpenPet = onOpenPet,
+                onOpenPaywall = onOpenPaywall,
                 onOpenPrivacy = { LegalLinks.open(context, LegalLinks.PRIVACY_URL) },
                 onOpenTerms = { LegalLinks.open(context, LegalLinks.TERMS_URL) },
             ),
             modifier = modifier,
+            badge = badge,
         )
     }
     pickingTime?.let { time ->
@@ -192,7 +203,7 @@ fun SettingsScreenRoute(
 
 /**
  * The Settings tab (CLAUDE.md §6.7, design/ui_v2/Settings.dc.html): the "Bun & you" card, then
- * grouped cards for the setup, work hours, breaks and about. The Premium badge comes with M10c.
+ * grouped cards for the setup, work hours, breaks and about. [badge] is the chip on that card.
  */
 @Composable
 fun SettingsScreen(
@@ -200,6 +211,7 @@ fun SettingsScreen(
     setup: SetupCardsUi,
     actions: SettingsActions,
     modifier: Modifier = Modifier,
+    badge: PremiumBadge? = null,
 ) {
     OnSurface(Surfaces.Settings) { SettingsContent(state, setup, actions, modifier) }
 }
@@ -226,7 +238,7 @@ private fun SettingsContent(
             color = Ink,
             modifier = Modifier.padding(start = S.TextInset, end = S.TextInset, bottom = S.TitleBottom).semantics { heading() },
         )
-        PetAndYouCard(state, petName, actions.onOpenPet)
+        PetAndYouCard(state, petName, badge, actions)
 
         SectionLabel(R.string.settings_your_setup)
         GroupedCard {
@@ -286,14 +298,16 @@ private fun SettingsContent(
  * breaks so far. Tapping it opens the Pet tab. The name never adds a line ([PetNameSentence]).
  */
 @Composable
-private fun PetAndYouCard(state: SettingsUiState, petName: String, onOpenPet: () -> Unit) {
+private fun PetAndYouCard(state: SettingsUiState, petName: String, badge: PremiumBadge?, actions: SettingsActions) {
     val summary = petSummary(state.streakDays, state.totalBreaks)
+    // With a big font the chip goes under the text, like a row's value (SettingsRow), so the name keeps its room.
+    val badgeBelow = LocalDensity.current.fontScale >= S.BadgeBelowFontScale
     ChunkySurface(
         shape = WigglebunShapes.Card,
         faceColor = Night,
         edgeColor = NightEdge,
         edgeHeight = S.HeaderEdge,
-        onClick = onOpenPet,
+        onClick = actions.onOpenPet,
         onClickLabel = stringResource(R.string.settings_open_profile),
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -326,9 +340,29 @@ private fun PetAndYouCard(state: SettingsUiState, petName: String, onOpenPet: ()
                     color = Card,
                 )
                 Text(summary, style = WigglebunTextStyles.HeaderCardSub, color = NightSubtle)
+                if (badge != null && badgeBelow) PremiumChip(badge, actions.onOpenPaywall)
             }
+            if (badge != null && !badgeBelow) PremiumChip(badge, actions.onOpenPaywall)
         }
     }
+}
+
+/** "Premium" / "Free trial" just say so; "Unlock" (the app is locked) opens the plans. */
+@Composable
+private fun PremiumChip(badge: PremiumBadge, onOpenPaywall: () -> Unit) {
+    val text = stringResource(
+        when (badge) {
+            PremiumBadge.Premium -> R.string.settings_badge_premium
+            PremiumBadge.Trial -> R.string.settings_badge_trial
+            PremiumBadge.Unlock -> R.string.settings_badge_unlock
+        },
+    )
+    val tap = if (badge == PremiumBadge.Unlock) {
+        Modifier.tickClickable(onClickLabel = stringResource(R.string.settings_badge_unlock_label), onClick = onOpenPaywall)
+    } else {
+        Modifier
+    }
+    StatusChip(text, modifier = Modifier.clip(WigglebunShapes.Pill).then(tap), background = Sun, content = Ink)
 }
 
 /** "5-day streak · 42 breaks so far"; no streak part at 0, "No breaks yet" before the first. */
@@ -610,6 +644,19 @@ internal fun SettingsAllOffPreview() {
 @Composable
 internal fun SettingsMixedPreview() {
     WigglebunTheme { SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.Mixed, SettingsActions()) }
+}
+
+@Preview(widthDp = 390, heightDp = 300)
+@Composable
+internal fun SettingsBadgePreview(badge: PremiumBadge = PremiumBadge.Premium, name: String? = null) {
+    WigglebunTheme {
+        SettingsScreen(
+            name?.let { SettingsPreviewStates.named(it) } ?: SettingsPreviewStates.Default,
+            SettingsPreviewStates.Mockup,
+            SettingsActions(),
+            badge = badge,
+        )
+    }
 }
 
 @Preview(widthDp = 360, heightDp = 640, fontScale = 1.3f)
