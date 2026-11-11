@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.kartikkhandelwal.wigglebun.R
@@ -96,6 +97,16 @@ val WigglebunTypography = Typography(
 )
 
 /** Styles from the mockups that don't map onto a Material slot. */
+/**
+ * Line breaking for short texts that sit alone on a screen (onboarding titles, the line under
+ * them, a speech bubble): lines of about the same length, so a title never leaves one word
+ * ("you?") alone on its last line. Not for long paragraphs.
+ */
+val BalancedLines = LineBreak(LineBreak.Strategy.Balanced, LineBreak.Strictness.Normal, LineBreak.WordBreak.Default)
+
+/** This style with [BalancedLines]. */
+fun TextStyle.balanced(): TextStyle = copy(lineBreak = BalancedLines)
+
 object WigglebunTextStyles {
     /** Mood chip on the timer pill (13 sp, 800). */
     val Chip = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, lineHeight = 17.sp)

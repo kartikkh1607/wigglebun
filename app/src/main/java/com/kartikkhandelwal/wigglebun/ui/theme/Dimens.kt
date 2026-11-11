@@ -108,11 +108,16 @@ object Dimens {
 
     /** Onboarding, measured from design/ui_v2 (WakeUp.dc.html, Name.dc.html: 390 x 844). */
     object Onboarding {
-        val SkipRowTop = 22.dp
-        val SkipRowHorizontal = 24.dp
-        val SkipPaddingVertical = 10.dp
-        val SkipPaddingHorizontal = 4.dp
-        val SkipMinSize = 48.dp
+        /**
+         * The top bar every onboarding screen shares: Back (if any) and Skip on one centre line.
+         * Back is 44 dp inside a 48 dp touch target, so 16 dp puts its face 18 dp from the edge;
+         * the Skip pill has no such margin and gets the 18 dp directly.
+         */
+        val TopBarTop = 14.dp
+        val TopBarStart = 16.dp
+        val TopBarEnd = 18.dp
+        /** Height of the bar's buttons at normal font size (their touch target). */
+        val TopBarButton = 48.dp
         val TextHorizontal = 32.dp
         val TextGap = 10.dp
         val CtaBottomShort = 16.dp
@@ -557,12 +562,9 @@ object Dimens {
         const val MinScale = 0.45f
         /** Above this font scale the button scrolls with the panel instead of staying pinned. */
         const val LargeFontScale = 1.15f
-        val TopButtonsInset = 16.dp
         /** Below Back and Skip at normal font size, and how much more per extra font scale (the Skip pill grows). */
         val TopButtonsClear = 68.dp
         val TopButtonsClearPerFont = 24.dp
-        val SkipTop = 22.dp
-        val SkipEnd = 20.dp
         val CtaHorizontal = 24.dp
         val CtaTop = 12.dp
         val CtaBottom = 32.dp
@@ -581,7 +583,8 @@ object Dimens {
         val ClockBarInset = 30.dp
         val ClockBarEdge = 4.dp
         val ClockLabelsTop = 262.dp
-        val ClockLabelsInset = 22.dp
+        /** The same as [ClockBarInset]: the two midnight labels start and end where the bar does. */
+        val ClockLabelsInset = 30.dp
         val ClockLabelGap = 6.dp
         val ClockSunRadius = 9.dp
         val ClockSunRay = 2.4.dp

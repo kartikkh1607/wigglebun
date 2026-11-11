@@ -34,6 +34,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.Dimens
 import com.kartikkhandelwal.wigglebun.ui.theme.Ink
 import com.kartikkhandelwal.wigglebun.ui.theme.InkMuted
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
+import com.kartikkhandelwal.wigglebun.ui.theme.balanced
 
 private val S = Dimens.Onboarding
 
@@ -44,7 +45,7 @@ fun FirstStretchScreen(petName: String, onStart: () -> Unit, onSkip: () -> Unit,
         modifier.fillMaxSize().background(Cream).systemBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        SkipRow(color = Ink, onSkip = onSkip)
+        OnboardingTopBar(onSkip = onSkip)
         Column(
             Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = S.TextHorizontal),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -56,14 +57,14 @@ fun FirstStretchScreen(petName: String, onStart: () -> Unit, onSkip: () -> Unit,
             PetNameSentence(
                 template = R.string.stretch_title,
                 name = petName,
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.displayMedium.balanced(),
                 color = Ink,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.semantics { heading() },
             )
             Text(
                 stringResource(R.string.stretch_body),
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.balanced(),
                 color = InkMuted,
                 textAlign = TextAlign.Center,
             )
