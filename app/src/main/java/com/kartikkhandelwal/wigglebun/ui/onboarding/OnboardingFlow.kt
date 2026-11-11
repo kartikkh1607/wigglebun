@@ -24,7 +24,7 @@ import com.kartikkhandelwal.wigglebun.ui.breaksession.BreakSessionScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.navigation.BreakSessionRoute
 import com.kartikkhandelwal.wigglebun.ui.navigation.navFadeIn
 import com.kartikkhandelwal.wigglebun.ui.navigation.navFadeOut
-import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallPlaceholderScreen
+import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +53,7 @@ data object IntervalRoute
 data object FirstStretchRoute
 
 @Serializable
-data object PaywallPlaceholderRoute
+data object PaywallRoute
 
 /** One of the 1-minute breaks, and it ends with a big reach up. */
 private val FirstBreak = BreakType.STAND_UP
@@ -204,6 +204,10 @@ fun OnboardingFlow(
     sessionContent: @Composable (onExit: () -> Unit, onCompleted: () -> Unit) -> Unit = { onExit, onCompleted ->
         BreakSessionScreenRoute(onExit = onExit, onCompleted = onCompleted)
     },
+    /** Overridable so tests can stand in for the Hilt-backed paywall. Both ways out finish onboarding. */
+    paywallContent: @Composable (petName: String, onClose: () -> Unit, onEntitled: () -> Unit) -> Unit = { name, onClose, onEntitled ->
+        PaywallScreenRoute(petName = name, onClose = onClose, onEntitled = onEntitled)
+    },
 ) {
     val defaultName = stringResource(PetSpecs.Bun.defaultName)
     val petName = cleanPetName(nameDraft) ?: defaultName
@@ -260,14 +264,15 @@ fun OnboardingFlow(
         composable<BreakSessionRoute> {
             sessionContent({ navController.popBackStack() }, { navController.openPaywall() })
         }
-        composable<PaywallPlaceholderRoute> {
-            PaywallPlaceholderScreen(petName = petName, onContinue = actions.onFinish)
+        composable<PaywallRoute> {
+            // Closing doesn't lock yet: the locked Home comes with M10c (CLAUDE.md §5.5).
+            paywallContent(petName, actions.onFinish, actions.onFinish)
         }
     }
 }
 
 /** There's nothing to go back to from the paywall: the steps are behind us. */
-private fun NavHostController.openPaywall() = navigate(PaywallPlaceholderRoute) {
+private fun NavHostController.openPaywall() = navigate(PaywallRoute) {
     popUpTo(FirstStretchRoute) { inclusive = true }
     launchSingleTop = true
 }

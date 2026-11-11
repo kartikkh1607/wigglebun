@@ -213,3 +213,7 @@ val CelebrateText = Color(0xFF3F5A47)
 val CelebrateSparkTile = Color(0xFFFFF0CC)
 /** Streak bars not yet reached today. */
 val StreakBarIdle = Color(0xFFE9E1D6)
+
+// Paywall (design/ui_v2/Paywall.dc.html), on the Profile surface
+val PaywallHalo = Color(0xFFD3E5FA)
+val PaywallPlanSelected = Color(0xFFFFF8E6)
