@@ -61,6 +61,11 @@ class SettingsScreenshotTest {
     @Test
     fun badgeTrial() = capture("settings_badge_trial") { SettingsBadgePreview(PremiumBadge.Trial) }
 
+    /** The chip an unlocked build (closed test) shows someone who hasn't bought: same chip as when locked. */
+    @Config(qualifiers = "w390dp-h300dp-xxhdpi")
+    @Test
+    fun badgeUnlockOpen() = capture("settings_badge_unlock_open") { SettingsBadgePreview(PremiumBadge.Unlock) }
+
     @Config(qualifiers = "w360dp-h300dp-xxhdpi")
     @Test
     fun badgeUnlockWidestName() = capture("settings_badge_unlock_widest_name") {

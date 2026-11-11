@@ -40,7 +40,7 @@ android {
         // what people see; this first AAB (internal testing, only to unlock Play Console's
         // subscription setup) was "1.0.0-internal" (versionCode 2); closed-test builds add "-closedtest" to
         // "1.0.0" (below).
-        versionCode = 3
+        versionCode = 4
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
