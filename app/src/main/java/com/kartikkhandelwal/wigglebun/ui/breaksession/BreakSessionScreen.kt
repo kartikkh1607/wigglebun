@@ -230,8 +230,9 @@ private fun SessionContent(
         )
     }
     if (LocalDensity.current.fontScale > S.LargeFontScale) {
-        // A big font leaves no room for the ring and the text together: they scroll as one, above the
-        // pinned buttons, so the whole instruction can be read.
+        // A big font leaves no room for the full ring and the text together: a smaller ring, and the
+        // two scroll as one above the pinned buttons if they still don't fit. From HugeFontScale the
+        // ring is smaller again and shares a line with the countdown (session_small_phone_font_2_0).
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
             Column { top() }
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
