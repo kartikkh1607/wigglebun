@@ -390,8 +390,8 @@ v1.0 build order (approved 2026-11-04): release foundations + cleanup → privac
 - Day circles (`DayChips`, Settings and onboarding's Hours): 40 dp, but never wider than their cell less a 6 dp gap, so on a 360 dp phone (where they all but touched at any font size) they shrink to about 36–38 dp. Their cells are still 44.5 dp wide on a 360 dp phone (under the 48 dp target; 48 dp tall).
 - Naming screen's bubble and the celebration subtitle: `balanced()`, no word alone on the last line.
 - Onboarding Interval at a big font: the wrapped labels stop clear of the panel's edge.
-- Wake-up at 200% font on 360×640: still needs a scroll to read the last line; scrolled to its end it now stops clear of the button.
-- Break session from 160% font: the ring is 30% of its size, so the step's title starts on the first screen; the instruction can still need a scroll on 360×640 at 200%.
+- Wake-up at a big font: the scene's squeeze allows for the lines that wrapping adds (`WakeTextWrapGrowth`), so at 200% on 360×640 the whole text sits above the button.
+- Break session from 160% font: the ring (30% of its size) and the countdown share one line and the "Colour coming back!" chip is left out ("Paused" stays), so the step's title and text start high on the first screen.
 - Onboarding Hours at 200% font: the bar's labels no longer crowd (the midnight labels drop out when there is no room).
 
 ---
