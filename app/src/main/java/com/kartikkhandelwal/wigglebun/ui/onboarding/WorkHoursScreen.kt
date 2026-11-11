@@ -1,7 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import android.text.format.DateFormat

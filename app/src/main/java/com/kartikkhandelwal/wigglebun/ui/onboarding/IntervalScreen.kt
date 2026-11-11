@@ -1,7 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
 import androidx.compose.runtime.remember
-import androidx.compose.ui.unit.dp
 import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -54,6 +53,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.kartikkhandelwal.wigglebun.R
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
