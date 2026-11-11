@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.home
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import android.text.format.DateFormat
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -59,6 +60,7 @@ import com.kartikkhandelwal.wigglebun.domain.model.BreakType
 import com.kartikkhandelwal.wigglebun.domain.model.Mood
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
+import com.kartikkhandelwal.wigglebun.ui.pet.bunTap
 import com.kartikkhandelwal.wigglebun.ui.components.PillCard
 import com.kartikkhandelwal.wigglebun.ui.components.SparkIcon
 import com.kartikkhandelwal.wigglebun.ui.components.SparksPill
@@ -182,7 +184,7 @@ private fun PetWithLine(
                 spec = pet,
                 name = petName,
                 accessories = accessories,
-                modifier = Modifier.size(H.PetWidth, H.PetHeight),
+                modifier = Modifier.size(H.PetWidth, H.PetHeight).bunTap(mood, petName),
             )
             if (line != null) SpeechBubble(stringResource(line.textRes))
         },
@@ -294,6 +296,7 @@ private fun SittingContent(pill: PillState.Sitting, line: PetLine?, showBreakCta
         ChunkyButton(
             text = stringResource(R.string.home_take_break),
             onClick = onTakeBreak,
+            sound = FeelSound.TapSoft,
             modifier = Modifier.fillMaxWidth().padding(top = H.CtaTopGap),
             wrap = true,
         )

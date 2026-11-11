@@ -3,6 +3,7 @@ package com.kartikkhandelwal.wigglebun.ui.home
 import android.app.Application
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -35,6 +36,16 @@ class HomeSceneTest {
         val node = composeRule.onNodeWithText("Getting sleepy… stretch with me?").fetchSemanticsNode()
         val description = node.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty()
         assertEquals(listOf("Bun, energy draining from sitting"), description)
+    }
+
+    @Test
+    fun theTalkBackActionOnThePetNamesIt() {
+        show(HomePreviewStates.Tired)
+        // The pet's click action is merged into the same item as its bubble; its label is what
+        // TalkBack says after "Double tap to": "Pet Bun", never "Pet ".
+        val node = composeRule.onNodeWithText("Getting sleepy… stretch with me?").fetchSemanticsNode()
+        val label = node.config.getOrNull(SemanticsActions.OnClick)?.label
+        assertEquals("Pet Bun", label)
     }
 
     @Test

@@ -1,5 +1,8 @@
 package com.kartikkhandelwal.wigglebun.ui.collection
 
+import com.kartikkhandelwal.wigglebun.data.repo.BuyResult
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvents
+import com.kartikkhandelwal.wigglebun.feedback.FeelEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kartikkhandelwal.wigglebun.data.repo.AdoptResult
@@ -28,6 +31,10 @@ class CollectionViewModel @Inject constructor(
 
     /** Today's break day (night shifts included); the days estimate counts only the days before it. */
     private val today = streakRepository.history.map { it.today }.distinctUntilChanged()
+
+    /** Adopt and buy feedback, played once by the route ([ConsumeFeel]). */
+    private val feelEvents = FeelEvents()
+    val feel = feelEvents.flow
 
     private val selection = MutableStateFlow<SheetSelection?>(null)
     private val busy = MutableStateFlow(false)
@@ -75,7 +82,7 @@ class CollectionViewModel @Inject constructor(
         if (busy.value) return
         busy.value = true
         viewModelScope.launch {
-            petRepository.buy(item)
+            if (petRepository.buy(item) == BuyResult.Bought) feelEvents.send(FeelEvent.Success)
             // Bought: the details now say "Take off". Not enough sparks (the balance changed
             // meanwhile): the details say how many are missing.
             accessorySelection.value = AccessorySelection(item, AccessoryStep.DETAILS)
@@ -125,7 +132,11 @@ class CollectionViewModel @Inject constructor(
         busy.value = true
         viewModelScope.launch {
             val step = when (petRepository.adopt(pet)) {
-                AdoptResult.Adopted, AdoptResult.AlreadyOwned -> SheetStep.ADOPTED
+                AdoptResult.Adopted -> {
+                    feelEvents.send(FeelEvent.Success) // only now that the sparks are spent
+                    SheetStep.ADOPTED
+                }
+                AdoptResult.AlreadyOwned -> SheetStep.ADOPTED
                 // The balance changed meanwhile: back to the details, which now say how many are missing.
                 is AdoptResult.NotEnoughSparks -> SheetStep.DETAILS
             }

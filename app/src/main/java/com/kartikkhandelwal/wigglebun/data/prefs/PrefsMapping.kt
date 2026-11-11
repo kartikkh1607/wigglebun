@@ -28,6 +28,9 @@ import java.time.LocalDate
 
 /** All keys in the single app DataStore (see DataStoreModule). */
 internal object PrefsKeys {
+    /** Feel layer switches (CLAUDE.md §11); missing = on. */
+    val SoundsEnabled = booleanPreferencesKey("sounds_enabled")
+    val HapticsEnabled = booleanPreferencesKey("haptics_enabled")
     val WorkDays = stringSetPreferencesKey("work_days")
     val WorkStartMinute = intPreferencesKey("work_start_minute")
     val WorkEndMinute = intPreferencesKey("work_end_minute")

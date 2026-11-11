@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.settings
 
+import androidx.compose.ui.graphics.Color
 import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +52,9 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
 import com.kartikkhandelwal.wigglebun.domain.sitting.WorkSchedule
 import com.kartikkhandelwal.wigglebun.ui.collection.PetSheet
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkyButton
+import androidx.annotation.DrawableRes
+import com.kartikkhandelwal.wigglebun.feedback.ConsumeFeel
+import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import com.kartikkhandelwal.wigglebun.ui.components.ChunkySurface
 import com.kartikkhandelwal.wigglebun.ui.components.GroupedCard
 import com.kartikkhandelwal.wigglebun.ui.components.LegalLinks
@@ -116,6 +120,8 @@ class SettingsActions(
     val onSaveHours: () -> Unit = {},
     val onPickInterval: () -> Unit = {},
     val onBreakToggled: (BreakType, Boolean) -> Unit = { _, _ -> },
+    val onSoundsToggled: (Boolean) -> Unit = {},
+    val onHapticsToggled: (Boolean) -> Unit = {},
     val onOpenPrivacy: () -> Unit = {},
     val onOpenTerms: () -> Unit = {},
     /** The "Bun & you" card opens the Pet tab. */
@@ -135,6 +141,7 @@ fun SettingsScreenRoute(
         Box(modifier.fillMaxSize().background(Surfaces.Settings.background))
         return
     }
+    ConsumeFeel(viewModel.feel)
     val context = LocalContext.current
     var pickingTime by rememberSaveable { mutableStateOf<WorkTime?>(null) }
     var pickingInterval by rememberSaveable { mutableStateOf(false) }
@@ -147,6 +154,8 @@ fun SettingsScreenRoute(
                 onToggleDay = viewModel::onToggleDay,
                 onPickTime = { pickingTime = it },
                 onSaveHours = viewModel::onSaveHours,
+                onSoundsToggled = viewModel::onSoundsToggled,
+                onHapticsToggled = viewModel::onHapticsToggled,
                 onPickInterval = { pickingInterval = true },
                 onBreakToggled = viewModel::onBreakToggled,
                 onOpenPet = onOpenPet,
@@ -232,6 +241,9 @@ private fun SettingsContent(
 
         SectionLabel(R.string.settings_breaks)
         BreaksCard(state, actions)
+
+        SectionLabel(R.string.settings_feel)
+        FeelCard(state, actions)
 
         SectionLabel(R.string.settings_about)
         GroupedCard {
@@ -442,12 +454,72 @@ private fun BreaksCard(state: SettingsUiState, actions: SettingsActions) {
 /** One break type: the whole row toggles; the switch only shows the state. */
 @Composable
 private fun BreakToggle(type: BreakType, isOn: Boolean, onlyOneLeft: Boolean, onToggle: (BreakType, Boolean) -> Unit) {
-    val enabled = !(isOn && onlyOneLeft)
-    SettingsRow(
+    SwitchRow(
         icon = type.iconRes,
         tile = type.tint,
         title = stringResource(type.labelRes),
-        modifier = Modifier.toggleable(value = isOn, enabled = enabled, role = Role.Switch, onValueChange = { onToggle(type, it) }),
+        isOn = isOn,
+        enabled = !(isOn && onlyOneLeft),
+        onToggle = { onToggle(type, it) },
+    )
+}
+
+/** "Sound and touch": Sounds and Haptics, both on by default and applied at once. */
+@Composable
+private fun FeelCard(state: SettingsUiState, actions: SettingsActions) {
+    GroupedCard {
+        row {
+            SwitchRow(
+                icon = R.drawable.ic_settings_sound,
+                tile = BreakEyesTint,
+                title = stringResource(R.string.settings_sounds),
+                subtitle = stringResource(R.string.settings_sounds_sub),
+                isOn = state.soundsOn,
+                // Switching Sounds off must not chirp on the way out.
+                soundOnToggle = false,
+                onToggle = actions.onSoundsToggled,
+            )
+        }
+        row {
+            SwitchRow(
+                icon = R.drawable.ic_settings_haptics,
+                tile = BreakNeckTint,
+                title = stringResource(R.string.settings_haptics),
+                subtitle = stringResource(R.string.settings_haptics_sub),
+                isOn = state.hapticsOn,
+                onToggle = actions.onHapticsToggled,
+            )
+        }
+    }
+}
+
+/** A row that toggles as a whole; the [Switch] only shows the state. Ticks and sounds go through [LocalFeel]. */
+@Composable
+private fun SwitchRow(
+    @DrawableRes icon: Int,
+    tile: Color,
+    title: String,
+    isOn: Boolean,
+    onToggle: (Boolean) -> Unit,
+    subtitle: String? = null,
+    enabled: Boolean = true,
+    soundOnToggle: Boolean = true,
+) {
+    val feel = LocalFeel.current
+    SettingsRow(
+        icon = icon,
+        tile = tile,
+        title = title,
+        subtitle = subtitle,
+        modifier = Modifier.toggleable(
+            value = isOn,
+            enabled = enabled,
+            role = Role.Switch,
+            onValueChange = {
+                feel.toggle(it, withSound = soundOnToggle)
+                onToggle(it)
+            },
+        ),
     ) {
         Switch(
             checked = isOn,
@@ -547,7 +619,7 @@ internal fun SettingsSmallLargeFontPreview() {
 }
 
 /** The whole page, for reviewing what's below the fold. */
-@Preview(widthDp = 390, heightDp = 1500)
+@Preview(widthDp = 390, heightDp = 1700)
 @Composable
 internal fun SettingsFullPreview() {
     WigglebunTheme { SettingsScreen(SettingsPreviewStates.Default, SettingsPreviewStates.Mixed, SettingsActions()) }

@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.collection
 
+import com.kartikkhandelwal.wigglebun.feedback.ConsumeFeel
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,6 +80,7 @@ private val C = Dimens.Collection
 @Composable
 fun CollectionScreenRoute(modifier: Modifier = Modifier, viewModel: CollectionViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    ConsumeFeel(viewModel.feel)
     val loaded = state
     if (loaded == null) {
         Box(modifier.fillMaxSize().background(Surfaces.Collection.background))

@@ -1,5 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
+import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -110,6 +112,7 @@ fun NamePetScreen(
         ChunkyButton(
             text = stringResource(R.string.name_cta),
             onClick = onContinue,
+            sound = FeelSound.TapSoft,
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -256,7 +259,7 @@ private fun Suggestions(onPick: (String) -> Unit) {
             val text = stringResource(suggestion.label)
             // The chip is smaller than a finger: the touch target around it is 48 dp.
             Box(
-                Modifier.clickable(role = Role.Button) { onPick(text) }.minimumInteractiveComponentSize(),
+                Modifier.tickClickable { onPick(text) }.minimumInteractiveComponentSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

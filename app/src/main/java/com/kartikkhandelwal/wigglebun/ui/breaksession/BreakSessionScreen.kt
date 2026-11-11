@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.breaksession
 
+import com.kartikkhandelwal.wigglebun.feedback.ConsumeFeel
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -76,6 +77,7 @@ fun BreakSessionScreenRoute(
     viewModel: BreakSessionViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    ConsumeFeel(viewModel.feel)
     // Ignores a second exit (Continue tapped as the auto-return fires).
     val exit = dropUnlessResumed(block = onExit)
     val complete = dropUnlessResumed(block = onCompleted)

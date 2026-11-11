@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.kartikkhandelwal.wigglebun.R
+import com.kartikkhandelwal.wigglebun.feedback.FeelSound
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonBorder
 import com.kartikkhandelwal.wigglebun.ui.theme.ButtonEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.Card
@@ -83,6 +84,7 @@ fun ChunkyButton(
     contentColor: Color = style.content,
     contentPadding: PaddingValues = PaddingValues(horizontal = Dimens.ButtonHorizontalPadding),
     interactionSource: MutableInteractionSource? = null,
+    sound: FeelSound? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
     ChunkySurface(
@@ -97,6 +99,7 @@ fun ChunkyButton(
         onClick = onClick,
         enabled = enabled,
         interactionSource = interactionSource,
+        sound = sound,
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
@@ -120,8 +123,10 @@ fun ChunkyButton(
     enabled: Boolean = true,
     /** Long labels in full-width buttons: wrap to more lines instead of clipping at large font sizes. */
     wrap: Boolean = false,
+    /** `tap_soft` for primary CTAs (Continue, Start, Done); null stays silent. */
+    sound: FeelSound? = null,
 ) {
-    ChunkyButton(onClick = onClick, modifier = modifier, style = style, enabled = enabled) {
+    ChunkyButton(onClick = onClick, modifier = modifier, style = style, enabled = enabled, sound = sound) {
         if (wrap) {
             // Wraps rather than clips at large font sizes (200% on a small phone): the button grows taller.
             Text(text = text, textAlign = TextAlign.Center)

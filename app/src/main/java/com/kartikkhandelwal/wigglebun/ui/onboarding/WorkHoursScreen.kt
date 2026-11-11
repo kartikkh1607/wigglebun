@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import android.text.format.DateFormat
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -162,6 +163,7 @@ internal fun DayChips(
     offColor: Color = Track,
 ) {
     val locale: Locale = LocalConfiguration.current.locales[0]
+    val feel = LocalFeel.current
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         DayOfWeek.entries.forEach { day ->
             val isOn = day in selected
@@ -171,7 +173,7 @@ internal fun DayChips(
                 Modifier
                     .weight(1f)
                     .heightIn(min = S.DayChipTouch)
-                    .toggleable(value = isOn, role = Role.Checkbox, onValueChange = { onToggle(day) })
+                    .toggleable(value = isOn, role = Role.Checkbox, onValueChange = { feel.segment(); onToggle(day) })
                     .semantics { contentDescription = fullName },
                 contentAlignment = Alignment.Center,
             ) {

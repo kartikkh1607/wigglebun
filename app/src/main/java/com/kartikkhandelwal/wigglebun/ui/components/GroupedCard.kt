@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.components
 
+import com.kartikkhandelwal.wigglebun.feedback.tickClickable
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -101,7 +102,7 @@ fun SettingsRow(
 ) {
     val hasSubtitle = subtitle != null || subtitleContent != null
     val action = if (onClick != null) {
-        Modifier.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+        Modifier.tickClickable(onClickLabel = onClickLabel, onClick = onClick)
     } else {
         Modifier.semantics(mergeDescendants = true) {}
     }
