@@ -623,6 +623,84 @@ object Dimens {
         val SliderThumbRing = 3.dp
         val SliderThumbDrop = 4.dp
     }
+
+    /** The paywall (design/ui_v2/Paywall.dc.html, a 390 x 844 artboard). */
+    object Paywall {
+        // The sky with the pet; the panel's rounded top covers the pet's feet.
+        val SceneHeight = 212.dp
+        const val MinScale = 0.45f
+        /** Above this font scale the button and small print scroll with the panel instead of staying pinned. */
+        const val LargeFontScale = 1.15f
+        /** What the panel needs at normal font size (title, benefits, timeline, plans): the scene leaves room for it. */
+        val PanelNeed = 446.dp
+        val HaloY = 168.dp
+        val HaloOuter = 112.dp
+        val HaloInner = 80.dp
+        val PetTop = 74.dp
+        val PetWidth = 154.dp
+        val PetHeight = 162.dp
+        val TopBarTop = 14.dp
+        val TopBarStart = 16.dp
+        val TopBarEnd = 12.dp
+        val RestoreMinSize = 48.dp
+        val RestorePaddingHorizontal = 8.dp
+        val RestoreSize = 14.sp
+
+        val PanelBottom = 12.dp
+        val TitleSize = 27.sp
+        val BenefitGap = 8.dp
+        val BenefitTile = 34.dp
+        val BenefitTileRadius = 11.dp
+        val BenefitTextStart = 12.dp
+        val BenefitPetWidth = 24.dp
+        val BenefitPetHeight = 25.dp
+        const val BenefitPetEnergy = 0.55f
+        val BenefitNeckIcon = 26.dp
+        val BenefitSparkIcon = 22.dp
+
+        val TimelineRadius = 18.dp
+        val TimelinePaddingHorizontal = 10.dp
+        val TimelinePaddingTop = 12.dp
+        val TimelinePaddingBottom = 10.dp
+        val TimelineDot = 18.dp
+        val TimelineDotRing = 4.dp
+        val TimelineLine = 3.dp
+        val TimelineTextGap = 4.dp
+
+        /** Room above the cards for the badge that sits on the yearly card's top edge. */
+        val PlansTop = 10.dp
+        val PlanGap = 8.dp
+        val PlanHeight = 104.dp
+        val PlanRadius = 20.dp
+        val PlanEdge = 4.dp
+        val PlanBorderSelected = 3.dp
+        val PlanBorder = 2.dp
+        val PlanPaddingHorizontal = 4.dp
+        val PlanPaddingVertical = 8.dp
+        val PlanTextGap = 2.dp
+        val PlanLabelSize = 14.sp
+        val PlanPriceSize = 21.sp
+        val PlanPriceMinSize = 12.sp
+        val PlanSubSize = 12.sp
+        val BadgeLift = 11.dp
+        val BadgePaddingHorizontal = 9.dp
+        val BadgePaddingVertical = 3.dp
+        val BadgeSize = 11.sp
+        val ProblemPadding = 16.dp
+        val ProblemGap = 12.dp
+
+        /** The same as the panel's own side padding (Shared.PanelPaddingHorizontal). */
+        val FooterHorizontal = 24.dp
+        val FooterTop = 10.dp
+        val FooterBottom = 12.dp
+        val FooterGap = 8.dp
+        val FinePrintSize = 12.5.sp
+        val FinePrintLineHeight = 18.sp
+        val LinkGap = 6.dp
+        val LinkMinSize = 48.dp
+        val LinkPaddingHorizontal = 8.dp
+        val LinkSize = 13.sp
+    }
 }
 
 /** A dot behind a header, [x] from the left edge or, with [fromRight], from the right one. */

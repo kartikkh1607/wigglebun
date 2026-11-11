@@ -12,7 +12,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.kartikkhandelwal.wigglebun.ui.home.HomePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreen
-import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallPlaceholderPreview
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsAllOffPreview
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsExplainPreview
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsMixedPreview
@@ -182,9 +181,6 @@ class OnboardingScreenshotTest {
             )
         }
     }
-
-    @Test
-    fun paywallPlaceholder() = capture("paywall_placeholder") { PaywallPlaceholderPreview() }
 
     @Config(qualifiers = "w360dp-h640dp-xxhdpi", fontScale = 1.3f)
     @Test

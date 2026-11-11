@@ -22,6 +22,9 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kartikkhandelwal.wigglebun.domain.sitting.SittingSettings
+import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallActions
+import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallPreviewStates
+import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallScreen
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -81,6 +84,14 @@ class OnboardingFlowTest {
                                 Button(onClick = onCompleted) { Text("session done") }
                             }
                         },
+                        // The real screen with sample plans; the Hilt-backed route isn't available here.
+                        paywallContent = { name, onClose, onEntitled ->
+                            PaywallScreen(
+                                state = PaywallPreviewStates.yearly,
+                                petName = name,
+                                actions = PaywallActions(onClose = onClose, onPurchase = onEntitled),
+                            )
+                        },
                     )
                     backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
                 }
@@ -116,9 +127,9 @@ class OnboardingFlowTest {
         composeRule.onNodeWithText("session").assertIsDisplayed()
         tap("session done")
 
-        composeRule.onNodeWithText("You’re all set!").assertIsDisplayed()
+        composeRule.onNodeWithText("Keep Biscuit moving with you").assertIsDisplayed()
         assertEquals(0, finished) // not until the paywall is left behind
-        tap("Continue")
+        tap("Start 7-day free trial")
 
         assertEquals(listOf("name", "hours", "interval"), saved)
         assertEquals(1, finished)
@@ -131,7 +142,7 @@ class OnboardingFlowTest {
         tap("Start stretching")
         tap("close session")
         composeRule.onNodeWithText("Start stretching").assertIsDisplayed()
-        composeRule.onNodeWithText("You’re all set!").assertDoesNotExist()
+        composeRule.onNodeWithText("Keep Bun moving with you").assertDoesNotExist()
     }
 
     /** Leaving the paywall with Back finishes onboarding, as closing the real one will (§5.5). */
@@ -216,8 +227,8 @@ class OnboardingFlowTest {
         tap("Skip")
         composeRule.onNodeWithText("Stretch with Bun").assertIsDisplayed()
         tap("Skip")
-        composeRule.onNodeWithText("You’re all set!").assertIsDisplayed()
-        tap("Continue")
+        composeRule.onNodeWithText("Keep Bun moving with you").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Close").performClick()
         assertTrue(saved.isEmpty())
         assertEquals(1, finished)
     }
