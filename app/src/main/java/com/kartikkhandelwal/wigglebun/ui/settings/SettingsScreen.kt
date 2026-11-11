@@ -213,7 +213,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     badge: PremiumBadge? = null,
 ) {
-    OnSurface(Surfaces.Settings) { SettingsContent(state, setup, actions, modifier) }
+    OnSurface(Surfaces.Settings) { SettingsContent(state, setup, actions, badge, modifier) }
 }
 
 @Composable
@@ -221,6 +221,7 @@ private fun SettingsContent(
     state: SettingsUiState,
     setup: SetupCardsUi,
     actions: SettingsActions,
+    badge: PremiumBadge?,
     modifier: Modifier,
 ) {
     val petName = state.pet.displayName()
