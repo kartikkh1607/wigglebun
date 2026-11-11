@@ -341,7 +341,7 @@ One entry point: `feedback/Feel.kt`. `FeelPlayer` (app-scoped `@Singleton`: Soun
   `keytool -genkeypair -v -keystore C:\Users\<you>\wigglebun-upload.jks -alias wigglebun-upload -keyalg RSA -keysize 2048 -validity 10000`
   then add the four `WIGGLEBUN_UPLOAD_*` lines to `~/.gradle/gradle.properties` and run `./gradlew bundleRelease` (output: `app/build/outputs/bundle/release/app-release.aab`, about 7.5 MB). Before uploading, run `./gradlew assembleRelease`, install `app-release.apk` on a phone and check the R8 build: start, finish onboarding, start a break.
 - [ ] Closed test with **12 testers for 14 continuous days** if the developer account is a personal account created after 13 Nov 2023
-- [ ] Store listing: icon, feature graphic 1024×500, screenshots, optional YouTube preview video
+- [ ] Store listing: icon, feature graphic 1024×500, screenshots, optional YouTube preview video. Prepared in `store/`: `listing.md` (name, descriptions, proposed Data safety / Health / App access answers), `feature_graphic.png` and six captioned 1080×1920 screenshots built from the reference images by `store/make_assets.py` (re-run it after UI changes)
 
 ---
 
