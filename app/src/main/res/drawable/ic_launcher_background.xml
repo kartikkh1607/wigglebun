@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon background: a night sky with a soft glow behind the pet
+     (design/app_icon_background.svg). Gradients in vectors need API 24; minSdk is 26. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M0,0 h108 v108 h-108 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="56"
+                android:gradientRadius="52"
+                android:startColor="#FF4A4870"
+                android:endColor="#FF252437" />
+        </aapt:attr>
+    </path>
+</vector>

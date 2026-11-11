@@ -4,4 +4,10 @@
     <style name="Theme.Wigglebun" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/cream</item>
     </style>
+
+    <!-- The launch theme (CLAUDE.md §6.1). Android 8–11 have no system splash: the window
+         background is the splash, and MainActivity sets Theme.Wigglebun before it draws. -->
+    <style name="Theme.Wigglebun.Launch">
+        <item name="android:windowBackground">@drawable/splash_window</item>
+    </style>
 </resources>

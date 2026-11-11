@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Adaptive icon foreground: design/app_icon_foreground.svg, path for path. 108×108 with the
-     artwork inside the 66-unit safe-zone circle; the background is @color/ic_launcher_background.
-     Colours match ui/theme/Color.kt (PetYellow, PetPink, PetBlush, Ink). -->
+     artwork inside the 66-unit safe-zone circle; the background is @drawable/ic_launcher_background.
+     Colours match ui/theme/Color.kt (PetYellow, PetPink, PetBlush, Ink, Sun). Also the splash's icon. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <!-- The SVG's ears reach 35.4 units from the centre, past the 33-unit safe-zone circle, so
-         circle masks touched them. Scaled to 0.9 (shapes unchanged) and nudged down 1.5:
-         the furthest point is now 31 units out. -->
+         circle masks touched them. Scaled to 0.9 (shapes unchanged) and nudged down 3 to leave
+         room for the sparks: the furthest point (the edge under the chin) is 31 units out. -->
     <group
         android:pivotX="54"
         android:pivotY="54"
         android:scaleX="0.9"
         android:scaleY="0.9"
-        android:translateY="1.5">
+        android:translateY="3">
+        <!-- The chunky edge: the same silhouette 3.2 lower, in a darker yellow -->
+        <path
+            android:fillColor="#FFD9B450"
+            android:pathData="M24,41.2 a9,9 0,1 1,18 0 a9,9 0,1 1,-18 0 Z M66,41.2 a9,9 0,1 1,18 0 a9,9 0,1 1,-18 0 Z M27,62.2 a27,24 0,1 1,54 0 a27,24 0,1 1,-54 0 Z" />
         <!-- Ears -->
         <path
             android:fillColor="#FFF5DC8B"
@@ -47,4 +51,11 @@
             android:strokeWidth="1.2"
             android:strokeLineJoin="round" />
     </group>
+    <!-- Two sparks above the head (the app's currency), outside the scaled group -->
+    <path
+        android:fillColor="#FFFFC857"
+        android:pathData="M54,21.2 Q55.4,24.8 59,26.2 Q55.4,27.6 54,31.2 Q52.6,27.6 49,26.2 Q52.6,24.8 54,21.2 Z" />
+    <path
+        android:fillColor="#FFFFE9B0"
+        android:pathData="M63,22.4 Q63.62,23.98 65.2,24.6 Q63.62,25.22 63,26.8 Q62.38,25.22 60.8,24.6 Q62.38,23.98 63,22.4 Z" />
 </vector>

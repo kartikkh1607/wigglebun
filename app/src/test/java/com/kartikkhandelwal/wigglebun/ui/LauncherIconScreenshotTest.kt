@@ -62,6 +62,25 @@ class LauncherIconScreenshotTest {
         composeRule.setContent { WigglebunTheme { LauncherIconSheet() } }
         composeRule.onRoot().captureRoboImage("launcher_icon.png")
     }
+
+    /**
+     * The splash as Android 8–11 draw it (drawable/splash_window, the launch theme's window
+     * background). Android 12+ builds the same picture itself from the theme, which a test can't show.
+     */
+    @Test
+    fun splashWindow() {
+        composeRule.setContent {
+            val context = LocalContext.current
+            val splash = remember { requireNotNull(ContextCompat.getDrawable(context, R.drawable.splash_window)) }
+            ComposeCanvas(Modifier.size(390.dp, 844.dp)) {
+                drawIntoCanvas {
+                    splash.setBounds(0, 0, size.width.toInt(), size.height.toInt())
+                    splash.draw(it.nativeCanvas)
+                }
+            }
+        }
+        composeRule.onRoot().captureRoboImage("splash_window.png")
+    }
 }
 
 /** Mask outlines in a 100×100 box, as in the platform's config_icon_mask and OEM overlays. */

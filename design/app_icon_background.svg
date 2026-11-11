@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="432" height="432">
+  <!-- Adaptive icon BACKGROUND: res/drawable/ic_launcher_background.xml. -->
+  <defs><radialGradient id="night" cx="54" cy="56" r="52" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4A4870"/><stop offset="1" stop-color="#252437"/></radialGradient></defs>
+  <rect width="108" height="108" fill="url(#night)"/>
+</svg>
