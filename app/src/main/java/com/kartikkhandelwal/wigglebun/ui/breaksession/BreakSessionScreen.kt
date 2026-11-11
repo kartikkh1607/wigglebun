@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.breaksession
 
+import androidx.compose.foundation.layout.Row
 import com.kartikkhandelwal.wigglebun.feedback.ConsumeFeel
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -197,12 +198,14 @@ private fun SessionContent(
             }
         }
     }
+    val hugeFont = LocalDensity.current.fontScale >= S.HugeFontScale
     val timer: @Composable (Modifier) -> Unit = { timerModifier ->
         TimerRow(
             remainingMillis = state.remainingMillis,
             isPaused = state.isPaused,
             colourIsBack = state.colourIsBack,
-            showColourChip = state.showColourChip,
+            // A huge font has no room for it: the pet's colour filling says the same. "Paused" stays.
+            showColourChip = state.showColourChip && !hugeFont,
             timerAlpha = timerAlpha,
             modifier = timerModifier,
         )
@@ -233,9 +236,16 @@ private fun SessionContent(
             Column { top() }
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.height(S.RingTop))
-                val ringScale = if (LocalDensity.current.fontScale >= S.HugeFontScale) S.HugeFontRingScale else S.LargeFontRingScale
-                ring(Modifier.size(S.RingSize * ringScale))
-                timer(Modifier.padding(top = S.TimerGap))
+                if (hugeFont) {
+                    // The small ring and the countdown share a line, so the step's text starts higher.
+                    Row(Modifier.fillMaxWidth().padding(start = Dimens.ScreenPadding), verticalAlignment = Alignment.CenterVertically) {
+                        ring(Modifier.size(S.RingSize * S.HugeFontRingScale))
+                        timer(Modifier.weight(1f))
+                    }
+                } else {
+                    ring(Modifier.size(S.RingSize * S.LargeFontRingScale))
+                    timer(Modifier.padding(top = S.TimerGap))
+                }
                 Spacer(Modifier.height(S.TimerGap))
                 SheetPanel(Modifier.fillMaxWidth().heightIn(min = S.TextMinHeight)) { text() }
             }

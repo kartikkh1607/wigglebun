@@ -135,7 +135,9 @@ fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modif
         // The title, the line under it and the button must be whole on screen, so the scene gets what
         // they leave: everything above the title (556 units) and the button's bottom gap (44) scale
         // with it. A bigger font means more text, hence a smaller scene.
-        val textHeight = S.WakeTextHeight * LocalDensity.current.fontScale
+        // Bigger letters also wrap onto more lines, so the text grows faster than the font does.
+        val fontScale = LocalDensity.current.fontScale
+        val textHeight = S.WakeTextHeight * fontScale * (1f + (fontScale - 1f).coerceAtLeast(0f) * S.WakeTextWrapGrowth)
         val room = maxHeight - statusTop - textHeight - S.WakeCtaHeight - S.WakeCtaPaddingShort
         val k = (room / (S.WakeTitleTop + S.WakeCtaBottom)).coerceIn(S.WakeMinSqueeze, 1f)
         NightRoomScene(Modifier.fillMaxSize(), squeeze = k, topInset = statusTop)
