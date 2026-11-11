@@ -38,9 +38,10 @@ android {
         // Play rejects an upload whose versionCode it has seen before, on any track. Add 1 for every
         // AAB uploaded (internal, closed test or production); never reuse or lower it. versionName is
         // what people see; this first AAB (internal testing, only to unlock Play Console's
-        // subscription setup) is "1.0.0-internal"; closed-test builds add "-closedtest" to it (below).
-        versionCode = 2
-        versionName = "1.0.0-internal"
+        // subscription setup) was "1.0.0-internal" (versionCode 2); closed-test builds add "-closedtest" to
+        // "1.0.0" (below).
+        versionCode = 3
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
