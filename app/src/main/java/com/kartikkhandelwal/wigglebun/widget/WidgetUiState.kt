@@ -20,6 +20,9 @@ data class WidgetUiState(
 ) {
     val isSleeping: Boolean get() = minutes == null
 
+    /** The same pet asleep with no timer, as outside work hours: what a locked app shows. */
+    fun asleep(): WidgetUiState = copy(mood = Mood.SLEEPING, minutes = null)
+
     @get:DrawableRes
     val petImage: Int get() = moodImage(pet, mood)
 

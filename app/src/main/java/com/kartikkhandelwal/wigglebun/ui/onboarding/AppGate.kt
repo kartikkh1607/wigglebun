@@ -13,17 +13,21 @@ import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTheme
  * First-launch gate (CLAUDE.md §6.2). Onboarding runs apart from the main app, so finishing it
  * leaves nothing on the tabs' back stack. While [onboardingDone] is still null (the saved answer
  * is loading) it shows the plain background, so a cold start never flashes the wrong screen.
+ * The same goes for the app itself while [accessKnown] is false: whether Home is open or locked
+ * (CLAUDE.md §5.5) is decided before either is drawn. Onboarding doesn't wait for it.
  */
 @Composable
 fun AppGate(
     onboardingDone: Boolean?,
     onboarding: @Composable () -> Unit,
     app: @Composable () -> Unit,
+    accessKnown: Boolean = true,
 ) {
-    when (onboardingDone) {
-        null -> Box(Modifier.fillMaxSize().background(Cream))
-        false -> onboarding()
-        true -> app()
+    when {
+        onboardingDone == null -> Box(Modifier.fillMaxSize().background(Cream))
+        !onboardingDone -> onboarding()
+        !accessKnown -> Box(Modifier.fillMaxSize().background(Cream))
+        else -> app()
     }
 }
 

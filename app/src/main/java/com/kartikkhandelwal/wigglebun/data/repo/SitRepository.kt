@@ -2,6 +2,7 @@ package com.kartikkhandelwal.wigglebun.data.repo
 
 import com.kartikkhandelwal.wigglebun.activity.MovementTracker
 import com.kartikkhandelwal.wigglebun.activity.StepCounter
+import com.kartikkhandelwal.wigglebun.billing.AccessGate
 import com.kartikkhandelwal.wigglebun.data.ApplicationScope
 import com.kartikkhandelwal.wigglebun.data.prefs.MovementStore
 import com.kartikkhandelwal.wigglebun.data.prefs.ReceivedTransition
@@ -18,6 +19,10 @@ import com.kartikkhandelwal.wigglebun.domain.sitting.SnoozeResult
 import com.kartikkhandelwal.wigglebun.notify.ReminderNotifier
 import com.kartikkhandelwal.wigglebun.notify.ReminderScheduler
 import com.kartikkhandelwal.wigglebun.widget.WidgetRefresher
+import java.time.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -32,10 +37,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.time.Instant
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Owns the sit timer: runs the [SittingEngine] over the persisted state and settings,
@@ -57,6 +58,8 @@ class SitRepository @Inject constructor(
     private val widget: WidgetRefresher,
     private val petRepository: PetRepository,
     @ApplicationScope private val scope: CoroutineScope,
+    /** Hilt always supplies the real gate; the default keeps tests of the timer free of billing. */
+    private val access: AccessGate = AccessGate.AlwaysOpen,
 ) {
     // UI buttons, notification actions and movement events can all arrive at once.
     private val mutex = Mutex()
@@ -131,12 +134,15 @@ class SitRepository @Inject constructor(
         val status = engine.status(state, settings)
         val due = status.reminderDue
         if (status.shouldNotify && due != null) {
-            notifier.showReminder(
-                pet = petRepository.activePet.first(),
-                suggested = BreakType.suggestedFor(due.epochSecond / 60, settingsRepository.enabledBreaks.first()),
-                snoozesLeft = status.snoozesLeft,
-            )
-            // Marked even if notifications are blocked, so we don't retry every second.
+            // No reminders while the app is locked (CLAUDE.md §5.5): the pet is napping.
+            if (access.isOpen()) {
+                notifier.showReminder(
+                    pet = petRepository.activePet.first(),
+                    suggested = BreakType.suggestedFor(due.epochSecond / 60, settingsRepository.enabledBreaks.first()),
+                    snoozesLeft = status.snoozesLeft,
+                )
+            }
+            // Marked even if notifications are blocked or the app is locked, so we don't retry every second.
             state = store.update { engine.markNotified(it, due) }
         }
         armAlarm(state, settings)

@@ -1,15 +1,17 @@
 package com.kartikkhandelwal.wigglebun
 
 import android.app.Application
+import com.kartikkhandelwal.wigglebun.billing.AccessGate
 import com.kartikkhandelwal.wigglebun.billing.PremiumRepository
 import com.kartikkhandelwal.wigglebun.data.ApplicationScope
 import com.kartikkhandelwal.wigglebun.data.repo.SitRepository
 import com.kartikkhandelwal.wigglebun.feedback.FeelPlayer
 import com.kartikkhandelwal.wigglebun.notify.ReminderNotifier
+import com.kartikkhandelwal.wigglebun.widget.WidgetRefresher
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltAndroidApp
 class WigglebunApp : Application() {
@@ -25,6 +27,10 @@ class WigglebunApp : Application() {
 
     @Inject lateinit var premium: PremiumRepository
 
+    @Inject lateinit var access: AccessGate
+
+    @Inject lateinit var widget: WidgetRefresher
+
     override fun onCreate() {
         super.onCreate()
         // Configures RevenueCat once per process and starts following the premium entitlement.
@@ -34,5 +40,8 @@ class WigglebunApp : Application() {
         // Starts the timer on first run and re-arms the alarm (it is lost on force-stop). Also
         // re-syncs the widget's work-hours refresh, which a force-stop or app update may have lost.
         appScope.launch { sitRepository.onAppStart() }
+        // The widget shows the pet asleep while the app is locked: redraw it when that changes
+        // (a trial started, a subscription ended).
+        appScope.launch { access.access.collect { widget.requestUpdate() } }
     }
 }

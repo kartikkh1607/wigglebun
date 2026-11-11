@@ -50,6 +50,8 @@ data class RoomPalette(
     val steam: Color,
     val plantPot: Color,
     val plantPotRim: Color,
+    /** A crescent in the window; null by day. */
+    val moon: Color? = null,
 ) {
     companion object {
         val Day = RoomPalette(
@@ -94,6 +96,46 @@ data class RoomPalette(
             steam = Card,
             plantPot = Color(0xFFE58B62),
             plantPotRim = Color(0xFFCC7350),
+        )
+
+        /**
+         * The same room at dusk, for the locked Home (design/ui_v2/Locked.dc.html): muted walls,
+         * a night window with a moon, the laptop closed for the day.
+         */
+        val Dusk = Day.copy(
+            wall = Color(0xFFB9D3C2),
+            wallLower = Color(0xFFA9C8B4),
+            wallEdge = Color(0xFF9FBCA9),
+            trim = Color(0xFFEEF2EE),
+            skirtingShadow = Color(0xFFD6C8B2),
+            floor = Color(0xFFE9DECD),
+            floorSeam = Color(0xFFDED0BA),
+            rug = Color(0xFFB7CDE6),
+            rugEdge = Color(0xFF9DB9DB),
+            rugStitch = Color(0xFFEEF2F8),
+            rugShadow = Color(0xFF9DB9DB),
+            windowFrame = Color(0xFFEEF2EE),
+            sky = Color(0xFF7F8FC4),
+            cloud = Color(0xFF7F8FC4),
+            hillNear = Color(0xFF6E86AE),
+            hillFar = Color(0xFF6880A8),
+            treeTrunk = Color(0xFF5F78A3),
+            treeTop = Color(0xFF5F78A3),
+            sill = Color(0xFFE2E3DD),
+            leafLight = Color(0xFF6EA67E),
+            leafMid = Color(0xFF64997A),
+            leafDark = Color(0xFF5A8D69),
+            deskTop = Color(0xFFD9B88D),
+            deskEdge = Color(0xFFBE9466),
+            deskLeg = Color(0xFFC49C6E),
+            laptop = Color(0xFFA9AFBD),
+            laptopScreen = Color(0xFFBFC4CF),
+            laptopBase = Color(0xFFBFC4CF),
+            glare = Color.Transparent,
+            steam = Color.Transparent,
+            plantPot = Color(0xFFC97A57),
+            plantPotRim = Color(0xFFB26746),
+            moon = Color(0xFFFFF3C9),
         )
     }
 }

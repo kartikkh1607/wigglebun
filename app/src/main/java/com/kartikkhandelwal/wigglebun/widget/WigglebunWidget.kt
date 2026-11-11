@@ -8,6 +8,7 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
+import com.kartikkhandelwal.wigglebun.billing.AccessGate
 import com.kartikkhandelwal.wigglebun.data.prefs.SettingsRepository
 import com.kartikkhandelwal.wigglebun.data.prefs.SitStateStore
 import com.kartikkhandelwal.wigglebun.data.repo.PetRepository
@@ -30,6 +31,8 @@ internal interface WidgetEntryPoint {
     fun settings(): SettingsRepository
 
     fun pets(): PetRepository
+
+    fun access(): AccessGate
 }
 
 /** Reads the current sit state once; the widget is redrawn by [WidgetRefresher], not by a ticker. */
@@ -37,7 +40,9 @@ internal suspend fun loadWidgetState(context: Context): WidgetUiState {
     val app = EntryPointAccessors.fromApplication(context.applicationContext, WidgetEntryPoint::class.java)
     val status = app.engine().status(app.store().current(), app.settings().current())
     val pet = app.pets().activePet.first()
-    return WidgetUiState.from(status, pet.id, pet.displayName(context), app.settings().enabledBreaks.first())
+    val state = WidgetUiState.from(status, pet.id, pet.displayName(context), app.settings().enabledBreaks.first())
+    // Locked (CLAUDE.md §5.5): the pet naps on the widget too, with no timer; tapping opens the app.
+    return if (app.access().isOpen()) state else state.asleep()
 }
 
 /**

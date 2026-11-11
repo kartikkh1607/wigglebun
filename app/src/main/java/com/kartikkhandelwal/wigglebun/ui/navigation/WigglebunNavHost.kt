@@ -23,18 +23,21 @@ import com.kartikkhandelwal.wigglebun.ui.collection.CollectionPreviewStates
 import com.kartikkhandelwal.wigglebun.ui.collection.CollectionScreen
 import com.kartikkhandelwal.wigglebun.ui.collection.CollectionScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.components.TabBarItem
+import com.kartikkhandelwal.wigglebun.ui.components.WigglebunTabBar
 import com.kartikkhandelwal.wigglebun.ui.debug.DebugHomeEntry
 import com.kartikkhandelwal.wigglebun.ui.debug.debugDestinations
-import com.kartikkhandelwal.wigglebun.ui.components.WigglebunTabBar
 import com.kartikkhandelwal.wigglebun.ui.home.HomeNavigation
 import com.kartikkhandelwal.wigglebun.ui.home.HomePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreen
 import com.kartikkhandelwal.wigglebun.ui.home.HomeScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.home.LockedHomeNavigation
+import com.kartikkhandelwal.wigglebun.ui.home.LockedHomeScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.paywall.PaywallScreenRoute
 import com.kartikkhandelwal.wigglebun.ui.pet.displayName
-import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfilePreviewStates
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreen
 import com.kartikkhandelwal.wigglebun.ui.pet.profile.PetProfileScreenRoute
+import com.kartikkhandelwal.wigglebun.ui.pet.spec
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsActions
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsPreviewStates
 import com.kartikkhandelwal.wigglebun.ui.settings.SettingsScreen
@@ -58,6 +61,12 @@ fun WigglebunNavHost(
     /** A break to open straight away (from the widget); [onStartBreakHandled] clears it. */
     startBreak: BreakType? = null,
     onStartBreakHandled: () -> Unit = {},
+    /** No entitlement (CLAUDE.md §5.5): Home is the napping pet and no break can be started. */
+    locked: Boolean = false,
+    lockedHomeContent: @Composable (LockedHomeNavigation) -> Unit = { LockedHomeScreenRoute(it) },
+    paywallContent: @Composable (petName: String, onDone: () -> Unit) -> Unit = { name, onDone ->
+        PaywallScreenRoute(petName = name, onClose = onDone, onEntitled = onDone)
+    },
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val selectedTab = TopLevelTab.entries.firstOrNull { tab ->
@@ -80,7 +89,8 @@ fun WigglebunNavHost(
 
     LaunchedEffect(startBreak) {
         if (startBreak != null) {
-            openBreak(startBreak)
+            // The widget's "Take a break" can't start one while locked; the app just opens.
+            if (!locked) openBreak(startBreak)
             onStartBreakHandled()
         }
     }
@@ -112,7 +122,14 @@ fun WigglebunNavHost(
             modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
         ) {
             composable<HomeRoute> {
-                homeContent(
+                if (locked) {
+                    lockedHomeContent(
+                        LockedHomeNavigation(
+                            onOpenMenu = { openTab(TopLevelTab.Settings) },
+                            onOpenPaywall = { navController.navigate(PremiumPaywallRoute) { launchSingleTop = true } },
+                        ),
+                    )
+                } else homeContent(
                     HomeNavigation(
                         onOpenMenu = { openTab(TopLevelTab.Settings) },
                         onStartBreak = ::openBreak,
@@ -125,6 +142,10 @@ fun WigglebunNavHost(
             composable<PetRoute> { petContent() }
             composable<SettingsRoute> { settingsContent { openTab(TopLevelTab.Pet) } }
             composable<BreakSessionRoute> { BreakSessionScreenRoute(onExit = { navController.popBackStack() }) }
+            composable<PremiumPaywallRoute> {
+                // Closed or bought, the way out is the same: back to Home, which is open by then if it was bought.
+                paywallContent(activePet?.displayName().orEmpty()) { navController.popBackStack() }
+            }
             debugDestinations(navController)
         }
     }
