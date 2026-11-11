@@ -1,5 +1,6 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
+import androidx.compose.foundation.layout.size
 import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import android.text.format.DateFormat
 import androidx.annotation.StringRes
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -178,8 +178,10 @@ internal fun DayChips(
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
+                    // A fixed size: the letter grows with the font, the circle doesn't, so on a
+                    // 360 dp phone at 200% the seven circles still keep a gap between them.
                     Modifier
-                        .defaultMinSize(minWidth = S.DayChip, minHeight = S.DayChip)
+                        .size(S.DayChip)
                         .clip(CircleShape)
                         .background(if (isOn) Ink else offColor),
                     contentAlignment = Alignment.Center,

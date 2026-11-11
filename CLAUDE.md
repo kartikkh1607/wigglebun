@@ -386,14 +386,13 @@ One entry point: `feedback/Feel.kt`. `FeelPlayer` (app-scoped `@Singleton`: Soun
 
 v1.0 build order (approved 2026-11-04): release foundations + cleanup → privacy policy + terms → UI v2 (`design/ui_v2`, one PR each: respect "Remove animations" → foundations (palette, surfaces, icons, tab bar, shared pieces) → Home → Collection → Settings → onboarding wake-up + name → onboarding hours + interval → break session + celebration) → M10a RevenueCat layer (only once the Play Console app and products exist) → M10b paywall (`design/ui_v2/Paywall.dc.html`) → M10c gating (Locked Home) → M10d trial-end reminder → M11 accessibility + large fonts → M11 store listing → M12.
 
-**M11 accessibility list (found while reviewing, fix in M11):**
-- Settings, Work hours: at 200% font on a small phone (360 dp) the day circles (M T W T F S S) touch each other and their 48 dp tap targets may overlap. Needs a layout that keeps the circles apart (smaller circles, or wrapping to two rows), with a 200% / 360 dp screenshot. The same `DayChips` is on onboarding's Hours screen.
-- Naming screen at 130% font (360 dp): the speech bubble's "nap!" wraps alone onto its own line. Rebalance the line break (or the bubble width).
-- Wake-up at 200% font on 360×640: the last body line sits partly behind the button; it can be reached by scrolling, but the squeeze could leave it whole.
-- Onboarding Hours at 200% font (360 dp): the 24-hour bar's labels ("12 AM", "9 AM") crowd together.
-- Onboarding Interval at 200% font (360 dp): the "After 45 min sitting" chip is clipped by the panel's top edge.
-- Celebration subtitle at 390 dp (100% font): "does." is left alone on the last line ("Bun’s colour is back. That’s what every break / does."). Rebalance the break or the width.
-- Break session at 200% font on 360×640: the ring, timer and text scroll together, so the instruction is below the first screen and has to be scrolled to while the timer runs. A smaller ring or a one-line timer row would show more of it.
+**M11 accessibility list** (fixed in the M11 accessibility PR unless noted):
+- Day circles (`DayChips`, Settings and onboarding's Hours): a fixed 40 dp circle, so at 200% font on 360 dp they keep a gap. Their cells are still 44.5 dp wide on a 360 dp phone (under the 48 dp target; 48 dp tall).
+- Naming screen's bubble and the celebration subtitle: `balanced()`, no word alone on the last line.
+- Onboarding Interval at a big font: the wrapped labels stop clear of the panel's edge.
+- Wake-up at 200% font on 360×640: still needs a scroll to read the last line; scrolled to its end it now stops clear of the button.
+- Break session from 160% font: the ring is 30% of its size, so the step's title starts on the first screen; the instruction can still need a scroll on 360×640 at 200%.
+- Onboarding Hours at 200% font: the bar's labels no longer crowd (the midnight labels drop out when there is no room).
 
 ---
 

@@ -153,6 +153,8 @@ fun WakeUpScreen(phase: WakePhase, onWake: () -> Unit, onSkip: () -> Unit, modif
                 Sleeper(asleep, k, onWake)
                 Spacer(Modifier.height((S.WakeTitleTop - S.WakeBlobTop - S.WakeBlobHeight) * k))
                 WakeText()
+                // Scrolled to its end (a big font), the last line stops clear of the button.
+                Spacer(Modifier.height(S.TextGap))
             }
             WakeButton(
                 asleep,

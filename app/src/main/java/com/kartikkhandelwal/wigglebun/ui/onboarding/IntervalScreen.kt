@@ -1,6 +1,7 @@
 package com.kartikkhandelwal.wigglebun.ui.onboarding
 
 import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
 import com.kartikkhandelwal.wigglebun.feedback.LocalFeel
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -139,7 +140,8 @@ private fun IntervalScene(minutes: Int, petName: String, scale: Float) {
         Row(
             Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = top)
+                // Once the labels wrap (a big font) they reach the panel: keep them clear of its edge.
+                .padding(top = top, bottom = if (fontScale > P.LargeFontScale) P.IntervalLabelsBottomLargeFont else 0.dp)
                 .drawBehind {
                     // Two hills under the pets, centred under each (the columns sit 94 dp either side of the middle).
                     val radiusX = P.IntervalHillRadiusX.toPx() * scale

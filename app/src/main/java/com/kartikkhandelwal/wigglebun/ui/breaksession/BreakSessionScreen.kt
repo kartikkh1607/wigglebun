@@ -233,7 +233,8 @@ private fun SessionContent(
             Column { top() }
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.height(S.RingTop))
-                ring(Modifier.size(S.RingSize * S.LargeFontRingScale))
+                val ringScale = if (LocalDensity.current.fontScale >= S.HugeFontScale) S.HugeFontRingScale else S.LargeFontRingScale
+                ring(Modifier.size(S.RingSize * ringScale))
                 timer(Modifier.padding(top = S.TimerGap))
                 Spacer(Modifier.height(S.TimerGap))
                 SheetPanel(Modifier.fillMaxWidth().heightIn(min = S.TextMinHeight)) { text() }

@@ -73,6 +73,7 @@ import com.kartikkhandelwal.wigglebun.ui.theme.RugEdge
 import com.kartikkhandelwal.wigglebun.ui.theme.StreakBarIdle
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunShapes
 import com.kartikkhandelwal.wigglebun.ui.theme.WigglebunTextStyles
+import com.kartikkhandelwal.wigglebun.ui.theme.balanced
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -163,7 +164,7 @@ internal fun CelebrationContent(
                         PetNameSentence(
                             R.string.celebrate_subtitle,
                             petName,
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.Bold),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.Bold).balanced(),
                             color = CelebrateText,
                             textAlign = TextAlign.Center,
                         )
