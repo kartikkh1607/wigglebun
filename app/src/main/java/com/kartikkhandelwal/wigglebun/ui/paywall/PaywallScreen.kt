@@ -79,7 +79,6 @@ import com.kartikkhandelwal.wigglebun.ui.components.LegalLinks
 import com.kartikkhandelwal.wigglebun.ui.components.SheetPanel
 import com.kartikkhandelwal.wigglebun.ui.components.TopIcon
 import com.kartikkhandelwal.wigglebun.ui.components.TopIconButton
-import com.kartikkhandelwal.wigglebun.ui.pet.PetNameSentence
 import com.kartikkhandelwal.wigglebun.ui.pet.PetSpecs
 import com.kartikkhandelwal.wigglebun.ui.pet.PetView
 import com.kartikkhandelwal.wigglebun.ui.theme.BreakNeckTint
@@ -194,16 +193,15 @@ fun PaywallScreen(state: PaywallUiState, petName: String, actions: PaywallAction
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                         Scene(petName, scale, Modifier.fillMaxWidth().height(sceneHeight))
                         SheetPanel(Modifier.fillMaxWidth().heightIn(min = viewport - sceneHeight)) {
-                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                PetNameSentence(
-                                    template = R.string.paywall_title,
-                                    name = petName,
-                                    style = MaterialTheme.typography.displayMedium.copy(fontSize = D.TitleSize).balanced(),
-                                    color = Ink,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.semantics { heading() },
-                                )
-                            }
+                            // The whole name, on a second line if it needs one: this is the screen's
+                            // title, not a card whose height a long name must not change.
+                            Text(
+                                stringResource(R.string.paywall_title, petName),
+                                style = MaterialTheme.typography.displayMedium.copy(fontSize = D.TitleSize).balanced(),
+                                color = Ink,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth().semantics { heading() },
+                            )
                             Benefits()
                             PlansSection(state, actions)
                             if (smallPrintInPanel) {
@@ -405,7 +403,7 @@ private fun TimelineStep(dot: Color, title: String, sub: String, modifier: Modif
 @Composable
 private fun Plans(options: PaywallOptions, selected: PlanKind?, enabled: Boolean, onPick: (PlanKind) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(top = D.PlansTop).selectableGroup(),
+        Modifier.fillMaxWidth().padding(top = D.PlansTop * LocalDensity.current.fontScale.coerceAtLeast(1f)).selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(D.PlanGap),
     ) {
         options.all.forEach { option ->
@@ -423,6 +421,8 @@ private fun PlanCard(option: PlanOption, selected: Boolean, enabled: Boolean, on
         PlanKind.LIFETIME -> R.string.paywall_plan_lifetime to R.string.paywall_plan_lifetime_sub
     }
     val outline = if (selected) Ink else ButtonBorder
+    // The badge and the card grow with the font, so the badge never sits on the plan's name.
+    val fontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
     Box(modifier) {
         ChunkySurface(
             shape = RoundedCornerShape(D.PlanRadius),
@@ -434,7 +434,7 @@ private fun PlanCard(option: PlanOption, selected: Boolean, enabled: Boolean, on
             enabled = enabled,
             role = Role.RadioButton,
             contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxWidth().heightIn(min = D.PlanHeight + D.PlanEdge).semantics { this.selected = selected },
+            modifier = Modifier.fillMaxWidth().heightIn(min = D.PlanHeight * fontScale + D.PlanEdge).semantics { this.selected = selected },
         ) {
             Column(
                 Modifier.padding(horizontal = D.PlanPaddingHorizontal, vertical = D.PlanPaddingVertical),
@@ -471,7 +471,7 @@ private fun PlanCard(option: PlanOption, selected: Boolean, enabled: Boolean, on
                 maxLines = 1,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .offset(y = -D.BadgeLift)
+                    .offset(y = -D.BadgeLift * fontScale)
                     .background(StatusOnText, WigglebunShapes.Pill)
                     .padding(horizontal = D.BadgePaddingHorizontal, vertical = D.BadgePaddingVertical),
             )
